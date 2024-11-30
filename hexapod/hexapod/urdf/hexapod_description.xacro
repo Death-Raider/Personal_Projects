@@ -1,0 +1,530 @@
+<?xml version="1.0" ?>
+<robot name="hexapod" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="materials.xacro" />
+
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.000402323158202931 -0.006408606809467444 -0.0008934136825454772" rpy="0 0 0"/>
+    <mass value="1.2532302907744557"/>
+    <inertia ixx="0.002389" iyy="0.00243" izz="0.004702" ixy="-0.0" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_1_v1_1_6">
+  <inertial>
+    <origin xyz="-0.009119599596452234 -0.013834419227087363 0.02497248793502356" rpy="0 0 0"/>
+    <mass value="0.2868158630289448"/>
+    <inertia ixx="0.000104" iyy="8.6e-05" izz="0.000102" ixy="-2.2e-05" iyz="2e-06" ixz="1e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.043597 0.082619 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_6.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.043597 0.082619 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_6.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_1_v1_1_1">
+  <inertial>
+    <origin xyz="0.009664258824036875 -0.01345959320351453 0.024972487935023564" rpy="0 0 0"/>
+    <mass value="0.2868158630289448"/>
+    <inertia ixx="0.000103" iyy="8.7e-05" izz="0.000102" ixy="2.2e-05" iyz="2e-06" ixz="-1e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.044403 0.082619 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.044403 0.082619 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_1_v1_1_4">
+  <inertial>
+    <origin xyz="0.01655853411091676 0.0006174105923810631 0.02497248793502356" rpy="0 0 0"/>
+    <mass value="0.2868158630289448"/>
+    <inertia ixx="7.1e-05" iyy="0.000119" izz="0.000102" ixy="-1e-06" iyz="-0.0" ixz="-3e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.088403 0.006409 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_4.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.088403 0.006409 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_4.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_1_v1_1_2">
+  <inertial>
+    <origin xyz="0.008211831309080708 0.014391653710902022 0.024972487935023564" rpy="0 0 0"/>
+    <mass value="0.2868158630289448"/>
+    <inertia ixx="0.000107" iyy="8.4e-05" izz="0.000102" ixy="-2.1e-05" iyz="-2e-06" ixz="-1e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.044403 -0.069802 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_2.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.044403 -0.069802 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_2.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_1_v1_1_3">
+  <inertial>
+    <origin xyz="-0.009072415563632093 0.013865270655351092 0.02497248793502356" rpy="0 0 0"/>
+    <mass value="0.2868158630289448"/>
+    <inertia ixx="0.000105" iyy="8.5e-05" izz="0.000102" ixy="2.2e-05" iyz="-2e-06" ixz="1e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.043597 -0.069802 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_3.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.043597 -0.069802 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_3.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_1_v1_1_5">
+  <inertial>
+    <origin xyz="-0.0165693988297837 0.00014444549575706126 0.02497248793502358" rpy="0 0 0"/>
+    <mass value="0.2868158630289448"/>
+    <inertia ixx="7.1e-05" iyy="0.000119" izz="0.000102" ixy="1e-06" iyz="-0.0" ixz="3e-06"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.089297 0.006409 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_5.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.089297 0.006409 0.0021" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_1_v1_1_5.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_2_v1_1_1">
+  <inertial>
+    <origin xyz="0.006290836000516109 -0.05481802459999906 -7.026571801835302e-08" rpy="0 0 0"/>
+    <mass value="0.6177504574485608"/>
+    <inertia ixx="0.00057" iyy="0.000371" izz="0.00087" ixy="0.000309" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.095156 0.10997 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.095156 0.10997 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_2_v1_1_2">
+  <inertial>
+    <origin xyz="0.04916410051045869 -0.02504841938288667 -7.026571796631131e-08" rpy="0 0 0"/>
+    <mass value="0.6177504574485608"/>
+    <inertia ixx="0.000147" iyy="0.000794" izz="0.00087" ixy="-2.9e-05" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.139245 -0.020778 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_2.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.139245 -0.020778 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_2.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_2_v1_1_6">
+  <inertial>
+    <origin xyz="-0.04895349399788656 -0.02545740811131758 -7.02657179801891e-08" rpy="0 0 0"/>
+    <mass value="0.6177504574485608"/>
+    <inertia ixx="0.000603" iyy="0.000339" izz="0.00087" ixy="-0.000296" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.051014 0.139794 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_6.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.051014 0.139794 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_6.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_2_v1_1_4">
+  <inertial>
+    <origin xyz="0.0472165681737606 0.02855051863506336 -7.026571796284187e-08" rpy="0 0 0"/>
+    <mass value="0.6177504574485608"/>
+    <inertia ixx="0.00064" iyy="0.000302" izz="0.00087" ixy="-0.000277" iyz="-0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.048131 -0.127335 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_4.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.048131 -0.127335 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_4.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_2_v1_1_5">
+  <inertial>
+    <origin xyz="-0.005755682592959402 0.053807147227421415 -7.026571819876426e-08" rpy="0 0 0"/>
+    <mass value="0.6177504574485608"/>
+    <inertia ixx="0.000596" iyy="0.000345" izz="0.00087" ixy="0.000299" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.093119 -0.099325 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_5.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.093119 -0.099325 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_5.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="link_2_v1_1_3">
+  <inertial>
+    <origin xyz="-0.04803790977822023 -0.027138664385555632 -7.026571786569735e-08" rpy="0 0 0"/>
+    <mass value="0.6177504574485608"/>
+    <inertia ixx="0.000146" iyy="0.000795" izz="0.00087" ixy="1e-06" iyz="0.0" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.141258 -0.020168 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_3.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.141258 -0.020168 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/link_2_v1_1_3.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="L3_v4_1_2">
+  <inertial>
+    <origin xyz="0.0029226702791636527 0.025855385438347568 -0.06253428803669432" rpy="0 0 0"/>
+    <mass value="0.6616082583376713"/>
+    <inertia ixx="0.001835" iyy="0.001684" izz="0.000255" ixy="7e-06" iyz="-1e-05" ixz="-0.000233"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.23747 0.027103 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_2.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.23747 0.027103 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_2.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="L3_v4_1_3">
+  <inertial>
+    <origin xyz="0.024404322053452138 -0.009026177091379595 -0.06253428803669486" rpy="0 0 0"/>
+    <mass value="0.6616082583376713"/>
+    <inertia ixx="0.00172" iyy="0.001799" izz="0.000255" ixy="6.5e-05" iyz="-0.000203" ixz="-0.000114"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.095321 -0.210936 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_3.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.095321 -0.210936 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_3.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="L3_v4_1_6">
+  <inertial>
+    <origin xyz="0.019151421029623916 0.017614376109464286 -0.06253428803669556" rpy="0 0 0"/>
+    <mass value="0.6616082583376713"/>
+    <inertia ixx="0.00173" iyy="0.001789" izz="0.000255" ixy="-7e-05" iyz="-0.000194" ixz="0.000129"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.146259 -0.179276 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_6.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.146259 -0.179276 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_6.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="L3_v4_1_5">
+  <inertial>
+    <origin xyz="-0.004030686150665319 0.02570609720343514 -0.06253428803669454" rpy="0 0 0"/>
+    <mass value="0.6616082583376713"/>
+    <inertia ixx="0.001836" iyy="0.001684" izz="0.000255" ixy="-0.0" iyz="-0.0" ixz="0.000233"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.237335 0.031891 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_5.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.237335 0.031891 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_5.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="L3_v4_1_4">
+  <inertial>
+    <origin xyz="0.019344516571139392 -0.01740187308380231 -0.06253428803669474" rpy="0 0 0"/>
+    <mass value="0.6616082583376713"/>
+    <inertia ixx="0.001729" iyy="0.001791" izz="0.000255" ixy="6.9e-05" iyz="0.000196" ixz="0.000127"/>
+  </inertial>
+  <visual>
+    <origin xyz="0.147058 0.191913 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_4.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0.147058 0.191913 -0.0244" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/L3_v4_1_4.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="Top_plate_v2_1">
+  <inertial>
+    <origin xyz="-0.06314102602417976 -0.03645460798574804 0.022319149849514854" rpy="0 0 0"/>
+    <mass value="1.2163426849674803"/>
+    <inertia ixx="0.002266" iyy="0.002308" izz="0.004505" ixy="0.0" iyz="-0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.063545 -0.030046 -0.026" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/Top_plate_v2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.063545 -0.030046 -0.026" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://hexapod/meshes/Top_plate_v2_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="Revolute 4" type="continuous">
+  <origin xyz="-0.043597 -0.082619 -0.0021" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_1_v1_1_6"/>
+  <axis xyz="0.0 0.0 1.0"/>
+</joint>
+
+<joint name="Revolute 5" type="continuous">
+  <origin xyz="0.044403 -0.082619 -0.0021" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_1_v1_1_1"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+</joint>
+
+<joint name="Revolute 6" type="continuous">
+  <origin xyz="0.088403 -0.006409 -0.0021" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_1_v1_1_4"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+</joint>
+
+<joint name="Revolute 7" type="continuous">
+  <origin xyz="0.044403 0.069802 -0.0021" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_1_v1_1_2"/>
+  <axis xyz="0.0 0.0 -1.0"/>
+</joint>
+
+<joint name="Revolute 8" type="continuous">
+  <origin xyz="-0.043597 0.069802 -0.0021" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_1_v1_1_3"/>
+  <axis xyz="0.0 0.0 1.0"/>
+</joint>
+
+<joint name="Revolute 9" type="continuous">
+  <origin xyz="-0.089297 -0.006409 -0.0021" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="link_1_v1_1_5"/>
+  <axis xyz="0.0 0.0 1.0"/>
+</joint>
+
+<joint name="Revolute 10" type="continuous">
+  <origin xyz="0.050753 -0.027351 0.0265" rpy="0 0 0"/>
+  <parent link="link_1_v1_1_1"/>
+  <child link="link_2_v1_1_1"/>
+  <axis xyz="-0.808072 -0.589084 -0.0"/>
+</joint>
+
+<joint name="Revolute 11" type="continuous">
+  <origin xyz="0.050842 0.027187 0.0265" rpy="0 0 0"/>
+  <parent link="link_1_v1_1_4"/>
+  <child link="link_2_v1_1_2"/>
+  <axis xyz="0.044449 -0.999012 -0.0"/>
+</joint>
+
+<joint name="Revolute 12" type="continuous">
+  <origin xyz="-0.007417 -0.057175 0.0265" rpy="0 0 0"/>
+  <parent link="link_1_v1_1_6"/>
+  <child link="link_2_v1_1_6"/>
+  <axis xyz="0.838877 -0.544321 0.0"/>
+</joint>
+
+<joint name="Revolute 13" type="continuous">
+  <origin xyz="0.003728 0.057533 0.0265" rpy="0 0 0"/>
+  <parent link="link_1_v1_1_2"/>
+  <child link="link_2_v1_1_4"/>
+  <axis xyz="0.872118 -0.489295 -0.0"/>
+</joint>
+
+<joint name="Revolute 14" type="continuous">
+  <origin xyz="-0.049522 0.029523 0.0265" rpy="0 0 0"/>
+  <parent link="link_1_v1_1_3"/>
+  <child link="link_2_v1_1_5"/>
+  <axis xyz="0.83282 0.553544 -0.0"/>
+</joint>
+
+<joint name="Revolute 15" type="continuous">
+  <origin xyz="-0.051961 0.026577 0.0265" rpy="0 0 0"/>
+  <parent link="link_1_v1_1_5"/>
+  <child link="link_2_v1_1_3"/>
+  <axis xyz="0.001471 0.999999 -0.0"/>
+</joint>
+
+<joint name="Revolute 16" type="continuous">
+  <origin xyz="0.098225 -0.047881 0.0" rpy="0 0 0"/>
+  <parent link="link_2_v1_1_2"/>
+  <child link="L3_v4_1_2"/>
+  <axis xyz="0.044449 -0.999012 -0.0"/>
+</joint>
+
+<joint name="Revolute 17" type="continuous">
+  <origin xyz="0.04719 0.083601 0.0" rpy="0 0 0"/>
+  <parent link="link_2_v1_1_4"/>
+  <child link="L3_v4_1_3"/>
+  <axis xyz="0.872118 -0.489295 -0.0"/>
+</joint>
+
+<joint name="Revolute 18" type="continuous">
+  <origin xyz="-0.05314 0.079951 0.0" rpy="0 0 0"/>
+  <parent link="link_2_v1_1_5"/>
+  <child link="L3_v4_1_6"/>
+  <axis xyz="-0.83282 -0.553544 0.0"/>
+</joint>
+
+<joint name="Revolute 19" type="continuous">
+  <origin xyz="-0.096077 -0.052059 0.0" rpy="0 0 0"/>
+  <parent link="link_2_v1_1_3"/>
+  <child link="L3_v4_1_5"/>
+  <axis xyz="-0.001471 -0.999999 0.0"/>
+</joint>
+
+<joint name="Revolute 20" type="continuous">
+  <origin xyz="-0.096044 -0.052119 0.0" rpy="0 0 0"/>
+  <parent link="link_2_v1_1_6"/>
+  <child link="L3_v4_1_4"/>
+  <axis xyz="-0.838877 0.544321 -0.0"/>
+</joint>
+
+<joint name="Rigid 21" type="fixed">
+  <origin xyz="0.063545 0.030046 0.026" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="Top_plate_v2_1"/>
+</joint>
+
+</robot>
