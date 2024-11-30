@@ -1,0 +1,16 @@
+body{
+  background-color: lightblue;
+}
+#canvas-container {
+  width: 100%;
+  text-align:center;
+}
+canvas {
+  display: inline;
+  border: solid 4px black;
+}
+button{
+  background-color: pink;
+  border: solid 2px black;
+  align-content: center;
+}
