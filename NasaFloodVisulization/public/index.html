@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>visual</title>
+    <link rel="stylesheet" href="color.css">
+  </head>
+  <body>
+    <canvas id="MyCanvas" width="360px" height="143px"></canvas>
+    <input type="digit" value="10" min="1" max="10" maxlength="2" id="val">
+    <button onclick = "get(document.getElementById('val').value)">get data</button>
+
+    <script>
+      const c = document.getElementById("MyCanvas");
+      const ctx = c.getContext("2d");
+      async function get(mag){
+        const options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({val:mag}) //converts to json the data to send
+        };
+        const responce = await fetch('/apiPost',options);
+        let data = await responce.json()
+        console.log(data);
+        console.log(data.length);
+        ctx.fillStyle = Rgb((11-mag)*10,(11-mag)*10,155+(11-mag)*10);
+        for(let i = 0; i < data.length; i++){
+          ctx.fillRect(180 + data[i][0], 58 + data[i][1], 1, 1);
+        }
+        console.log("done");
+      }
+      function Rgb(r,g,b){
+        r = r.toString(16);
+        g = g.toString(16);
+        b = b.toString(16);
+
+        if (r.length == 1)
+          r = "0" + r;
+        if (g.length == 1)
+          g = "0" + g;
+        if (b.length == 1)
+          b = "0" + b;
+        return "#" + r + g + b;
+      }
+    </script>
+  </body>
+</html>
