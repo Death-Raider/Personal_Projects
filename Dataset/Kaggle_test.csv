@@ -1,0 +1,401 @@
+ID,Intelligence,Blood Status,Loyalty,Gender,What are you curious about?,Affinity to Dark Arts,Magic Transportation Model,Height,Preferred Goblet Potion,"If you were a principal, how would you choose your students?",Species,Preferred Element,Kindness
+1,28.0,Muggle Born,39.0,F,Magical Creatures,53.84,Apparition,249.4,Silvery Potion,"By a difficult exam",Giants,Air,39.7
+2,29.0,Muggle Born,41.0,M,Magical Creatures,59.77,Portkey,159.7,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,34.59
+3,28.0,Muggle Born,36.0,M,Magical Creatures,41.69,Apparition,189.88,Silvery Potion,"I choose without preferences",Giants,Air,95.1
+4,28.0,Muggle Born,40.0,F,World after we die,45.57,Apparition,123.82,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,66.52
+5,32.0,Pure Blood,40.0,M,World after we die,44.45,Apparition,195.2,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,37.82
+6,32.0,Muggle Born,35.0,M,Plants,64.07,Portkey,118.33,Silvery Potion,"By a psychological test",Centaurs,Air,54.17
+7,30.0,Muggle Born,42.0,M,World after we die,52.44,Floo Network,184.03,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,31.99
+8,28.0,Muggle Born,39.0,M,Magical Creatures,49.95,Flying,161.4,The Golden Potion,"By a psychological test",Werewolves,Air,71.42
+9,30.0,Muggle Born,38.0,M,Magical Creatures,44.61,Portkey,162.46,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,52.8
+10,30.0,Pure Blood,39.0,M,Magical Creatures,49.67,Flying,160.69,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,82.4
+11,30.0,Pure Blood,42.0,F,World after we die,54.58,Portkey,139.71,Silvery Potion,"By a psychological test",Centaurs,Air,26.96
+12,28.0,Pure Blood,37.0,F,World after we die,51.21,Apparition,195.79,The Golden Potion,"By a psychological test",Werewolves,Air,22.19
+13,30.0,Muggle Born,40.0,F,Magical Creatures,31.2,Flying,135.08,The Golden Potion,"By a difficult exam",Werewolves,Air,26.36
+14,27.0,Muggle Born,39.0,F,World after we die,34.56,Floo Network,96.97,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Air,25.16
+15,27.0,Pure Blood,45.0,M,Plants,48.86,Apparition,192.38,Potion that makes you see strange visions,"By a difficult exam",Werewolves,Air,14.77
+16,31.0,Muggle Born,43.0,M,World after we die,65.51,Apparition,166.28,The Golden Potion,"By a difficult exam",Werewolves,Air,40.97
+17,32.0,Pure Blood,41.0,M,Magical Creatures,54.22,Portkey,240.31,The Golden Potion,"I choose without preferences",Werewolves,Air,20.85
+18,33.0,Pure Blood,39.0,F,Evil,45.67,Portkey,177.79,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Air,55.71
+19,29.0,Pure Blood,38.0,F,Plants,42.96,Floo Network,195.57,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,66.44
+20,25.0,Pure Blood,40.0,M,Magical Creatures,46.69,Apparition,161.17,Silvery Potion,"I choose without preferences",Humans,Water,45.67
+21,30.0,Pure Blood,41.0,F,World after we die,41.76,Portkey,199.23,The Golden Potion,"I choose without preferences",Giants,Air,-2.8
+22,35.0,Pure Blood,43.0,M,Evil,29.79,Apparition,251.5,The Golden Potion,"By a difficult exam",Centaurs,Air,50.42
+23,35.0,Pure Blood,39.0,F,Evil,44.42,Portkey,165.43,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,79.95
+24,30.0,Muggle Born,38.0,F,World after we die,46.31,Portkey,145.5,Silvery Potion,"By a psychological test",Humans,Air,37.37
+25,29.0,Muggle Born,42.0,M,World after we die,36.84,Portkey,163.25,Silvery Potion,"I choose without preferences",Werewolves,Air,48.63
+26,30.0,Pure Blood,39.0,M,Magical Creatures,59.47,Portkey,141.39,The Golden Potion,"By a difficult exam",Humans,Air,34.17
+27,24.0,Pure Blood,37.0,M,Plants,50.44,Apparition,113.69,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,31.32
+28,30.0,Pure Blood,39.0,M,Plants,60.97,Portkey,181.01,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,62.51
+29,29.0,Muggle Born,38.0,M,Magical Creatures,59.2,Apparition,214.35,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,64.55
+30,26.0,Pure Blood,42.0,F,Plants,53.44,Floo Network,134.37,The Golden Potion,"By a psychological test",Werewolves,Air,26.14
+31,31.0,Pure Blood,41.0,M,Magical Creatures,61.56,Floo Network,103.85,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,60.66
+32,27.0,Muggle Born,42.0,M,Magical Creatures,39.58,Portkey,104.23,The Golden Potion,"By a difficult exam",Centaurs,Air,30.06
+33,29.0,Muggle Born,41.0,M,World after we die,51.74,Floo Network,231.34,The Golden Potion,"I choose students with high scores",Giants,Air,79.67
+34,28.0,Muggle Born,37.0,M,Magical Creatures,28.65,Portkey,93.44,The Golden Potion,"I choose without preferences",Centaurs,Water,44.58
+35,25.0,Pure Blood,40.0,F,World after we die,45.15,Apparition,152.89,Potion that makes you see strange visions,"I choose without preferences",Centaurs,Air,81.21
+36,31.0,Muggle Born,40.0,M,Plants,65.07,Floo Network,217.57,The Golden Potion,"I choose students with high scores",Giants,Fire,28.65
+37,31.0,Muggle Born,39.0,M,World after we die,49.39,Portkey,152.2,Silvery Potion,"I choose without preferences",Werewolves,Air,64.28
+38,30.0,Muggle Born,34.0,F,Magical Creatures,38.24,Portkey,218.77,The Golden Potion,"By a difficult exam",Giants,Air,59.17
+39,31.0,Pure Blood,43.0,M,Plants,40.95,Portkey,222.93,The Golden Potion,"By a difficult exam",Centaurs,Air,75.04
+40,29.0,Pure Blood,40.0,M,World after we die,57.44,Portkey,114.41,Silvery Potion,"By a difficult exam",Werewolves,Air,16.17
+41,27.0,Muggle Born,39.0,F,World after we die,52.36,Apparition,208.67,Potion that makes you see strange visions,"I choose without preferences",Centaurs,Air,55.85
+42,26.0,Muggle Born,37.0,F,World after we die,61.41,Floo Network,98.36,Silvery Potion,"I choose without preferences",Centaurs,Air,69.19
+43,30.0,Muggle Born,42.0,M,Magical Creatures,45.69,Apparition,190.32,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,59.04
+44,28.0,Muggle Born,42.0,F,Magical Creatures,61.5,Portkey,163.22,Silvery Potion,"I choose without preferences",Humans,Air,24.55
+45,29.0,Pure Blood,42.0,M,Plants,36.06,Floo Network,202.89,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Fire,73.84
+46,31.0,Muggle Born,43.0,M,Magical Creatures,50.75,Apparition,115.45,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,88.64
+47,28.0,Pure Blood,38.0,M,World after we die,44.4,Floo Network,148.14,The Golden Potion,"By a difficult exam",Centaurs,Air,43.89
+48,33.0,Muggle Born,39.0,F,Plants,53.22,Floo Network,191.64,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,42.1
+49,31.0,Pure Blood,39.0,F,Plants,57.58,Floo Network,182.03,Potion that smells of plums and chocolates,"By a difficult exam",Humans,Air,39.48
+50,36.0,Pure Blood,41.0,M,Magical Creatures,38.86,Portkey,116.95,Silvery Potion,"I choose students with high scores",Werewolves,Air,43.37
+51,25.0,Pure Blood,37.0,F,Magical Creatures,54.9,Portkey,79.94,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,51.28
+52,32.0,Pure Blood,42.0,M,Plants,48.92,Floo Network,128.07,Potion that makes you see strange visions,"By a difficult exam",Werewolves,Air,69.62
+53,30.0,Pure Blood,44.0,M,World after we die,40.23,Floo Network,99.16,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,52.06
+54,28.0,Pure Blood,39.0,M,Magical Creatures,49.8,Portkey,160.07,Potion that makes you see strange visions,"By a difficult exam",Werewolves,Air,85.88
+55,29.0,Pure Blood,41.0,F,World after we die,58.7,Floo Network,165.87,The Golden Potion,"I choose without preferences",Werewolves,Air,57.49
+56,28.0,Pure Blood,40.0,F,Evil,52.01,Portkey,141.53,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,34.27
+57,29.0,Pure Blood,38.0,F,World after we die,46.74,Apparition,167.29,The Golden Potion,"I choose without preferences",Giants,Air,62.63
+58,26.0,Muggle Born,39.0,F,Plants,39.72,Portkey,198.55,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,31.33
+59,26.0,Pure Blood,40.0,M,Plants,57.26,Floo Network,176.63,Silvery Potion,"I choose without preferences",Humans,Air,58.32
+60,28.0,Muggle Born,39.0,M,Magical Creatures,40.57,Portkey,194.69,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,38.8
+61,29.0,Muggle Born,39.0,F,Plants,62.42,Portkey,148.95,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,46.94
+62,36.0,Pure Blood,40.0,F,World after we die,47.69,Portkey,130.57,Silvery Potion,"By a difficult exam",Giants,Air,39.93
+63,31.0,Pure Blood,38.0,M,Plants,41.89,Apparition,219.67,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,42.47
+64,31.0,Muggle Born,40.0,F,World after we die,37.36,Apparition,126.78,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,82.71
+65,31.0,Muggle Born,41.0,M,Evil,47.87,Portkey,115.33,The Golden Potion,"By a psychological test",Centaurs,Air,37.9
+66,32.0,Muggle Born,38.0,F,Magical Creatures,54.65,Portkey,151.97,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,67.52
+67,26.0,Muggle Born,40.0,M,Plants,36.38,Apparition,158.54,Silvery Potion,"By a difficult exam",Centaurs,Air,35.58
+68,29.0,Pure Blood,41.0,M,World after we die,55.83,Portkey,172.99,Silvery Potion,"I choose without preferences",Humans,Air,-16.58
+69,31.0,Pure Blood,41.0,F,World after we die,34.91,Portkey,101.56,Potion that makes you see strange visions,"By a psychological test",Werewolves,Air,55.81
+70,28.0,Pure Blood,39.0,M,Plants,48.0,Floo Network,107.42,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,73.63
+71,33.0,Muggle Born,39.0,M,World after we die,58.08,Portkey,155.36,Silvery Potion,"I choose students with high scores",Centaurs,Air,46.81
+72,33.0,Muggle Born,40.0,M,Magical Creatures,46.51,Apparition,207.53,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,39.91
+73,27.0,Muggle Born,42.0,F,World after we die,43.24,Floo Network,118.02,The Golden Potion,"By a difficult exam",Werewolves,Air,43.9
+74,31.0,Pure Blood,39.0,F,Plants,35.11,Floo Network,146.18,Silvery Potion,"By a psychological test",Centaurs,Air,73.16
+75,39.0,Pure Blood,40.0,F,Magical Creatures,54.64,Apparition,123.03,Silvery Potion,"I choose without preferences",Centaurs,Air,21.72
+76,29.0,Pure Blood,40.0,M,World after we die,62.11,Apparition,152.28,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,53.71
+77,35.0,Pure Blood,37.0,M,Magical Creatures,55.58,Flying,187.32,The Golden Potion,"By a difficult exam",Humans,Air,45.36
+78,29.0,Muggle Born,40.0,M,Evil,50.65,Floo Network,89.48,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,41.65
+79,34.0,Muggle Born,41.0,F,Evil,30.48,Floo Network,184.94,Silvery Potion,"I choose without preferences",Giants,Air,25.61
+80,26.0,Pure Blood,39.0,M,Magical Creatures,47.1,Floo Network,98.36,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,31.8
+81,28.0,Pure Blood,40.0,M,World after we die,42.22,Portkey,150.45,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,46.85
+82,32.0,Muggle Born,42.0,M,Magical Creatures,51.55,Apparition,176.6,Silvery Potion,"By a difficult exam",Humans,Air,38.58
+83,27.0,Pure Blood,38.0,M,World after we die,36.32,Floo Network,178.57,Potion that makes you see strange visions,"I choose students with high scores",Werewolves,Air,31.61
+84,32.0,Muggle Born,38.0,M,Magical Creatures,52.61,Portkey,203.26,Silvery Potion,"By a difficult exam",Werewolves,Air,77.41
+85,29.0,Pure Blood,42.0,F,Magical Creatures,48.6,Portkey,30.18,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,32.6
+86,31.0,Pure Blood,38.0,M,Magical Creatures,48.62,Apparition,141.36,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,38.1
+87,30.0,Pure Blood,39.0,M,Magical Creatures,46.92,Floo Network,128.43,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,53.28
+88,28.0,Pure Blood,37.0,M,Plants,50.24,Portkey,133.95,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,27.58
+89,26.0,Pure Blood,38.0,F,Magical Creatures,52.77,Floo Network,180.8,The Golden Potion,"By a difficult exam",Giants,Air,69.59
+90,31.0,Pure Blood,39.0,M,World after we die,60.64,Apparition,185.36,The Golden Potion,"By a difficult exam",Werewolves,Air,54.8
+91,25.0,Pure Blood,42.0,M,Magical Creatures,60.72,Apparition,180.11,The Golden Potion,"By a difficult exam",Werewolves,Air,52.82
+92,32.0,Pure Blood,40.0,F,Plants,27.94,Apparition,248.32,Silvery Potion,"By a psychological test",Giants,Air,34.98
+93,29.0,Pure Blood,38.0,M,World after we die,56.26,Apparition,90.27,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,26.68
+94,26.0,Muggle Born,38.0,M,World after we die,50.75,Floo Network,176.83,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,35.85
+95,28.0,Muggle Born,40.0,M,World after we die,37.06,Portkey,194.02,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,49.84
+96,29.0,Muggle Born,38.0,M,Magical Creatures,52.01,Apparition,183.17,Silvery Potion,"I choose without preferences",Centaurs,Air,52.15
+97,25.0,Pure Blood,38.0,F,World after we die,53.39,Floo Network,161.95,The Golden Potion,"I choose without preferences",Centaurs,Air,-12.45
+98,33.0,Muggle Born,40.0,F,World after we die,79.86,Portkey,145.77,Silvery Potion,"I choose without preferences",Centaurs,Air,22.84
+99,33.0,Pure Blood,41.0,F,Plants,50.87,Flying,133.23,The Golden Potion,"By a difficult exam",Giants,Air,58.63
+100,30.0,Muggle Born,39.0,M,Magical Creatures,46.11,Portkey,87.87,The Golden Potion,"I choose students with high scores",Werewolves,Air,-1.74
+101,28.0,Pure Blood,38.0,F,Magical Creatures,43.52,Portkey,161.16,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,60.62
+102,28.0,Muggle Born,36.0,M,Magical Creatures,53.72,Portkey,196.47,Silvery Potion,"By a difficult exam",Humans,Air,27.71
+103,31.0,Pure Blood,40.0,M,Evil,48.91,Portkey,215.93,Potion that makes you see strange visions,"By a difficult exam",Centaurs,Air,57.61
+104,32.0,Pure Blood,39.0,F,Magical Creatures,71.77,Portkey,189.04,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,58.48
+105,29.0,Pure Blood,38.0,F,Magical Creatures,52.39,Floo Network,172.93,Silvery Potion,"By a difficult exam",Centaurs,Air,64.41
+106,26.0,Muggle Born,40.0,M,World after we die,63.78,Apparition,167.29,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,69.08
+107,25.0,Pure Blood,41.0,M,World after we die,54.36,Portkey,157.19,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,47.98
+108,32.0,Pure Blood,40.0,M,Magical Creatures,44.57,Portkey,225.62,The Golden Potion,"By a difficult exam",Giants,Air,24.21
+109,34.0,Muggle Born,36.0,M,Magical Creatures,48.3,Portkey,182.26,Silvery Potion,"By a psychological test",Centaurs,Air,48.41
+110,29.0,Muggle Born,38.0,M,World after we die,47.14,Apparition,129.78,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Air,46.83
+111,34.0,Muggle Born,39.0,M,Magical Creatures,50.93,Portkey,205.34,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,66.82
+112,34.0,Muggle Born,39.0,M,Plants,43.82,Portkey,172.5,Potion that smells of plums and chocolates,"I choose students with high scores",Humans,Air,56.17
+113,28.0,Pure Blood,39.0,F,Plants,60.69,Portkey,142.43,Silvery Potion,"By a psychological test",Giants,Air,15.41
+114,32.0,Muggle Born,40.0,F,World after we die,35.37,Portkey,181.66,Silvery Potion,"By a psychological test",Centaurs,Air,35.51
+115,26.0,Pure Blood,41.0,M,Plants,45.53,Portkey,193.79,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,80.96
+116,31.0,Pure Blood,40.0,M,Magical Creatures,52.45,Portkey,102.81,Potion that makes you see strange visions,"I choose without preferences",Werewolves,Air,44.83
+117,31.0,Pure Blood,44.0,F,Magical Creatures,41.38,Apparition,179.0,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,80.05
+118,36.0,Muggle Born,39.0,F,Plants,49.49,Apparition,151.59,The Golden Potion,"I choose without preferences",Werewolves,Air,41.7
+119,26.0,Pure Blood,43.0,F,Plants,45.19,Portkey,119.09,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Air,60.33
+120,32.0,Muggle Born,38.0,F,Magical Creatures,55.29,Floo Network,113.41,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,22.05
+121,30.0,Muggle Born,37.0,F,World after we die,61.26,Floo Network,159.23,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,59.17
+122,32.0,Muggle Born,38.0,M,World after we die,49.82,Portkey,117.61,The Golden Potion,"By a difficult exam",Centaurs,Air,71.32
+123,32.0,Muggle Born,35.0,F,Magical Creatures,46.9,Portkey,167.18,Potion that makes you see strange visions,"By a difficult exam",Humans,Air,45.76
+124,22.0,Pure Blood,42.0,M,World after we die,58.33,Portkey,230.08,The Golden Potion,"I choose students with high scores",Centaurs,Air,81.68
+125,23.0,Pure Blood,42.0,M,Magical Creatures,52.72,Apparition,212.58,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,63.6
+126,28.0,Pure Blood,39.0,M,Plants,42.78,Apparition,118.62,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,3.69
+127,28.0,Pure Blood,40.0,M,World after we die,55.31,Portkey,149.12,Silvery Potion,"I choose without preferences",Giants,Air,53.76
+128,31.0,Pure Blood,33.0,M,World after we die,59.07,Portkey,145.16,The Golden Potion,"I choose without preferences",Centaurs,Air,28.29
+129,24.0,Pure Blood,39.0,F,Plants,62.5,Portkey,220.48,Potion that makes you see strange visions,"By a difficult exam",Centaurs,Air,72.26
+130,26.0,Pure Blood,39.0,F,Magical Creatures,45.96,Floo Network,173.43,Potion that makes you see strange visions,"By a difficult exam",Centaurs,Air,55.86
+131,29.0,Pure Blood,38.0,M,World after we die,60.41,Portkey,143.39,Silvery Potion,"I choose students with high scores",Humans,Air,54.09
+132,34.0,Muggle Born,40.0,M,Plants,56.75,Portkey,119.98,Silvery Potion,"By a difficult exam",Humans,Air,59.73
+133,28.0,Muggle Born,40.0,F,Magical Creatures,42.2,Floo Network,177.18,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Water,60.45
+134,32.0,Pure Blood,39.0,F,Plants,46.74,Portkey,131.84,Potion that makes you see strange visions,"By a difficult exam",Giants,Air,72.49
+135,22.0,Pure Blood,42.0,M,World after we die,63.38,Portkey,169.39,Silvery Potion,"By a difficult exam",Centaurs,Air,63.24
+136,27.0,Muggle Born,38.0,F,Plants,46.86,Apparition,166.62,The Golden Potion,"I choose students with high scores",Werewolves,Fire,25.59
+137,31.0,Pure Blood,43.0,F,World after we die,39.66,Portkey,127.73,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,20.86
+138,38.0,Muggle Born,42.0,M,Plants,52.93,Apparition,189.17,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,46.03
+139,27.0,Pure Blood,37.0,F,Plants,55.07,Portkey,104.86,Potion that smells of plums and chocolates,"By a psychological test",Humans,Air,75.02
+140,34.0,Muggle Born,44.0,M,Plants,45.2,Portkey,76.17,Silvery Potion,"I choose without preferences",Giants,Air,64.0
+141,25.0,Muggle Born,40.0,F,Plants,52.77,Portkey,131.69,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Water,59.73
+142,29.0,Pure Blood,38.0,M,Magical Creatures,44.33,Portkey,89.39,Silvery Potion,"By a difficult exam",Werewolves,Air,46.5
+143,30.0,Muggle Born,40.0,F,Evil,57.83,Apparition,149.36,Silvery Potion,"By a psychological test",Giants,Air,7.09
+144,28.0,Pure Blood,36.0,M,Plants,41.81,Portkey,47.88,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Fire,40.84
+145,29.0,Muggle Born,43.0,F,Magical Creatures,56.44,Portkey,124.92,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,35.14
+146,33.0,Muggle Born,38.0,M,Magical Creatures,51.53,Flying,129.52,Potion that makes you see strange visions,"I choose students with high scores",Giants,Air,80.12
+147,33.0,Pure Blood,41.0,M,Magical Creatures,52.44,Portkey,163.27,Potion that makes you see strange visions,"By a difficult exam",Giants,Air,51.86
+148,28.0,Muggle Born,40.0,M,Magical Creatures,60.85,Floo Network,209.84,Silvery Potion,"I choose without preferences",Giants,Air,18.43
+149,35.0,Pure Blood,43.0,M,World after we die,57.2,Apparition,95.45,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,37.5
+150,33.0,Pure Blood,40.0,F,Plants,40.76,Portkey,220.52,The Golden Potion,"I choose without preferences",Werewolves,Air,57.57
+151,34.0,Pure Blood,41.0,M,Magical Creatures,50.97,Apparition,138.24,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,41.55
+152,34.0,Muggle Born,42.0,M,World after we die,36.09,Portkey,214.27,Silvery Potion,"By a difficult exam",Centaurs,Air,48.89
+153,34.0,Muggle Born,42.0,M,Evil,57.67,Portkey,141.13,The Golden Potion,"By a difficult exam",Centaurs,Air,22.25
+154,25.0,Muggle Born,41.0,M,World after we die,44.91,Floo Network,111.41,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,43.27
+155,37.0,Pure Blood,40.0,M,Magical Creatures,35.08,Floo Network,128.11,Potion that makes you see strange visions,"I choose without preferences",Centaurs,Air,54.32
+156,30.0,Pure Blood,40.0,F,World after we die,45.94,Floo Network,93.01,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,38.06
+157,27.0,Muggle Born,38.0,M,Plants,53.6,Portkey,158.12,Silvery Potion,"By a difficult exam",Giants,Air,63.2
+158,30.0,Muggle Born,40.0,F,Magical Creatures,70.24,Apparition,131.65,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,64.0
+159,27.0,Pure Blood,39.0,F,Magical Creatures,48.7,Portkey,116.02,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,45.82
+160,29.0,Muggle Born,41.0,M,Magical Creatures,56.1,Floo Network,185.56,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,56.89
+161,27.0,Muggle Born,41.0,F,Evil,54.61,Apparition,196.83,Potion that smells of plums and chocolates,"By a psychological test",Humans,Air,103.74
+162,28.0,Muggle Born,40.0,M,Plants,62.76,Portkey,195.64,Silvery Potion,"By a difficult exam",Werewolves,Air,45.97
+163,31.0,Pure Blood,41.0,F,World after we die,59.66,Portkey,143.58,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,31.09
+164,26.0,Pure Blood,37.0,F,Magical Creatures,67.95,Floo Network,165.76,Silvery Potion,"I choose without preferences",Centaurs,Air,37.32
+165,31.0,Muggle Born,43.0,F,Magical Creatures,55.81,Flying,187.44,Silvery Potion,"By a difficult exam",Centaurs,Air,39.49
+166,34.0,Muggle Born,39.0,M,Magical Creatures,55.23,Apparition,209.83,The Golden Potion,"I choose without preferences",Giants,Air,62.62
+167,31.0,Muggle Born,40.0,M,World after we die,47.54,Apparition,105.58,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,44.88
+168,29.0,Muggle Born,40.0,F,Magical Creatures,36.64,Apparition,182.51,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,47.57
+169,28.0,Muggle Born,40.0,M,World after we die,46.36,Apparition,174.05,Silvery Potion,"I choose students with high scores",Werewolves,Air,31.25
+170,32.0,Pure Blood,35.0,M,Evil,45.14,Apparition,192.55,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,66.89
+171,30.0,Muggle Born,40.0,F,Magical Creatures,64.27,Floo Network,123.44,The Golden Potion,"I choose without preferences",Giants,Air,59.09
+172,27.0,Muggle Born,39.0,M,Magical Creatures,41.28,Floo Network,165.63,Silvery Potion,"By a difficult exam",Giants,Air,74.79
+173,30.0,Muggle Born,42.0,M,Magical Creatures,54.98,Apparition,186.76,The Golden Potion,"By a difficult exam",Centaurs,Air,66.8
+174,30.0,Pure Blood,37.0,F,World after we die,48.17,Portkey,113.83,Silvery Potion,"By a difficult exam",Centaurs,Air,81.42
+175,29.0,Pure Blood,38.0,M,Magical Creatures,43.2,Floo Network,97.44,Potion that makes you see strange visions,"By a difficult exam",Centaurs,Fire,41.97
+176,32.0,Pure Blood,38.0,F,Plants,67.38,Floo Network,213.66,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,69.0
+177,28.0,Muggle Born,39.0,F,Magical Creatures,56.45,Portkey,142.64,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,42.4
+178,33.0,Muggle Born,41.0,F,Magical Creatures,53.61,Apparition,120.55,Potion that smells of plums and chocolates,"I choose without preferences",Giants,Air,68.23
+179,32.0,Muggle Born,39.0,M,Magical Creatures,61.63,Portkey,205.12,Silvery Potion,"By a difficult exam",Werewolves,Air,78.78
+180,33.0,Pure Blood,41.0,M,Magical Creatures,51.95,Portkey,143.46,Silvery Potion,"By a difficult exam",Centaurs,Air,-3.07
+181,26.0,Pure Blood,38.0,F,Magical Creatures,50.02,Flying,176.27,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,23.59
+182,31.0,Muggle Born,40.0,F,Magical Creatures,50.57,Portkey,219.49,Potion that makes you see strange visions,"I choose students with high scores",Centaurs,Air,83.07
+183,25.0,Muggle Born,37.0,M,Plants,44.47,Portkey,149.99,The Golden Potion,"By a psychological test",Centaurs,Air,38.01
+184,31.0,Muggle Born,45.0,M,Magical Creatures,36.35,Floo Network,180.51,Potion that makes you see strange visions,"By a psychological test",Humans,Fire,40.44
+185,25.0,Pure Blood,35.0,M,World after we die,45.65,Portkey,159.85,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,60.32
+186,29.0,Muggle Born,40.0,M,Magical Creatures,50.76,Portkey,154.56,Silvery Potion,"I choose without preferences",Centaurs,Air,61.18
+187,31.0,Muggle Born,40.0,M,World after we die,60.94,Portkey,148.37,Silvery Potion,"By a difficult exam",Humans,Air,57.93
+188,35.0,Pure Blood,41.0,M,Magical Creatures,60.46,Portkey,151.09,Silvery Potion,"By a difficult exam",Humans,Air,61.19
+189,26.0,Pure Blood,36.0,F,Evil,61.68,Apparition,140.31,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,53.48
+190,28.0,Muggle Born,41.0,F,Plants,63.91,Portkey,183.41,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,47.76
+191,31.0,Pure Blood,38.0,F,Magical Creatures,47.71,Apparition,102.71,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,26.41
+192,27.0,Muggle Born,39.0,F,Evil,45.76,Apparition,174.21,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,30.97
+193,27.0,Pure Blood,40.0,F,Plants,38.89,Portkey,163.19,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,58.62
+194,33.0,Pure Blood,44.0,M,Magical Creatures,58.58,Apparition,221.5,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,30.66
+195,32.0,Muggle Born,41.0,M,Plants,52.08,Floo Network,184.99,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,58.35
+196,33.0,Muggle Born,38.0,M,Evil,46.09,Flying,209.75,Silvery Potion,"By a difficult exam",Centaurs,Air,55.68
+197,26.0,Muggle Born,37.0,M,Magical Creatures,54.06,Portkey,146.92,The Golden Potion,"I choose without preferences",Werewolves,Air,43.45
+198,30.0,Pure Blood,39.0,M,World after we die,68.32,Floo Network,193.21,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,67.2
+199,29.0,Pure Blood,40.0,F,Plants,45.93,Apparition,221.87,The Golden Potion,"By a psychological test",Giants,Air,33.15
+200,30.0,Pure Blood,41.0,M,World after we die,65.52,Portkey,141.36,Silvery Potion,"By a difficult exam",Humans,Air,44.95
+201,26.0,Pure Blood,37.0,M,Magical Creatures,59.84,Apparition,139.85,The Golden Potion,"By a psychological test",Humans,Air,42.89
+202,34.0,Pure Blood,42.0,M,World after we die,48.89,Floo Network,160.05,Silvery Potion,"I choose students with high scores",Werewolves,Air,56.21
+203,32.0,Pure Blood,38.0,M,Evil,55.61,Apparition,107.16,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,64.04
+204,32.0,Muggle Born,39.0,M,Magical Creatures,54.81,Portkey,222.74,Silvery Potion,"By a difficult exam",Centaurs,Air,18.79
+205,43.0,Muggle Born,36.0,M,World after we die,36.92,Apparition,69.78,The Golden Potion,"By a difficult exam",Werewolves,Air,33.0
+206,28.0,Pure Blood,40.0,M,Evil,68.0,Apparition,226.61,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,13.76
+207,25.0,Muggle Born,41.0,F,World after we die,47.74,Apparition,203.65,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,61.95
+208,24.0,Muggle Born,37.0,M,World after we die,47.12,Apparition,245.35,Silvery Potion,"I choose without preferences",Centaurs,Air,44.8
+209,30.0,Muggle Born,41.0,F,Magical Creatures,53.09,Floo Network,184.4,The Golden Potion,"I choose students with high scores",Centaurs,Air,54.93
+210,31.0,Muggle Born,41.0,F,World after we die,66.0,Apparition,94.06,Silvery Potion,"I choose students with high scores",Humans,Air,16.17
+211,29.0,Muggle Born,40.0,M,Magical Creatures,54.2,Flying,141.91,The Golden Potion,"By a difficult exam",Werewolves,Air,28.48
+212,32.0,Muggle Born,40.0,F,World after we die,50.14,Portkey,200.85,The Golden Potion,"I choose students with high scores",Werewolves,Air,18.37
+213,32.0,Pure Blood,37.0,M,World after we die,57.34,Flying,195.15,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,43.5
+214,26.0,Pure Blood,39.0,M,World after we die,41.66,Apparition,215.82,Potion that makes you see strange visions,"I choose without preferences",Werewolves,Air,84.0
+215,28.0,Muggle Born,38.0,M,World after we die,48.09,Portkey,134.19,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,33.77
+216,30.0,Muggle Born,38.0,M,Magical Creatures,63.25,Apparition,106.87,Silvery Potion,"By a difficult exam",Werewolves,Air,47.8
+217,31.0,Muggle Born,44.0,F,Magical Creatures,24.86,Floo Network,183.42,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,59.36
+218,28.0,Muggle Born,42.0,M,Magical Creatures,35.24,Apparition,129.15,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,10.15
+219,29.0,Muggle Born,39.0,M,World after we die,36.78,Portkey,114.57,Silvery Potion,"I choose without preferences",Centaurs,Air,23.97
+220,31.0,Muggle Born,40.0,F,Magical Creatures,53.72,Portkey,140.94,Potion that makes you see strange visions,"I choose without preferences",Giants,Air,36.07
+221,35.0,Muggle Born,40.0,M,Plants,33.88,Portkey,163.81,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,56.78
+222,28.0,Pure Blood,43.0,M,Magical Creatures,43.1,Floo Network,158.98,Silvery Potion,"By a difficult exam",Centaurs,Air,65.86
+223,30.0,Muggle Born,40.0,M,Plants,54.12,Floo Network,166.1,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,64.4
+224,33.0,Muggle Born,42.0,F,Magical Creatures,45.7,Portkey,170.23,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,65.66
+225,29.0,Muggle Born,41.0,F,Magical Creatures,52.41,Portkey,147.5,The Golden Potion,"By a difficult exam",Werewolves,Air,62.36
+226,34.0,Muggle Born,38.0,F,World after we die,38.07,Portkey,118.64,Silvery Potion,"By a difficult exam",Centaurs,Air,40.61
+227,28.0,Pure Blood,36.0,F,Evil,54.45,Portkey,138.21,The Golden Potion,"By a difficult exam",Centaurs,Air,65.27
+228,30.0,Muggle Born,41.0,M,Plants,38.32,Portkey,103.59,The Golden Potion,"By a difficult exam",Centaurs,Air,59.16
+229,33.0,Muggle Born,44.0,F,Magical Creatures,47.78,Portkey,198.08,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,51.33
+230,26.0,Muggle Born,42.0,F,Magical Creatures,61.93,Flying,206.45,Silvery Potion,"By a psychological test",Humans,Air,67.31
+231,32.0,Muggle Born,42.0,M,Magical Creatures,41.61,Portkey,87.22,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,48.56
+232,30.0,Pure Blood,37.0,F,World after we die,56.42,Flying,115.49,The Golden Potion,"By a difficult exam",Centaurs,Air,11.69
+233,24.0,Muggle Born,42.0,M,Plants,47.08,Portkey,159.82,Silvery Potion,"By a psychological test",Giants,Air,40.71
+234,31.0,Pure Blood,42.0,M,World after we die,33.04,Flying,161.84,Potion that smells of plums and chocolates,"I choose without preferences",Giants,Air,76.21
+235,27.0,Pure Blood,39.0,M,Magical Creatures,55.41,Portkey,162.92,The Golden Potion,"By a difficult exam",Centaurs,Air,38.99
+236,29.0,Muggle Born,39.0,F,Plants,40.75,Apparition,154.21,Silvery Potion,"By a psychological test",Centaurs,Air,37.91
+237,31.0,Pure Blood,40.0,M,Magical Creatures,52.84,Floo Network,246.41,Silvery Potion,"By a psychological test",Humans,Air,45.61
+238,22.0,Pure Blood,42.0,F,Plants,59.69,Portkey,155.89,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,37.25
+239,27.0,Muggle Born,42.0,M,Plants,43.4,Portkey,199.22,Silvery Potion,"By a psychological test",Centaurs,Air,70.45
+240,28.0,Muggle Born,39.0,F,Magical Creatures,44.76,Apparition,188.55,Potion that smells of plums and chocolates,"By a psychological test",Humans,Air,37.16
+241,30.0,Muggle Born,38.0,M,World after we die,48.95,Apparition,114.08,The Golden Potion,"I choose without preferences",Werewolves,Air,58.88
+242,33.0,Muggle Born,34.0,M,Magical Creatures,54.28,Portkey,141.44,Potion that makes you see strange visions,"I choose without preferences",Centaurs,Air,59.29
+243,32.0,Muggle Born,40.0,F,World after we die,43.58,Portkey,101.08,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,49.98
+244,28.0,Muggle Born,39.0,M,Magical Creatures,34.57,Apparition,128.99,The Golden Potion,"By a difficult exam",Centaurs,Air,71.8
+245,33.0,Muggle Born,38.0,M,Magical Creatures,46.9,Portkey,209.92,The Golden Potion,"By a difficult exam",Humans,Air,64.65
+246,30.0,Muggle Born,43.0,M,World after we die,48.56,Portkey,148.45,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,85.88
+247,31.0,Pure Blood,42.0,M,Magical Creatures,58.18,Flying,156.23,Silvery Potion,"By a psychological test",Werewolves,Air,7.83
+248,26.0,Pure Blood,39.0,F,Magical Creatures,48.77,Apparition,175.39,The Golden Potion,"By a difficult exam",Giants,Air,44.68
+249,32.0,Pure Blood,35.0,F,Evil,65.08,Apparition,76.08,The Golden Potion,"By a difficult exam",Werewolves,Air,40.92
+250,32.0,Muggle Born,37.0,F,Magical Creatures,51.65,Flying,143.56,Potion that makes you see strange visions,"By a difficult exam",Centaurs,Air,34.3
+251,30.0,Muggle Born,41.0,M,Magical Creatures,52.34,Floo Network,110.29,Silvery Potion,"By a difficult exam",Giants,Air,54.84
+252,32.0,Pure Blood,39.0,F,Magical Creatures,34.62,Apparition,135.92,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,47.3
+253,29.0,Pure Blood,40.0,M,Plants,46.26,Apparition,156.69,The Golden Potion,"I choose without preferences",Centaurs,Air,77.21
+254,30.0,Pure Blood,39.0,F,Plants,55.04,Apparition,132.02,Silvery Potion,"By a psychological test",Giants,Air,25.08
+255,27.0,Pure Blood,40.0,M,Plants,48.89,Portkey,178.67,Silvery Potion,"I choose without preferences",Werewolves,Air,26.93
+256,26.0,Muggle Born,41.0,M,World after we die,42.93,Floo Network,117.76,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,44.75
+257,32.0,Muggle Born,39.0,M,Magical Creatures,35.38,Apparition,211.98,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,37.64
+258,28.0,Pure Blood,39.0,M,World after we die,55.62,Portkey,69.74,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Air,24.53
+259,28.0,Muggle Born,41.0,M,World after we die,56.61,Floo Network,158.22,Potion that makes you see strange visions,"By a psychological test",Centaurs,Air,72.63
+260,31.0,Muggle Born,37.0,M,World after we die,57.11,Portkey,126.84,Silvery Potion,"I choose without preferences",Giants,Air,42.39
+261,33.0,Pure Blood,39.0,M,Evil,50.1,Portkey,128.81,Potion that makes you see strange visions,"By a psychological test",Centaurs,Air,72.42
+262,28.0,Pure Blood,41.0,M,Magical Creatures,68.26,Portkey,185.77,Silvery Potion,"I choose without preferences",Humans,Air,71.25
+263,28.0,Pure Blood,41.0,M,Magical Creatures,56.14,Apparition,187.0,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,37.71
+264,28.0,Muggle Born,40.0,M,World after we die,37.07,Apparition,135.14,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,56.36
+265,26.0,Muggle Born,37.0,F,World after we die,28.92,Apparition,133.56,Silvery Potion,"By a difficult exam",Giants,Air,46.1
+266,25.0,Pure Blood,36.0,F,Magical Creatures,64.16,Flying,202.28,Potion that makes you see strange visions,"I choose students with high scores",Centaurs,Air,44.6
+267,26.0,Pure Blood,41.0,M,Evil,39.1,Portkey,91.22,Potion that smells of plums and chocolates,"By a psychological test",Humans,Air,54.46
+268,29.0,Pure Blood,41.0,M,Magical Creatures,37.87,Portkey,162.19,The Golden Potion,"By a difficult exam",Humans,Air,8.69
+269,30.0,Pure Blood,36.0,F,Evil,52.34,Floo Network,166.74,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,34.47
+270,31.0,Muggle Born,38.0,M,World after we die,43.96,Portkey,160.49,Silvery Potion,"I choose students with high scores",Giants,Air,36.92
+271,26.0,Muggle Born,39.0,M,World after we die,20.88,Floo Network,78.78,Potion that smells of plums and chocolates,"By a difficult exam",Humans,Air,55.48
+272,31.0,Muggle Born,39.0,M,Magical Creatures,45.82,Portkey,183.18,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,76.32
+273,29.0,Pure Blood,38.0,M,World after we die,43.89,Floo Network,169.26,The Golden Potion,"I choose students with high scores",Centaurs,Air,38.71
+274,32.0,Muggle Born,41.0,F,Magical Creatures,35.75,Portkey,79.75,The Golden Potion,"By a difficult exam",Humans,Air,47.15
+275,30.0,Pure Blood,39.0,F,Evil,28.71,Apparition,150.5,The Golden Potion,"I choose students with high scores",Centaurs,Air,74.3
+276,27.0,Pure Blood,40.0,M,World after we die,47.61,Apparition,159.55,Potion that smells of plums and chocolates,"By a difficult exam",Humans,Air,55.64
+277,27.0,Pure Blood,40.0,F,Plants,39.15,Portkey,145.33,Silvery Potion,"I choose students with high scores",Centaurs,Air,56.23
+278,27.0,Muggle Born,40.0,M,Evil,50.79,Apparition,218.51,The Golden Potion,"By a difficult exam",Giants,Air,69.34
+279,33.0,Pure Blood,43.0,M,Magical Creatures,48.69,Portkey,193.12,Potion that makes you see strange visions,"By a psychological test",Centaurs,Air,101.6
+280,24.0,Pure Blood,40.0,F,Magical Creatures,66.65,Apparition,115.12,Silvery Potion,"By a difficult exam",Centaurs,Air,55.46
+281,32.0,Pure Blood,40.0,M,Magical Creatures,47.74,Flying,98.56,Silvery Potion,"I choose without preferences",Centaurs,Air,37.62
+282,30.0,Muggle Born,38.0,F,Evil,34.41,Portkey,180.62,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,23.33
+283,25.0,Muggle Born,40.0,M,World after we die,51.0,Floo Network,152.78,Silvery Potion,"By a difficult exam",Centaurs,Air,48.5
+284,31.0,Muggle Born,40.0,F,Magical Creatures,39.9,Portkey,193.02,Potion that makes you see strange visions,"I choose without preferences",Giants,Air,69.6
+285,34.0,Pure Blood,43.0,M,Plants,48.15,Portkey,203.55,Potion that smells of plums and chocolates,"By a psychological test",Giants,Air,72.75
+286,35.0,Pure Blood,40.0,M,Plants,50.8,Apparition,100.89,Silvery Potion,"By a psychological test",Centaurs,Air,60.54
+287,26.0,Muggle Born,36.0,M,World after we die,59.53,Portkey,171.92,Silvery Potion,"By a psychological test",Giants,Air,23.1
+288,30.0,Pure Blood,40.0,M,Magical Creatures,31.86,Flying,178.03,The Golden Potion,"I choose without preferences",Humans,Air,27.06
+289,26.0,Muggle Born,42.0,M,Plants,52.46,Apparition,227.74,Potion that makes you see strange visions,"I choose without preferences",Centaurs,Air,66.16
+290,30.0,Pure Blood,38.0,M,Magical Creatures,56.79,Floo Network,262.91,Silvery Potion,"I choose students with high scores",Centaurs,Air,61.83
+291,32.0,Pure Blood,36.0,M,Evil,38.8,Portkey,111.76,The Golden Potion,"I choose without preferences",Giants,Air,19.13
+292,25.0,Muggle Born,40.0,F,Plants,50.75,Apparition,187.09,Silvery Potion,"By a difficult exam",Werewolves,Air,61.11
+293,26.0,Muggle Born,39.0,M,Magical Creatures,61.92,Portkey,205.82,Silvery Potion,"I choose students with high scores",Centaurs,Air,25.9
+294,25.0,Muggle Born,37.0,F,Evil,69.15,Apparition,161.79,The Golden Potion,"I choose students with high scores",Werewolves,Air,23.52
+295,34.0,Pure Blood,39.0,F,Magical Creatures,45.94,Floo Network,206.84,The Golden Potion,"I choose students with high scores",Centaurs,Air,65.36
+296,33.0,Pure Blood,39.0,F,World after we die,32.71,Portkey,161.37,Silvery Potion,"By a difficult exam",Werewolves,Air,51.08
+297,28.0,Muggle Born,38.0,M,Magical Creatures,29.69,Flying,155.47,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,53.27
+298,27.0,Muggle Born,37.0,M,Magical Creatures,49.11,Apparition,92.55,Potion that makes you see strange visions,"I choose students with high scores",Centaurs,Air,28.11
+299,29.0,Pure Blood,37.0,F,Plants,61.78,Portkey,195.04,Potion that smells of plums and chocolates,"By a psychological test",Humans,Air,44.99
+300,32.0,Pure Blood,38.0,M,Plants,64.18,Floo Network,178.51,Silvery Potion,"By a difficult exam",Centaurs,Air,42.38
+301,27.0,Muggle Born,42.0,M,Magical Creatures,52.35,Apparition,188.03,Potion that smells of plums and chocolates,"I choose students with high scores",Humans,Air,43.78
+302,31.0,Pure Blood,41.0,M,Magical Creatures,41.66,Apparition,117.7,Silvery Potion,"By a psychological test",Giants,Air,38.62
+303,31.0,Pure Blood,41.0,F,Magical Creatures,57.73,Portkey,134.54,Silvery Potion,"By a psychological test",Werewolves,Air,42.24
+304,24.0,Pure Blood,38.0,M,Evil,48.15,Floo Network,169.35,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,59.01
+305,30.0,Pure Blood,40.0,M,World after we die,55.17,Portkey,75.15,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,43.81
+306,33.0,Muggle Born,40.0,F,Plants,52.8,Portkey,199.47,Silvery Potion,"I choose students with high scores",Giants,Air,64.22
+307,31.0,Pure Blood,39.0,M,Magical Creatures,61.1,Floo Network,196.89,Potion that smells of plums and chocolates,"I choose without preferences",Giants,Air,55.13
+308,28.0,Pure Blood,44.0,M,Magical Creatures,43.06,Portkey,255.92,Silvery Potion,"I choose without preferences",Werewolves,Air,41.84
+309,28.0,Pure Blood,41.0,M,Magical Creatures,43.51,Portkey,137.84,Silvery Potion,"By a difficult exam",Humans,Air,61.21
+310,31.0,Pure Blood,40.0,F,World after we die,60.31,Floo Network,165.78,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,48.06
+311,26.0,Muggle Born,40.0,M,Magical Creatures,38.12,Flying,194.4,Potion that makes you see strange visions,"By a psychological test",Werewolves,Air,40.53
+312,25.0,Pure Blood,37.0,M,Plants,71.56,Portkey,161.81,Potion that makes you see strange visions,"I choose students with high scores",Werewolves,Air,90.46
+313,27.0,Pure Blood,40.0,F,Plants,79.9,Floo Network,106.7,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,55.18
+314,34.0,Pure Blood,41.0,F,Evil,56.27,Apparition,221.01,Silvery Potion,"I choose students with high scores",Werewolves,Air,43.55
+315,32.0,Pure Blood,38.0,M,World after we die,35.01,Portkey,194.38,The Golden Potion,"I choose without preferences",Centaurs,Air,33.72
+316,30.0,Pure Blood,38.0,F,Magical Creatures,46.01,Portkey,131.03,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,53.52
+317,28.0,Muggle Born,41.0,F,World after we die,51.4,Portkey,208.24,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,96.22
+318,28.0,Muggle Born,39.0,M,Plants,47.06,Portkey,192.1,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,11.14
+319,32.0,Muggle Born,36.0,M,Plants,26.46,Portkey,182.65,Silvery Potion,"I choose students with high scores",Humans,Air,56.14
+320,28.0,Pure Blood,36.0,F,Plants,43.62,Portkey,153.63,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,74.53
+321,29.0,Pure Blood,40.0,F,Magical Creatures,52.98,Flying,154.38,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,63.35
+322,32.0,Muggle Born,35.0,F,Plants,39.8,Portkey,197.28,Silvery Potion,"By a difficult exam",Centaurs,Air,36.39
+323,26.0,Muggle Born,41.0,M,Plants,67.04,Portkey,196.19,Potion that smells of plums and chocolates,"By a difficult exam",Humans,Air,75.21
+324,33.0,Muggle Born,37.0,M,World after we die,58.87,Portkey,169.62,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,50.19
+325,29.0,Muggle Born,39.0,F,Magical Creatures,52.02,Portkey,155.79,Potion that smells of plums and chocolates,"I choose students with high scores",Werewolves,Air,65.82
+326,31.0,Pure Blood,40.0,F,World after we die,32.57,Floo Network,151.91,Silvery Potion,"By a difficult exam",Giants,Air,38.15
+327,29.0,Pure Blood,38.0,M,Plants,68.12,Portkey,155.23,Silvery Potion,"By a psychological test",Centaurs,Air,53.17
+328,28.0,Pure Blood,36.0,F,World after we die,58.24,Flying,170.25,The Golden Potion,"By a difficult exam",Centaurs,Air,33.2
+329,27.0,Muggle Born,40.0,F,World after we die,49.86,Portkey,165.27,Silvery Potion,"By a psychological test",Werewolves,Air,71.64
+330,32.0,Pure Blood,39.0,M,World after we die,40.86,Portkey,126.08,Potion that makes you see strange visions,"I choose without preferences",Centaurs,Air,26.74
+331,25.0,Muggle Born,39.0,F,World after we die,56.41,Floo Network,196.55,Silvery Potion,"I choose without preferences",Werewolves,Air,60.19
+332,34.0,Pure Blood,42.0,M,Magical Creatures,58.99,Portkey,79.66,Silvery Potion,"I choose without preferences",Centaurs,Air,46.61
+333,29.0,Muggle Born,37.0,F,Plants,55.22,Portkey,143.04,Silvery Potion,"By a difficult exam",Giants,Air,53.72
+334,24.0,Muggle Born,40.0,F,Plants,62.93,Portkey,138.63,Silvery Potion,"By a difficult exam",Giants,Air,39.25
+335,28.0,Pure Blood,42.0,F,World after we die,36.71,Portkey,191.7,Silvery Potion,"By a difficult exam",Giants,Air,5.38
+336,31.0,Pure Blood,39.0,M,Magical Creatures,41.45,Apparition,200.7,Potion that smells of plums and chocolates,"By a difficult exam",Humans,Air,65.53
+337,27.0,Pure Blood,40.0,M,World after we die,46.82,Portkey,95.67,Silvery Potion,"By a psychological test",Giants,Air,51.53
+338,27.0,Muggle Born,41.0,M,Magical Creatures,42.37,Flying,251.41,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,68.49
+339,29.0,Muggle Born,39.0,M,World after we die,42.19,Floo Network,226.57,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,48.96
+340,25.0,Muggle Born,37.0,F,Evil,57.19,Floo Network,132.23,Potion that smells of plums and chocolates,"By a psychological test",Werewolves,Air,55.36
+341,30.0,Pure Blood,40.0,M,Magical Creatures,47.83,Portkey,178.41,The Golden Potion,"I choose without preferences",Giants,Air,62.51
+342,30.0,Pure Blood,37.0,F,Plants,50.08,Floo Network,97.73,Silvery Potion,"By a difficult exam",Werewolves,Air,67.41
+343,27.0,Pure Blood,41.0,F,Magical Creatures,67.81,Floo Network,177.53,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,37.41
+344,27.0,Pure Blood,36.0,M,World after we die,65.81,Floo Network,106.14,Silvery Potion,"By a psychological test",Werewolves,Air,90.48
+345,31.0,Muggle Born,40.0,F,Plants,39.43,Portkey,204.95,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,54.58
+346,28.0,Muggle Born,39.0,M,World after we die,44.88,Apparition,180.05,Silvery Potion,"I choose without preferences",Centaurs,Air,42.05
+347,28.0,Pure Blood,40.0,M,Plants,43.3,Floo Network,113.32,Potion that makes you see strange visions,"I choose students with high scores",Werewolves,Air,34.2
+348,27.0,Muggle Born,38.0,M,Evil,38.62,Floo Network,278.31,Silvery Potion,"I choose without preferences",Centaurs,Air,46.89
+349,32.0,Pure Blood,42.0,M,Magical Creatures,52.5,Floo Network,217.14,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,46.46
+350,32.0,Pure Blood,36.0,M,Magical Creatures,40.56,Apparition,187.32,The Golden Potion,"I choose students with high scores",Centaurs,Air,39.71
+351,28.0,Muggle Born,35.0,F,Plants,73.49,Portkey,164.36,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,59.15
+352,29.0,Muggle Born,36.0,M,World after we die,54.5,Portkey,152.79,Silvery Potion,"By a difficult exam",Centaurs,Air,39.47
+353,27.0,Muggle Born,40.0,M,Magical Creatures,48.93,Apparition,146.86,Potion that makes you see strange visions,"By a difficult exam",Werewolves,Air,70.18
+354,31.0,Pure Blood,37.0,F,Magical Creatures,17.75,Apparition,215.17,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,57.97
+355,30.0,Muggle Born,43.0,M,Evil,32.63,Floo Network,164.6,Silvery Potion,"By a difficult exam",Centaurs,Air,67.85
+356,31.0,Pure Blood,39.0,M,Magical Creatures,50.78,Flying,202.8,The Golden Potion,"By a difficult exam",Centaurs,Air,51.03
+357,23.0,Muggle Born,41.0,F,Magical Creatures,44.59,Apparition,117.67,Potion that smells of plums and chocolates,"By a difficult exam",Giants,Air,53.16
+358,26.0,Muggle Born,41.0,M,Magical Creatures,48.96,Apparition,154.23,Potion that smells of plums and chocolates,"I choose without preferences",Werewolves,Air,29.47
+359,36.0,Pure Blood,44.0,F,Plants,29.66,Portkey,176.52,Potion that smells of plums and chocolates,"By a difficult exam",Humans,Air,12.54
+360,34.0,Muggle Born,39.0,M,Magical Creatures,42.02,Apparition,155.47,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,47.27
+361,32.0,Pure Blood,40.0,M,Magical Creatures,48.53,Portkey,178.21,Silvery Potion,"I choose students with high scores",Giants,Air,97.0
+362,29.0,Muggle Born,40.0,F,Plants,53.88,Portkey,133.88,The Golden Potion,"I choose without preferences",Centaurs,Air,97.67
+363,29.0,Pure Blood,42.0,F,World after we die,59.01,Portkey,181.89,Potion that makes you see strange visions,"I choose students with high scores",Werewolves,Air,44.2
+364,29.0,Muggle Born,37.0,M,Evil,52.81,Flying,133.24,Potion that makes you see strange visions,"By a difficult exam",Centaurs,Air,48.44
+365,33.0,Pure Blood,40.0,M,World after we die,45.06,Portkey,210.15,The Golden Potion,"I choose students with high scores",Humans,Air,38.18
+366,25.0,Pure Blood,39.0,F,World after we die,33.4,Portkey,119.43,The Golden Potion,"I choose without preferences",Werewolves,Air,61.6
+367,32.0,Muggle Born,36.0,F,Evil,43.81,Portkey,129.77,Potion that smells of plums and chocolates,"I choose without preferences",Humans,Air,35.38
+368,30.0,Pure Blood,38.0,M,Evil,46.24,Apparition,175.38,The Golden Potion,"By a psychological test",Centaurs,Air,63.56
+369,31.0,Pure Blood,41.0,F,Evil,46.21,Portkey,166.13,The Golden Potion,"By a difficult exam",Werewolves,Air,60.91
+370,26.0,Muggle Born,37.0,F,Magical Creatures,50.29,Floo Network,133.89,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,59.94
+371,30.0,Muggle Born,40.0,F,Magical Creatures,59.62,Apparition,142.79,Silvery Potion,"By a difficult exam",Centaurs,Air,80.25
+372,32.0,Pure Blood,42.0,M,Plants,58.89,Portkey,148.39,Potion that makes you see strange visions,"By a psychological test",Werewolves,Air,80.53
+373,29.0,Muggle Born,37.0,M,World after we die,48.19,Portkey,169.69,Silvery Potion,"By a difficult exam",Werewolves,Air,82.95
+374,30.0,Pure Blood,37.0,M,World after we die,55.55,Apparition,212.57,Potion that makes you see strange visions,"I choose without preferences",Giants,Air,98.79
+375,24.0,Pure Blood,42.0,M,World after we die,53.62,Apparition,222.21,Silvery Potion,"By a psychological test",Centaurs,Air,56.88
+376,30.0,Pure Blood,39.0,F,Plants,70.77,Portkey,171.34,Silvery Potion,"I choose without preferences",Centaurs,Water,25.63
+377,32.0,Muggle Born,39.0,F,World after we die,58.58,Portkey,143.99,The Golden Potion,"By a psychological test",Werewolves,Air,59.65
+378,33.0,Muggle Born,40.0,M,Magical Creatures,25.92,Apparition,137.18,Potion that smells of plums and chocolates,"By a difficult exam",Werewolves,Air,31.97
+379,33.0,Pure Blood,43.0,M,Plants,75.33,Floo Network,159.9,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,66.15
+380,32.0,Pure Blood,37.0,F,Magical Creatures,67.63,Floo Network,113.4,The Golden Potion,"I choose students with high scores",Centaurs,Air,52.7
+381,32.0,Pure Blood,35.0,M,Magical Creatures,34.13,Apparition,103.97,Potion that smells of plums and chocolates,"I choose without preferences",Giants,Air,47.42
+382,35.0,Muggle Born,42.0,F,Magical Creatures,54.26,Apparition,168.56,Silvery Potion,"By a difficult exam",Giants,Air,36.4
+383,24.0,Pure Blood,42.0,M,Magical Creatures,55.93,Apparition,235.22,The Golden Potion,"By a psychological test",Giants,Air,53.07
+384,26.0,Pure Blood,40.0,F,Plants,53.3,Portkey,227.82,Potion that smells of plums and chocolates,"I choose students with high scores",Giants,Air,56.52
+385,26.0,Pure Blood,38.0,M,Magical Creatures,52.2,Portkey,191.36,Potion that smells of plums and chocolates,"I choose without preferences",Humans,Air,66.63
+386,33.0,Muggle Born,39.0,F,World after we die,49.63,Apparition,150.71,Silvery Potion,"By a difficult exam",Giants,Air,53.04
+387,32.0,Muggle Born,42.0,F,World after we die,36.16,Portkey,270.53,Potion that smells of plums and chocolates,"I choose students with high scores",Centaurs,Air,74.81
+388,30.0,Muggle Born,39.0,F,Plants,66.66,Portkey,189.81,Potion that smells of plums and chocolates,"By a psychological test",Centaurs,Air,45.14
+389,34.0,Muggle Born,40.0,M,Plants,38.74,Portkey,197.16,Potion that makes you see strange visions,"I choose students with high scores",Werewolves,Air,56.92
+390,29.0,Muggle Born,42.0,M,Evil,47.32,Apparition,84.54,Silvery Potion,"I choose without preferences",Giants,Air,69.97
+391,29.0,Pure Blood,38.0,M,Magical Creatures,44.4,Floo Network,122.27,Silvery Potion,"I choose students with high scores",Centaurs,Air,57.21
+392,30.0,Pure Blood,41.0,M,Magical Creatures,52.35,Portkey,99.85,The Golden Potion,"By a difficult exam",Centaurs,Air,74.98
+393,28.0,Muggle Born,38.0,M,Plants,54.86,Apparition,163.06,The Golden Potion,"By a psychological test",Giants,Air,50.91
+394,30.0,Muggle Born,38.0,F,World after we die,50.58,Floo Network,132.64,Potion that makes you see strange visions,"By a difficult exam",Werewolves,Air,57.98
+395,32.0,Muggle Born,40.0,M,Magical Creatures,43.32,Floo Network,174.15,Silvery Potion,"By a difficult exam",Giants,Air,68.4
+396,32.0,Muggle Born,40.0,M,Magical Creatures,56.8,Floo Network,152.98,Potion that smells of plums and chocolates,"I choose without preferences",Centaurs,Air,68.63
+397,29.0,Muggle Born,41.0,F,Magical Creatures,63.38,Apparition,170.87,Potion that makes you see strange visions,"By a psychological test",Giants,Air,53.59
+398,24.0,Muggle Born,39.0,M,Plants,47.55,Portkey,150.92,Potion that smells of plums and chocolates,"By a psychological test",Giants,Water,69.95
+399,27.0,Muggle Born,38.0,M,Plants,57.84,Portkey,177.12,Potion that smells of plums and chocolates,"By a difficult exam",Centaurs,Air,43.62
+400,34.0,Muggle Born,41.0,M,Plants,43.05,Apparition,175.11,Potion that makes you see strange visions,"By a psychological test",Giants,Air,65.3
