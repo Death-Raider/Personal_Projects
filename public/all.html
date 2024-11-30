@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <h1>DATABASE</h1>
+    <a href="index.html">data entry</a>
+    <script>
+      getData();
+      async function getData(){
+        const responce =  await fetch('/api');
+        const data = await responce.json();
+        for(item of data){
+          const root = document.createElement('div');
+          const mood = document.createElement('div');
+          const geo = document.createElement('div');
+          const date = document.createElement('div');
+
+          mood.textContent = `mood: ${item.mood}`
+          geo.textContent = `geo: ${item.lat}, ${item.long}`;
+          const dateString = new Date(item.timestamp);
+          date.textContent = dateString;
+
+          root.append(mood,geo,date);
+          document.body.append(root);
+        }
+        console.log(data);
+      }
+    </script>
+  </body>
+</html>

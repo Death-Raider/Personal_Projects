@@ -1,0 +1,23 @@
+{
+  "name": "node-serverside",
+  "version": "1.0.0",
+  "description": "Test",
+  "engines": {
+    "node": "10.15.1"
+  },
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "Example",
+    "data"
+  ],
+  "author": "Darsh Kachroo",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nedb": "^1.8.0"
+  }
+}

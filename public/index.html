@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Server</title>
+  </head>
+  <body>
+    <h1>IT WORKS</h1>
+    <a href="all.html">Database u made :)</a>
+    <p>Latitude: <span id="latitude"></span>&deg;</P>
+    <p>Longtitude: <span id="longitude"></span>&deg;</P>
+    <input type="text" id="mood">
+    <button onclick="sendDataLOL()">mood</button>
+    <script type="text/javascript">
+      const data = {};
+      if ("geolocation" in navigator){
+        console.log("aviliable geolocation");
+        navigator.geolocation.getCurrentPosition( async position => {
+          const lat = position.coords.latitude;
+          const long = position.coords.longitude;
+          document.getElementById('latitude').textContent = lat;
+          document.getElementById('longitude').textContent = long;
+          //console.log(`position:`, position);
+          data.lat = lat;
+          data.long = long;
+        });
+      }else{
+        console.log("unaviliable geolocation");
+    }
+    function sendDataLOL(){
+      data.mood = document.getElementById('mood').value;
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      };
+      responceServer();
+      //sends data and logs the responce
+      async function responceServer(){
+        const responce = await fetch('/api',options);
+        const jsonget = await responce.json();
+        console.log(jsonget);
+      }
+    }
+    </script>
+
+  </body>
+</html>
