@@ -1,0 +1,13 @@
+#canvasStuff{
+  position: relative;
+}
+#myCanvas{
+  border: 3px solid black;
+}
+#predictor,#clear{
+  background-color: lightgrey;
+  border:none;
+  border-bottom: black solid 1px;
+  width: 100px;
+  height:40px;
+}
