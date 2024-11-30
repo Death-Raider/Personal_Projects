@@ -1,0 +1,70 @@
+body{
+  background-image: linear-gradient(#3454dd,black);
+  color: whitesmoke;
+}
+#latit,#longi{
+  display: none;
+}
+#problem{
+  height:300px;
+  width:600px;
+  color: black;
+  background-color: lightgrey;
+}
+#btn,#ToC{
+  display: none;
+  height:30px;
+  width:100px;
+  color: #d0d0d0;
+  background-color: grey;
+  margin-bottom: 20px;
+}
+
+#btn:hover{
+  background-color: white;
+  color: black;
+}
+#mmap{
+  margin-right: 50px;
+  width: 1000px;
+  height: 500px;
+  border:#efefef solid 5px;
+}
+.tab{
+  height:40px;
+  width:100%;
+  background:inherit;
+}
+.tab button{
+  height:40px;
+  width: 30%;
+  background: inherit;
+  color:whitesmoke;
+  border:none;
+  border-bottom: white solid 1px;
+}
+.tab button:hover{
+  color:black;
+    background: linear-gradient(
+    to right,rgb(51,82,216,1),rgb(15,10,196,0), rgb(51,82,217,1)
+    ),linear-gradient(
+      rgb(51,83,219,1),rgb(249 249 249), rgb(50,81,212,1)
+    );
+}
+#info_active,#submit_active{
+  background: linear-gradient(
+    to right,rgb(51,82,216,1),rgb(15,10,196,0), rgb(51,82,217,1)
+    ),linear-gradient(
+      rgb(51,83,219,1),rgb(20,17,123), rgb(50,81,212,1)
+    );
+}
+#mapstuff_hide,#microbes_hide{
+  display:None;
+}
+#microbes{
+  margin-left: 30px;
+  height:1000px;
+}
+#body2{
+  height:1000px;
+}
