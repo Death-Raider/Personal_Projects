@@ -1,0 +1,15 @@
+{
+    "name": "",
+    "pfp":"",
+    "description":"",
+    "USER_TYPE":"client",
+    "verification": false,
+    "gender":false,
+    "age":false,
+    "researcher":{
+        "institution":"",
+        "qualification":"",
+        "verification":false,
+        "objective":""
+    }
+}

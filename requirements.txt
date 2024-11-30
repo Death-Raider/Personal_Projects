@@ -1,0 +1,6 @@
+yagmail
+flask
+firebase-admin
+pydantic
+flask-pydantic
+google-generativeai

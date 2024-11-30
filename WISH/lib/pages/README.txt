@@ -1,0 +1,1 @@
+This directory contains pages for the app. Each page is a new section/state in the app.

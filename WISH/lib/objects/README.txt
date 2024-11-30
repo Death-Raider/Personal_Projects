@@ -1,0 +1,1 @@
+Thile directory consists of objects of the classes from the classes directory which are are required to be other files and are static in fetching.

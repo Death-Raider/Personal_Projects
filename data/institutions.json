@@ -1,0 +1,47 @@
+{
+    "vellore_institute_of_technology":{
+        "chennai": "admin.chennai@vit.ac.in",
+        "vellore": "",
+        "bhopal": "info@vitbhopal.ac.in",
+        "amravati": "info@vitap.ac.in",
+        "bangalore": "study@vitbangalore.in"
+    },
+    "indian_institute_of_technology":{
+        "mumbai": "",
+        "madras": "",
+        "gandhi_nagar": "",
+        "bhubaneshwar": "",
+        "guwahati": "",
+        "indore": "",
+        "kanpur": "",
+        "jodhpur": "",
+        "kharagpur": "",
+        "hydrabad": "",
+        "patna": "",
+        "delhi": "",
+        "ropar": "",
+        "mandi": "",
+        "roorkee": "",
+        "varanasi": "",
+        "jammu": "",
+        "palakkad": "",
+        "tirupati": "",
+        "goa": "",
+        "bhilai": "",
+        "dharwad": "",
+        "dhanbad": ""
+    },
+    "manipal_institute_of_technology":{
+        "manipal": ""
+    },
+    "indian_institute_of_science_education_and_research":{
+        "pune": "",
+        "tirupati": "",
+        "bhopal": "",
+        "berhampur": "",
+        "kolkata": "",
+        "bangalore": "",
+        "thiruvananthapuram": ""
+    }
+
+}
