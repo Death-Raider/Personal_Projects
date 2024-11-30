@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Image Recogonition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courgette&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="graphics.css">
+  </head>
+  <body>
+
+    <div id="info">
+      <h2>How to submit data correctly</h2>
+      <p>
+        <ol type="1">
+
+          <li>Draw single digits
+            <ul>
+              <li>Dont draw too small</li>
+              <li>Dont forget the add the value of the digit</li>
+            </ul>
+          </li>
+          <br>
+          <li>
+            Draw the numbers from 0 to 9 and also fill the digit catagory<br>
+            on what u have drawn.
+          </li>
+          <br>
+          <li>
+            To submit click submit. If u click prediction, the digit box <br>
+            disappears. So to bring it back just tap the canvas again.
+          </li>
+          <br>
+          <li>
+            It would be nice if each person draws all digits 0 through 9 as<br>
+            it will help database fill faster.
+          </li>
+          <br>
+        </ol>
+      </p>
+    </div>
+
+    <center id="canvasStuff" style="touch-action:none;">
+      <canvas height="600" width="400" id="myCanvas" background="Black"></canvas><br>
+
+      <div id ="submitDataBlock">
+        FILL THIS IF U GONNA SUBMIT
+        <input type="number" id="digit" maxlength="1" placeholder="Digit" min="0" max="9">
+      </div>
+      <br>
+      <button id="predictor" onclick="parseImg('/prediction')">PREDICT!!!</button>
+      <button id="clear" onclick="clearScreen()">CLEAR</button>
+      <button id="submitData" onclick="parseImg('/submitData')">Submit</button>
+      <br><br>
+      <br>
+      <p id="prediction">Prediction appears here!</p><br>
+    </center>
+
+    <script src="graphics.js" charset="utf-8"></script>
+    <script src="sending.js" charset="utf-8"></script>
+  </body>
+</html>
