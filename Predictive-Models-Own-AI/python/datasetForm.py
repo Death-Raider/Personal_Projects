@@ -32,7 +32,6 @@ if data == 'generate':
         os.chdir("..")
         os.chdir("..")
         os.chdir("..")
-
 if isinstance(data, list):
     img_send_value = [0]*len(data)
     for i in range(len(data)):
