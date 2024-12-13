@@ -14,7 +14,7 @@ const genders = ['femme', 'homme']
 const age_range = [18,99]
 
 let people_to_text = 4
-let text_per_person = [
+let text_per_person = [iiiiiiiiii8
     ["hey", "how are you?"], 
     ["hey","how are you?"], 
     ["hey", "how are you?"],
@@ -32,7 +32,7 @@ for(let i = 0; i < people_to_text; i++){
     delay(1000)
     speech_area = document.getElementsByClassName('contentDiv')[0]
     for(let j = 0; j < text_per_person[i].length; j++){
-        speech_area.innerText=text_per_person[i][j]
+        speech_area.innerText = text_per_person[i][j]
         await delay(1000)
         sendMsg()
         await delay(1000)
@@ -44,8 +44,6 @@ for(let i = 0; i < people_to_text; i++){
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-// Runs even if you open a person and hide it again (may be usefull ?)
-//  
 
 // TODO implement class interface to work with individual people tags as objects
 // class should have the following methods
