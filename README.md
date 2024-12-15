@@ -1,82 +1,132 @@
-<h1 align="center" id="title">WISH</h1>
+# WISH (Women in STEM and Healthcare)
+
 <p align="center">
 <img src="https://socialify.git.ci/Death-Raider/WISH/image?font=Source%20Code%20Pro&language=1&name=1&owner=1&pattern=Diagonal%20Stripes&stargazers=1&theme=Dark" alt="WISH" width="640" height="320" />
 </p>
 
-<p id="description">WISH (Women in STEM and Healthcare) is a groundbreaking app dedicated to advancing research in STEM (Science, Technology, Engineering, and Mathematics) and Healthcare, with a primary objective of spotlighting the contributions of women in these fields. Our platform serves as a hub for accessing and discussing research papers authored by women, offering users a curated selection of insightful studies and findings. By elevating the visibility of female researchers and their work, WISH aims to inspire and empower the next generation of women in STEM and healthcare.</p>
-<p>At the core of WISH lies a dynamic and interactive platform where users can engage directly with verified researchers and medical professionals. Through intuitive chat functionalities and online consultations, individuals have the opportunity to seek guidance, ask questions, and engage in meaningful discussions with experts—all within the convenience of the app. Our stringent verification process ensures the authenticity and credibility of both researchers and users. Researchers are meticulously verified through direct communication with their respective institutions, while users undergo verification during the signup process, ensuring a safe and trustworthy environment for collaboration and knowledge exchange on WISH</p>
-<p align="center"><i>Promoting Women in STEM And Healthcare</i></p>
+## About
 
-<p align="center"><img src="https://img.shields.io/badge/Build-Vitafile-red?logo=npm" alt="shields"></p>
-<br>
-<h2> 🎥 Demo Video</h2>
-<a href="https://www.youtube.com/watch?v=vbWuN2zDp7A">Watch Our Video On YouTube</a>
+WISH (Women in STEM and Healthcare) is a pioneering app designed to:
+- **Empower women in STEM and healthcare** by spotlighting their contributions.
+- Serve as a **hub for accessing and discussing research papers** authored by women.
+- Enable **direct engagement with verified researchers and medical professionals** through intuitive chat and consultation features.
 
-<h2>Project: </h2>
-<br>
-<img src="./assets/login.jpeg" width=25%><br>
+Our goal is to **inspire and empower the next generation** of women in STEM and healthcare, providing a platform for visibility, collaboration, and knowledge exchange.
 
-- Login with the credentials used during sign-up.<br>
+---
 
-<img src="./assets/home.png" width=25%><br>
-- Home page highlighting the trending research papers and allows you to search through them<br>
+## Features 🎯
 
-<img src="./assets/sidebar.jpeg" width=25%><br>
--  Sidebar page providing accessibility to all the features available in the app.<br>
+### 🔐 Secure Authentication
+- **Firebase & Google Auth:** Ensures robust and real-time user authentication.
+- **pyTesseract for OCR:** Validates user identity, creating a safe and secure environment for women.
 
-<img src ="./assets/profile.jpeg" width=25%><br>
+### 🧠 AI-Powered Insights
+- **Google Gemini API:** Provides concise summaries of displayed research papers for easy understanding.
 
-- Profile page of the user showign their details and credentials which are publically visible.<br>
+### 🌐 Multilingual Support
+- **FastAPI:** Supports translation of health documents to overcome language barriers.
 
+### 🔒 Advanced Data Security
+- **Symmetric Key Encryption:** Protects sensitive user data with end-to-end encryption.
+- **Secure Key Management:** Ensures secret keys are safely stored, preventing unauthorized access.
 
-<h2>🧐 Features</h2>
+### 📄 Intuitive User Interface
+- **Profile Management:** Displays user credentials and details that are publicly visible.
+- **Trending Research Papers:** Highlights popular and impactful studies authored by women.
+- **Interactive Sidebar Navigation:** Simplifies access to all app features.
 
-* 🔐 **Firebase & Google Auth:** Secures user data and authentication, ensuring real-time synchronization and robust security.  
-* 🧠 **Google Gemini API:** Provides summaries for the research papers we are displaying
-* 📝 **pyTesseract for OCR:** Verification of User's Identity to create a safe platform for women.
-* ⚡ **FastApi**:Breaks language barriers, offering multilingual support for health documents. 
+---
 
+## Screenshots 🖼️
 
--  📄 **Data Encryption** All data is encrypted using a symmetric key approach, ensuring that any text file converted to cipher text remains confidential.
+### Login Page  
+<img src="./assets/login.jpeg" width="25%"><br>
+- Log in with the credentials used during sign-up.
 
--  **🗝 Same Key for Encryption/Decryption:** We employ the same secret key for both encrypting and decrypting data, simplifying key management while maintaining security.
+### Home Page  
+<img src="./assets/home.png" width="25%"><br>
+- Discover trending research papers and search through them.
 
--  **🛡 End-to-End Encryption:** From the moment data is encrypted to the point it is decrypted, it is fully protected, ensuring that sensitive information stays secure during transit and at rest.
+### Sidebar  
+<img src="./assets/sidebar.jpeg" width="25%"><br>
+- Access all the app features through an easy-to-use sidebar.
 
--  **🔐 Secure Key Management:** The secret keys are managed securely, ensuring they are inaccessible to unauthorized users and systems.
+### Profile Page  
+<img src="./assets/profile.jpeg" width="25%"><br>
+- View public details and credentials of the user.
 
+---
 
-<h2>🛠️ Installation Steps:</h2>
+## Demo Video 🎥
 
-<p> 1. Prerequisites- 
+[Watch Our Demo on YouTube](https://www.youtube.com/watch?v=vbWuN2zDp7A)
 
-```
-1. Flutter
-2. Gemini API key
-3. Firebase API key
+---
 
-```
-<p>2. Git Clone</p>
+## Installation 🛠️
 
-```
-git clone https://github.com/Death-Raider/WISH.git
-```
-<br>
-<p> 3. Start the Frontend </p>
+### Prerequisites  
 
-```
-cd wish
-flutter run
-```
-<br>
+1. Ensure you have the following installed:  
+   ```
+   1. Flutter  
+   2. Gemini API key  
+   3. Firebase API key  
+   ```
 
-<p> 4. Setup the Server </p>
+### Steps to Set Up  
 
-```
-cd ../api
-pip install -r requirements.txt
-python app.py
-```
-<br>
+1. **Clone the Repository**  
+   ```bash
+   git clone https://github.com/Death-Raider/WISH.git
+   ```
 
-<p> 5. You are <i><u>Good to Go!</u></i> </p>
+2. **Start the Frontend**  
+   ```bash
+   cd wish
+   flutter run
+   ```
+
+3. **Set Up the Backend**  
+   ```bash
+   cd ../api
+   pip install -r requirements.txt
+   python app.py
+   ```
+
+4. **Ready to Go!** 🎉
+
+---
+
+## Core Technologies ⚙️
+
+- **Flutter**: Cross-platform app development framework.
+- **Firebase**: User authentication and database management.
+- **Google Gemini API**: For generating concise research summaries.
+- **FastAPI**: Backend framework for multilingual document translation.
+- **pyTesseract**: OCR for verifying user identity.
+- **Python**: Backend scripting and encryption.
+
+---
+
+## Contributing 🤝
+
+We welcome contributions to enhance WISH!  
+To contribute:  
+1. Fork the repository.  
+2. Create a new branch.  
+3. Commit your changes and open a pull request.
+
+---
+
+## License 📜
+
+This project is licensed under the [MIT License](./LICENSE).  
+
+---
+
+## Acknowledgments 💡
+
+- Inspired by the mission to **promote women in STEM and healthcare**.  
+- Special thanks to the open-source community for tools and resources that made WISH possible.
