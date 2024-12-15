@@ -1,4 +1,4 @@
-const alpha = require('alphavantage')({ key: 'ababbaba' });//idk any keys lol
+const alpha = require('alphavantage')({ key: 'YOUR_KEY' });
 const spawn = require('child_process').spawn;
 
 let datapoint = 0,// 1 datapoint is 'time' seconds (compressed time step)
