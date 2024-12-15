@@ -1,6 +1,6 @@
 import socket
 import threading
-from NetworkComponents.client_handler import ClientHandler
+from NetworkComponents.hub_handler import ClientHandler
 
 class Hub:
     def __init__(self, name, bind_ip:str, port:int):
