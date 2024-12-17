@@ -99,6 +99,16 @@ A scientific project aimed at detecting microbial hotspots in an area based on u
 
 ---
 
+### 8. [Hygwell Assignment - Interview](https://github.com/Death-Raider/Personal_Projects/tree/Hygwell_Assignment_Interview)
+A technical assignment completed for a Hygwell interview. It showcases analytical and technical problem-solving skills with real-world datasets by means of 
+  1. Automated web scraping
+  2. PDF parsing
+  3. Vector Search for sentiment based retrieval
+  4. API creation
+  5. Containerization with Docker
+
+---
+
 <br>
 <br>
 
