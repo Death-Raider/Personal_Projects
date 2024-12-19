@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+numpy
+pydantic
+PyPDF2
+selenium
+sentence-transformers
+pandas
+Werkzeug
+python-multipart

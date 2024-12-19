@@ -18,7 +18,12 @@ def extract_text_from_url(browser, url: str) -> str:
 def start_browser():
     option = webdriver.ChromeOptions()
     option.add_argument("--incognito")
-    # option.add_argument('--headless=new')
-    option.add_argument("--disable-gpu")
+    option.add_argument("--headless")  # Run in headless mode
+    option.add_argument("--no-sandbox")  # Bypass OS security model
+    option.add_argument("--disable-dev-shm-usage")  # Overcome shared memory issue
+    option.add_argument("--disable-gpu")  # Disable GPU rendering
+    option.add_argument("--disable-extensions")  # Disable extensions
+    option.add_argument("--disable-software-rasterizer")  # Disable unnecessary rendering
+    option.add_argument("--remote-debugging-port=9222")  # Debugging port (optional)
     browser = webdriver.Chrome(options=option)
     return browser

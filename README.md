@@ -31,7 +31,7 @@ This repository contains the code and analysis for two assignments from the Hygw
 
 ---
 
-## Assignment 2: Web Traffic Analysis (TODO)
+## Assignment 2: Web Traffic Analysis
 
 ### Tasks Addressed
 1. **Pageview Analysis**
