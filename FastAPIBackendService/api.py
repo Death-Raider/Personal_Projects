@@ -1,5 +1,5 @@
 from werkzeug.utils import secure_filename
-from fastapi import FastAPI, File, UploadFile, Query, Request
+from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import os

@@ -4,28 +4,38 @@ FROM python:3.11-slim
 # Install necessary dependencies
 RUN apt-get update -qq -y && apt-get install -y --no-install-recommends \
     wget \
-    curl \
     unzip \
+    libx11-dev \
+    libx264-dev \
     libasound2 \
     libatk-bridge2.0-0 \
     libgtk-4-1 \
     libnss3 \
+    libxss1 \
+    libnspr4 \
+    fonts-liberation \
+    libgbm1 \
+    libxrandr2 \
+    libxcomposite1 \
+    libatspi2.0-0 \
+    libappindicator3-1\
     xdg-utils
 
-# Install Google Chrome (hardcoded version: 121-0-6167-85)
-RUN wget -q -O chrome-linux64.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/121.0.6167.85/linux64/chrome-linux64.zip && \
-    unzip chrome-linux64.zip && \
-    rm chrome-linux64.zip && \
-    mv chrome-linux64 /opt/chrome/ && \
-    ln -s /opt/chrome/chrome /usr/local/bin/chrome
+RUN wget https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip -P /tmp && \
+    unzip /tmp/chrome-linux64.zip -d /opt && \
+    rm /tmp/chrome-linux64.zip
 
-# Install ChromeDriver (hardcoded version: 121-0-6167-85)
-RUN wget -q -O chromedriver-linux64.zip https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/131.0.6778.204/linux64/chromedriver-linux64.zip && \
-    unzip chromedriver-linux64.zip && \
-    rm chromedriver-linux64.zip && \
-    mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver && \
-    chmod +x /usr/local/bin/chromedriver && \
-    rm -rf chromedriver-linux64
+RUN wget https://storage.googleapis.com/chrome-for-testing-public/131.0.6778.204/linux64/chromedriver-linux64.zip -P /tmp && \
+    unzip /tmp/chromedriver-linux64.zip -d /opt && \
+    rm /tmp/chromedriver-linux64.zip
+
+ENV CHROME_BIN=/opt/chrome-linux64/chrome
+ENV CHROMEDRIVER_PATH=/opt/chromedriver-linux64/chromedriver
+ENV PATH=$PATH:$CHROMEDRIVER_PATH
+ENV PATH=$PATH:$CHROME_BIN
+
+RUN chmod +x /opt/chromedriver-linux64/chromedriver
+
 # Install Python packages
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
