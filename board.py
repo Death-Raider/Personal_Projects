@@ -14,16 +14,18 @@ class Board:
         # Draw left paddle
         for i in range(l_paddle.y, l_paddle.y + l_paddle.length):
             if 0 <= i < self.size:
-                self.board[i][l_paddle.x] = 1
+                self.board[int(i)][l_paddle.x] = 1
 
         # Draw right paddle
         for i in range(r_paddle.y, r_paddle.y + r_paddle.length):
             if 0 <= i < self.size:
-                self.board[i][r_paddle.x] = 1
+                self.board[int(i)][r_paddle.x] = 2
 
-        # Draw the ball
-        if 0 <= ball.x < self.size and 0 <= ball.y < self.size:
-            self.board[ball.y][ball.x] = 3
+        # Draw the ball (rounding position for display)
+        ball_x = int(round(ball.x))
+        ball_y = int(round(ball.y))
+        if 0 <= ball_x < self.size and 0 <= ball_y < self.size:
+            self.board[ball_y][ball_x] = 3
 
     def increment_score(self, player):
         if player in self.scores:
@@ -35,9 +37,9 @@ class Board:
         ball.dir = [0, 1] if ball.dir[1] > 0 else [0, -1]
 
     def pong_game(self):
-        ball = Ball(r=2, vel=1, dir=[0, 1])
-        l_paddle = Paddle(length=5, x=10, y=self.size // 2)
-        r_paddle = Paddle(length=5, x=self.size - 10, y=self.size // 2)
+        ball = Ball(r=1, vel=1, dir=[0, 1])
+        l_paddle = Paddle(length=10, x=10, y=self.size // 2)
+        r_paddle = Paddle(length=10, x=self.size - 10, y=self.size // 2)
         ball.x, ball.y = self.size // 2, self.size // 2
 
         while True:
