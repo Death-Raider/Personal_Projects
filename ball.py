@@ -7,13 +7,11 @@ class Ball:
         self.r = r
         self.dir = dir
 
-    def move(self, l_paddle, r_paddle, board_size):
+    def move(self, l_paddle, r_paddle, board):
         x = math.ceil(self.x + self.dir[1])
         y = math.ceil(self.y + self.dir[0])
 
-        # if between old and new position there is a paddle, then teleport the ball to the paddle.
         if self.dir[1] > 0:  # right paddle
-            print("moving towards right paddle")
             c1 = self.x < r_paddle.x                                    # old position is before paddle position
             c2 = r_paddle.y <= y <= r_paddle.y + r_paddle.length        # new position can hit the paddle
             c3 = x >= r_paddle.x                                       # new position is through paddle position
@@ -25,7 +23,6 @@ class Ball:
                 self.x = x
                 self.y = y
         else:  # left paddle
-            print("moving towards left paddle")
             c1 = self.x > l_paddle.x                                    # old position is before paddle position
             c2 = l_paddle.y <= y <= l_paddle.y + l_paddle.length        # new position can hit the paddle
             c3 = x <= l_paddle.x                                       # new position is through paddle position
@@ -41,6 +38,14 @@ class Ball:
         if y <= 0:  # Top wall
             self.y = 0
             self.dir[0] = -self.dir[0]  # Reverse vertical direction
-        elif y >= board_size - 1:  # Bottom wall
-            self.y = board_size - 1
+        elif y >= board.size - 1:  # Bottom wall
+            self.y = board.size - 1
             self.dir[0] = -self.dir[0]  # Reverse vertical direction
+
+        # Check for scoring
+        if self.x <= 0:  # Right player scores
+            board.increment_score(2)
+            board.reset_ball(self)
+        elif self.x >= board.size - 1:  # Left player scores
+            board.increment_score(1)
+            board.reset_ball(self)
