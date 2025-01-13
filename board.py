@@ -1,29 +1,34 @@
 from ball import Ball
 from paddle import Paddle
 import keyboard
+import random
+import numpy as np
 
 class Board:
-    def __init__(self, size=100):
+    def __init__(self, size=100, paddle_length = 10, paddle_pos = 3):
         self.size = size
         self.board = [[0] * size for _ in range(size)]
         self.scores = {1: 0, 2: 0}
+        self.ball = Ball(r=1, vel=1, dir=[0, 1])
+        self.l_paddle = Paddle(length=paddle_length, x=paddle_pos, y=self.size // 2)
+        self.r_paddle = Paddle(length=paddle_length, x=self.size - paddle_pos, y=self.size // 2)
 
-    def update(self, l_paddle, r_paddle, ball):
+    def update(self):
         self.board = [[0] * self.size for _ in range(self.size)]
 
         # Draw left paddle
-        for i in range(l_paddle.y, l_paddle.y + l_paddle.length):
+        for i in range(self.l_paddle.y, self.l_paddle.y + self.l_paddle.length):
             if 0 <= i < self.size:
-                self.board[int(i)][l_paddle.x] = 1
+                self.board[int(i)][self.l_paddle.x] = 1
 
         # Draw right paddle
-        for i in range(r_paddle.y, r_paddle.y + r_paddle.length):
+        for i in range(self.r_paddle.y, self.r_paddle.y + self.r_paddle.length):
             if 0 <= i < self.size:
-                self.board[int(i)][r_paddle.x] = 2
+                self.board[int(i)][self.r_paddle.x] = 2
 
         # Draw the ball (rounding position for display)
-        ball_x = int(round(ball.x))
-        ball_y = int(round(ball.y))
+        ball_x = int(round(self.ball.x))
+        ball_y = int(round(self.ball.y))
         if 0 <= ball_x < self.size and 0 <= ball_y < self.size:
             self.board[ball_y][ball_x] = 3
 
@@ -31,29 +36,36 @@ class Board:
         if player in self.scores:
             self.scores[player] += 1
 
-    def reset_ball(self, ball):
-        ball.x = self.size // 2
-        ball.y = self.size // 2
-        ball.dir = [0, 1] if ball.dir[1] > 0 else [0, -1]
+    def reset_ball(self):
+        self.ball.x = self.size // 2
+        self.ball.y = self.size // 2
+        self.ball.dir = [0,random.choice([-1,1])] # [random.randrange(-1,1)+0.1, random.randrange(-1,1)+0.3]
+        # mag = np.hypot(*self.ball.dir)
+        # self.ball.dir[0] /= mag
+        # self.ball.dir[1] /= mag
 
-    def pong_game(self):
-        ball = Ball(r=1, vel=1, dir=[0, 1])
-        l_paddle = Paddle(length=10, x=10, y=self.size // 2)
-        r_paddle = Paddle(length=10, x=self.size - 10, y=self.size // 2)
-        ball.x, ball.y = self.size // 2, self.size // 2
+    def current_board_state(self):
+        paddle_positions = [self.l_paddle.y, self.r_paddle.y]
+        ball_position = [round(self.ball.y), round(self.ball.x)]
+        ball_angle = np.arctan2(-self.ball.dir[0], self.ball.dir[1])
+        if ball_angle < 0:
+            ball_angle += 2*np.pi
+        return paddle_positions + ball_position + [round(ball_angle*180/np.pi)]
+        
+    def do_board_action(self,player=1,action=0):
+        if action == 0: 
+            return
+        if action == 1 and player == 1:
+            self.l_paddle.move(direction=1, board_size=self.size)
+        elif action == 2 and player == 1:
+            self.l_paddle.move(direction=-1, board_size=self.size)
+        elif action == 1 and player == 2:
+            self.r_paddle.move(direction=1, board_size=self.size)
+        elif action == 2 and player == 2:
+            self.r_paddle.move(direction=-1, board_size=self.size)
 
-        while True:
-            self.update(l_paddle, r_paddle, ball)
-            yield self.board, self.scores
-
-            ball.move(l_paddle, r_paddle, self)
-
-            if keyboard.is_pressed('e'):
-                l_paddle.move(direction=-1, board_size=self.size)
-            elif keyboard.is_pressed('d'):
-                l_paddle.move(direction=1, board_size=self.size)
-
-            if keyboard.is_pressed('up'):
-                r_paddle.move(direction=-1, board_size=self.size)
-            elif keyboard.is_pressed('down'):
-                r_paddle.move(direction=1, board_size=self.size)
+    def get_board_score(self):
+        return self.scores
+    
+    def reset_score(self):
+        self.scores = {1:0, 2:0}

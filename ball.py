@@ -16,8 +16,8 @@ class Ball:
         if self.dir[1] > 0:  # right paddle
             c1 = self.x < r_paddle.x                                    # old position is before paddle position
             c2 = r_paddle.y <= y <= r_paddle.y + r_paddle.length        # new position can hit the paddle
-            c3 = x >= r_paddle.x                                       # new position is through paddle position
-            if c1 and c3 and c2:                                       # Stick to the point to collision
+            c3 = x >= r_paddle.x                                        # new position is through paddle position
+            if c1 and c3 and c2:                                        # Stick to the point to collision
                 self.y = (self.dir[0] / self.dir[1]) * (r_paddle.x - self.x) + self.y
                 self.x = r_paddle.x
                 self.dir[1] = -self.dir[1]  # Reverse direction after hitting the paddle
@@ -28,8 +28,8 @@ class Ball:
         else:  # left paddle
             c1 = self.x > l_paddle.x                                    # old position is before paddle position
             c2 = l_paddle.y <= y <= l_paddle.y + l_paddle.length        # new position can hit the paddle
-            c3 = x <= l_paddle.x                                       # new position is through paddle position
-            if c1 and c3 and c2:                                       # Stick to the point to collision
+            c3 = x <= l_paddle.x                                        # new position is through paddle position
+            if c1 and c3 and c2:                                        # Stick to the point to collision
                 self.y = (self.dir[0] / self.dir[1]) * (l_paddle.x - self.x) + self.y
                 self.x = l_paddle.x
                 self.dir[1] = -self.dir[1]  # Reverse direction after hitting the paddle
@@ -49,23 +49,16 @@ class Ball:
         # Check for scoring
         if self.x <= 0:  # Right player scores
             board.increment_score(2)
-            board.reset_ball(self)
+            board.reset_ball()
         elif self.x >= board.size - 1:  # Left player scores
             board.increment_score(1)
-            board.reset_ball(self)
+            board.reset_ball()
 
 
     def handle_paddle_collision(self, paddle, transfer_factor=0.3):
-        # Calculate the paddle's center
         paddle_center = paddle.y + paddle.length // 2
-
-        # Calculate the vertical offset
         offset = self.y - paddle_center
-
-        # Apply momentum transfer to vertical direction
         self.dir[0] += offset * transfer_factor
-
-        # Normalize direction to maintain constant speed
         magnitude = math.sqrt(self.dir[0]**2 + self.dir[1]**2)
         self.dir[0] /= magnitude
         self.dir[1] /= magnitude
