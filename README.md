@@ -164,6 +164,9 @@ Projects utilizing the Robot Operating System (ROS) for robotic applications. Cr
 ### 10. [Partial Differential Equation Modeling](https://github.com/Death-Raider/Personal_Projects/tree/Partial_Differential_Equation_Modeling)
 A mathematical modeling project focused on solving partial differential equations to simulate real-world phenomena like heat transfer, fluid dynamics, and wave propagation. Implemented in JavaScript and supports creation of solution graph.
 
+### 11. [Pong-QAgent](https://github.com/Death-Raider/Personal_Projects/tree/Pong-Agent)
+Implemented one-shot Q-Learning on the game Pong to train the agents to play against each other to achieve the highest score.
+
 ---
 
 
