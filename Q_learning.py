@@ -29,6 +29,7 @@ Sources:
 import numpy as np
 import keyboard
 import matplotlib.pyplot as plt
+import time
 
 from QAgent import QAgent
 from board import Board
@@ -66,13 +67,13 @@ n_states = base_y1*base_y2*base_bx*base_by*base_a
 n_actions = 3 # idle and down and up
 learning_rate = 0.8
 discount_factor = 0.90
-exploration_prob = 0.01
+exploration_prob = 0.90
 
 agent1 = QAgent(n_states, n_actions, learning_rate, discount_factor, exploration_prob)
 agent2 = QAgent(n_states, n_actions, learning_rate, discount_factor, exploration_prob)
 plt.ion()
-epochs = 1000
-reward_history = np.zeros((epochs,2))
+epochs = 3000
+reward_history = np.zeros((epochs,3))
 
 for epoch in range(epochs):
     board.reset_score()
@@ -82,14 +83,18 @@ for epoch in range(epochs):
     current_state = state_to_index(*board_state)
     board.update()
     iterations = 0
+    start_time = time.time()
     while True:
         score = board.get_board_score()
         if score[1]+score[2] > 20:
             break
         # choose an action
-        action1 = agent1.choose_action(current_state)
-        action2 = agent2.choose_action(current_state)
-
+        try:
+            action1 = agent1.choose_action(current_state)
+            action2 = agent2.choose_action(current_state)
+        except:
+            action1 = np.random.randint(0,3)
+            action2 = np.random.randint(0,3)
         # Simulate the environment based on action
         board.do_board_action(player=1, action=action1)
         board.do_board_action(player=2, action=action2)
@@ -130,8 +135,12 @@ for epoch in range(epochs):
             # print(board.current_board_state())
             plt.clf()
         iterations += 1
+    end_time = time.time()
     reward_history[epoch] /= iterations
-
-    print(epoch)
+    reward_history[epoch,2] = end_time - start_time
+    agent1.exploration_prob -= 0.001
+    agent1.exploration_prob = max(0.01,agent1.exploration_prob)
+    agent2.exploration_prob = agent1.exploration_prob
+    print(epoch, " time(ms):",1000*(end_time-start_time), " explora_prob:",agent1.exploration_prob)
 
 np.save("reward_history_over_epoch",reward_history)
