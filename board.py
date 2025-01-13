@@ -1,6 +1,5 @@
 from ball import Ball
 from paddle import Paddle
-import keyboard
 import random
 import numpy as np
 
