@@ -1,5 +1,5 @@
-from ball import Ball
-from paddle import Paddle
+from Environments.Pong.ball import Ball
+from Environments.Pong.paddle import Paddle
 import random
 import numpy as np
 

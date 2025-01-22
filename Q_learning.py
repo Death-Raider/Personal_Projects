@@ -7,9 +7,9 @@ Q Learning
 - Deep Q Learning can be used to work on continious states
 
 Environment:
-    - board size: 100 x 100
-    - paddle size: 10 x 1
-    - ball size: 1 x 1
+    - board size
+    - paddle size
+    - ball size
 
 Factors:
     - position of self paddle (y1): 90
@@ -31,8 +31,8 @@ import keyboard
 import matplotlib.pyplot as plt
 import time
 
-from QAgent import QAgent
-from board import Board
+from Agents.QAgent import QAgent
+from Environments.Pong.board import Board
 
 BOARD_SIZE = 40
 PADDLE_LENGTH = 10
@@ -45,6 +45,13 @@ base_y2 = BOARD_SIZE - PADDLE_LENGTH+1
 base_bx = BOARD_SIZE+1
 base_by = BOARD_SIZE+1
 base_a = 360
+
+print("Total States possible:", 
+    BOARD_SIZE**2 * # for the ball
+    (BOARD_SIZE - PADDLE_LENGTH) ** 2 * # for the paddle
+    360 # for the angle of the ball
+)
+# 518400000 ~ 22,768 * 22,768
 
 def state_to_index(y1, y2, bx, by, a): # (LSB to MSB) -> index
     return (y1 
