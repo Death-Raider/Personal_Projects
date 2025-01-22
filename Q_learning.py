@@ -72,7 +72,7 @@ exploration_prob = 0.90
 agent1 = QAgent(n_states, n_actions, learning_rate, discount_factor, exploration_prob)
 agent2 = QAgent(n_states, n_actions, learning_rate, discount_factor, exploration_prob)
 plt.ion()
-epochs = 3000
+epochs = 1000
 reward_history = np.zeros((epochs,3))
 
 for epoch in range(epochs):
