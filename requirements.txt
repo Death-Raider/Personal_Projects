@@ -1,0 +1,4 @@
+matplotlib
+tensorflow[and-cuda]
+keyboard
+numpy
