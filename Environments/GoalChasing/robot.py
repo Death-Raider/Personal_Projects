@@ -1,16 +1,18 @@
-from goal import Goal
+from Environments.GoalChasing.goal import Goal
 
 import random
 import numpy as np
 
 class Robot:
-    def __init__(self, id: int, x:float = 0, y:float = 0, a:float = 0, v:float = 0, dir:float = 0):
+    def __init__(self, id: int, x:float = 0, y:float = 0, a:float = 0, v:float = 0, dir:float = 0, cooperation: int = 1):
         self.id = id
         self.x = x
         self.y = y
         self.a = a
         self.v = v
         self.dir = dir # angle in radians from the x axis
+        self.cooperation = cooperation
+        self.closeness_threshold = 3
 
     def move(self):
         vx = self.v*np.cos(self.dir)
@@ -18,9 +20,45 @@ class Robot:
         self.x += vx
         self.y += vy
     
+    def set_dir(self, goal, player_dist_vector):
+        goal_distance, goal_angle = self.get_dist([goal.y,goal.x])
+        self_index = np.where(player_dist_vector[:,0]==0)[0][0]
+
+        goal_based_relative_angle = player_dist_vector[:,1] - goal_angle # alpha
+        goal_based_relative_angle = np.where(goal_based_relative_angle < 0, goal_based_relative_angle + np.pi*2, goal_based_relative_angle)
+
+        close_robot_indicies = np.where(player_dist_vector[:,0] <= self.closeness_threshold)[0] # robots which are close to self
+        # print(f"Robot {self.id}:", close_robot_indicies )
+
+        if len(close_robot_indicies) == 1:
+            self.dir = goal_angle
+        else:   
+            # check the states of the robots which are close
+            # determine deviation angle 
+            deviation_angle = 0.2 # for example
+
+            # ---- hard coded logic part ----
+            # calculate estimated point of intersection
+            # if the intersection point lies on the line of self to self goal then do
+                # calculate time to intersection for both the robots
+                # if time is within threshold then do
+                    # choose to do one of the following
+                    # 1. slow down
+                    # 2. speed up
+                    # 3. add a deviation angle to recompute for next step
+                # else
+                    # the robots will not clash
+            # else
+                # skip the robot as it is just close but not in the way
+            #
+            # ---- Q Learning part ----
+            # calculate deviation angle by q learning 
+            self.dir = goal_angle + deviation_angle
+
+
     def set_random_init_state(self, max_x, max_y):
-        self.x = random.randint(0,max_x)
-        self.y = random.randint(0,max_y)
+        self.x = random.randint(0,max_x-1)
+        self.y = random.randint(0,max_y-1)
         self.v = 2*random.random()
         self.dir = random.random()
 
