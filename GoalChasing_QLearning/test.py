@@ -17,7 +17,7 @@ def create_random_agents(id,board_size)->list[Robot,Goal]:
         print(r1.get_dist([g1.y,g1.x])[0])
     return [r1,g1]
 
-robot_count = 10
+robot_count = 2
 board_size = 20
 
 board = Board(board_size)
@@ -40,6 +40,6 @@ while len(board.players) > 0:
         r.move()
     # print(board.dist_table)
     plt.imshow(board.board)
-    plt.pause(0.4)
+    plt.pause(1)
 plt.show()
 plt.ioff()

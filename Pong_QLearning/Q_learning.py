@@ -74,12 +74,12 @@ n_states = base_y1*base_y2*base_bx*base_by*base_a
 n_actions = 3 # idle and down and up
 learning_rate = 0.8
 discount_factor = 0.90
-exploration_prob = 0.90
+exploration_prob = 0.01
 
 agent1 = QAgent(n_states, n_actions, learning_rate, discount_factor, exploration_prob)
 agent2 = QAgent(n_states, n_actions, learning_rate, discount_factor, exploration_prob)
 plt.ion()
-epochs = 100
+epochs = 1000
 reward_history = np.zeros((epochs,3))
 
 for epoch in range(epochs):
