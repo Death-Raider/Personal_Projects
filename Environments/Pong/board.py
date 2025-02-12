@@ -50,6 +50,14 @@ class Board:
         if ball_angle < 0:
             ball_angle += 2*np.pi
         return paddle_positions + ball_position + [round(ball_angle*180/np.pi)]
+    
+    def set_state(self, state):
+        y1,y2,by,bx,a = state
+        self.l_paddle.y = int(y1)
+        self.r_paddle.y = int(y2)
+        self.ball.y = by
+        self.ball.x = bx
+        self.ball.dir = [-np.sin(a*np.pi/180), np.cos(a*np.pi/180)]
         
     def do_board_action(self,player=1,action=0):
         if action == 0: 

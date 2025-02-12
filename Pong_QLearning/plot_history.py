@@ -4,13 +4,9 @@ import numpy as np
 with open("reward_history_over_epoch.npy",'rb') as f:
     reward_history = np.load(f)
 
-# with open("dataset.npy",'rb') as f:
-#     dataset = np.load(f,allow_pickle=True)
-
 epochs = len(reward_history)
 
 print(reward_history)
-# print(dataset)
 
 plt.figure()
 plt.plot(range(epochs),reward_history[:,0]) # reward 1

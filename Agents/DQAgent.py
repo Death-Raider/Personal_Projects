@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import SparseCategoricalCrossentropy, categorical_crossentropy, MeanSquaredError
+from tensorflow.keras.losses import MeanSquaredError
 from collections import deque
 
 class DQAgent:
@@ -24,7 +24,6 @@ class DQAgent:
         inputs = Input(shape=(self.state_dim,))
         x = Dense(units=64, activation='relu')(inputs)
         x = Dense(units=32, activation='relu')(x)
-        x = Dense(units=16, activation='relu')(x)
         x = Dense(units=10, activation='relu')(x)
         out = Dense(units=self.action_dim, activation='linear')(x)
         self.model = Model(inputs=inputs, outputs=out)
