@@ -44,11 +44,13 @@ state_dim = 5  # (y1, y2, bx, by, a)
 n_actions = 3  # idle, down, up
 
 dataset = [[],[]]
-with open("Pong_QLearning/dataset.npy", 'rb') as file:
-    dataset = np.load(file,allow_pickle=True)
-
+try:
+    with open("Pong_QLearning/dataset.npy", 'rb') as file:
+        dataset = np.load(file,allow_pickle=True).tolist()
+except:
+    pass
 # Hyperparameters
-learning_rate = 1e-4
+learning_rate = 1e-2
 discount_factor = 0.99 # gamma
 exploration_prob = 0.01  # epsilon
 
@@ -61,8 +63,8 @@ agent1.model.summary()
 agent2.create_model()
 agent2.model.summary()
 
-agent1.model = keras.saving.load_model('Agent_1.keras') 
-agent2.model = keras.saving.load_model('Agent_2.keras') 
+# agent1.model = keras.saving.load_model('Agent_1.keras') 
+# agent2.model = keras.saving.load_model('Agent_2.keras') 
 
 def normalize_board(state,vals):
     new_state = state.copy()
@@ -136,11 +138,11 @@ def run():
             dataset[0].append({'current_state':current_state, 'action':action1, 'reward':reward1, 'next_state': next_state})
             dataset[1].append({'current_state':current_state, 'action':action2, 'reward':reward2, 'next_state': next_state})
             
-            if iterations % 64 == 0 and iterations != 0:
-                loss1 = agent1.update_model(batch_size=64, fit=False)
-                loss2 = agent2.update_model(batch_size=64, fit=False)
-                reward_history[epoch, 2] += loss1
-                reward_history[epoch, 3] += loss2
+            # if iterations % 64 == 0 and iterations != 0:
+            loss1 = agent1.update_model(batch_size=64, fit=False)
+            loss2 = agent2.update_model(batch_size=64, fit=False)
+            reward_history[epoch, 2] += loss1
+            reward_history[epoch, 3] += loss2
 
             # Update state
             current_state = next_state
@@ -162,11 +164,11 @@ def run():
 
         time_sec = 1000 * (end_time - start_time)
         print(epoch, " time(ms): {0:.2f}".format(time_sec), " time(ms/itr): {0:.2f}".format(time_sec/iterations))
-        np.save("Pong_QLearning/reward_history_over_epoch", reward_history)
-        np.save("Pong_QLearning/dataset", dataset)
+    #     np.save("Pong_QLearning/reward_history_over_epoch", reward_history)
+    #     np.save("Pong_QLearning/dataset", dataset)
 
-    np.save("Pong_QLearning/reward_history_over_epoch", reward_history)
-    np.save("Pong_QLearning/dataset", dataset)
+    # np.save("Pong_QLearning/reward_history_over_epoch", reward_history)
+    # np.save("Pong_QLearning/dataset", dataset)
 
-    agent1.model.save("Agent_1.keras")
-    agent2.model.save("Agent_2.keras")
+    # agent1.model.save("Agent_1.keras")
+    # agent2.model.save("Agent_2.keras")
