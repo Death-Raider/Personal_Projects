@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-with open("reward_history_over_epoch.npy",'rb') as f:
+with open("Pong_QLearning/data/reward_history_over_epoch.npy",'rb') as f:
     reward_history = np.load(f)
 
 epochs = len(reward_history)

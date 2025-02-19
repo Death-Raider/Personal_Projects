@@ -150,4 +150,4 @@ for epoch in range(epochs):
     agent2.exploration_prob = agent1.exploration_prob
     print(epoch, " time(ms):",1000*(end_time-start_time), " explora_prob:",agent1.exploration_prob)
 
-np.save("reward_history_over_epoch",reward_history)
+np.save("Pong_QLearning/data/reward_history_over_epoch_Q",reward_history)

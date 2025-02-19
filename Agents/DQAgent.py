@@ -1,9 +1,9 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Input
+from tensorflow.keras.layers import Dense, Input, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.losses import MeanSquaredError, Huber
 from collections import deque
 
 class DQAgent:
@@ -17,13 +17,17 @@ class DQAgent:
 
         self.memory = deque(maxlen=max_memory)  # Experience replay buffer
 
-        self.loss_fn = MeanSquaredError()
+        self.loss_fn = Huber()
         self.optimizer = Adam(learning_rate=self.learning_rate)
 
     def create_model(self):
         inputs = Input(shape=(self.state_dim,))
-        x = Dense(units=64, activation='relu')(inputs)
-        x = Dense(units=32, activation='relu')(x)
+        inputs_BN = BatchNormalization()(inputs)
+        x = Dense(units=256, activation='relu')(inputs_BN)
+        x = Dropout(0.4)(x)
+        x = Dense(units=128, activation='relu')(x)
+        x = Dropout(0.4)(x)
+        x = BatchNormalization()(x)
         x = Dense(units=10, activation='relu')(x)
         out = Dense(units=self.action_dim, activation='linear')(x)
         self.model = Model(inputs=inputs, outputs=out)
@@ -52,40 +56,29 @@ class DQAgent:
         actions = np.array(actions)
         rewards = np.array(rewards)
         next_states = np.array(next_states)
+        X,y = self.get_train_data_from_state_vector(states, actions, rewards, next_states)
 
-        # print("States:",states)
-        # print("Actions:",actions)
-        # print("Rewards:",rewards)
-        # print("next_states:",next_states)
-
-        current_q_value = self.model(states)
-        # print("Q_vals:", current_q_value) 
-
-        q_value_t_plus_1 = self.model(next_states)
-        # print("t+1 Q_vals:", q_value_t_plus_1)
-        
-        best_next_action = np.max(q_value_t_plus_1,axis=1) # q_values_t_plus_1 : max Q value
-
-        # print("best actions:", best_next_action)
-        target = rewards + self.gamma * best_next_action
-        # print("Targets:", target)
-
-        target_one_hot = np.zeros_like(current_q_value)
-        for i, action in enumerate(actions):
-            target_one_hot[i, action] = target[i]
-        
-        # print("Targets one hot:", target_one_hot)
         if fit:
-            print("Training Model")
-            history = self.model.fit(states,target_one_hot, epochs=100, verbose=2)
-            print("Training Finished")
-
+            history = self.model.fit(X,y, epochs=10, batch_size=batch_size, verbose=0)
             return 0
         else:
-            loss_vec = self.train_step(states, target_one_hot)
+            loss_vec = self.train_step(X, y)
             loss = tf.reduce_mean(loss_vec)
             return loss
     
+    def get_train_data_from_state_vector(self,states, actions, rewards, next_states):
+        # print("Q_vals:", current_q_value) 
+        current_q_value = self.model(states)
+        # print("t+1 Q_vals:", q_value_t_plus_1)
+        q_value_t_plus_1 = self.model(next_states)
+        # q_values_t_plus_1 -> max Q value
+        best_next_action = np.max(q_value_t_plus_1,axis=1)
+        target = rewards + self.gamma * best_next_action
+        target_one_hot = np.zeros_like(current_q_value)
+        for i, action in enumerate(actions):
+            target_one_hot[i, action] = target[i]
+        return states, target_one_hot
+
     @tf.function
     def train_step(self, x, y):
         with tf.GradientTape() as tape:

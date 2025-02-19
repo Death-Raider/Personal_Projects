@@ -31,21 +31,22 @@ print(tf.__version__)
 
 # Board settings
 BOARD_SIZE = 40
-PADDLE_LENGTH = 10
+PADDLE_LENGTH = round(0.2*BOARD_SIZE)
 SHOW = False
+TRAIN = True
 
-board = Board(size=BOARD_SIZE, paddle_length=PADDLE_LENGTH, paddle_pos=5)
+board = Board(size=BOARD_SIZE, paddle_length=PADDLE_LENGTH, paddle_pos=round(0.1*BOARD_SIZE))
 board.reset_ball()
 
 # Define state & action space
 max_val = [BOARD_SIZE-PADDLE_LENGTH,BOARD_SIZE-PADDLE_LENGTH,BOARD_SIZE,BOARD_SIZE,360]
-state_dim = 5  # (y1, y2, bx, by, a)
+state_dim = 5  # (y1, y2,q bx, by, a)
 n_actions = 3  # idle, down, up
 
 # Hyperparameters
-learning_rate = 1e-4
-discount_factor = 0.99 # gamma
-exploration_prob = 0.01  # epsilon
+learning_rate = 1e-3
+discount_factor = 0.90 # gamma
+exploration_prob = 0.1  # epsilon
 
 # Initialize agents
 agent1 = DQAgent(state_dim, n_actions, lr=learning_rate, gamma=discount_factor, epsilon=exploration_prob, max_memory=100000)
@@ -56,15 +57,12 @@ agent1.model.summary()
 agent2.create_model()
 agent2.model.summary()
 
-def normalize_board(state,vals):
-    new_state = state.copy()
-    for i in range(len(new_state)):
-        new_state[i] /= vals[i]
-    return new_state
+# agent1.model = keras.saving.load_model('Pong_QLearning/models/Agent_1.keras')
+# agent2.model = keras.saving.load_model('Pong_QLearning/models/Agent_2.keras')
 
 def run():
     # Training settings
-    epochs = 1000
+    epochs = 500
     reward_history = np.zeros((epochs, 5))
     dataset = [[],[]]
 
@@ -81,7 +79,6 @@ def run():
 
         # Get initial state
         board_state = board.current_board_state()
-        board_state = normalize_board(board_state, max_val)
 
         current_state = np.array(board_state, dtype=np.float32)
         board.update()
@@ -104,7 +101,6 @@ def run():
 
             # Get new state
             board_state_new = board.current_board_state()
-            board_state_new = normalize_board(board_state_new, max_val)
 
             next_state = np.array(board_state_new, dtype=np.float32)
             board.update()
@@ -112,13 +108,13 @@ def run():
             # Compute rewards
             reward1 = (
                 0.1 * (score[1] - score[2])       # avg value =  0.1*0
-                + (2 if board.l_paddle.y < board.ball.y < board.l_paddle.y + PADDLE_LENGTH else -2)  # min -2 max +2
-                + 0.001*iterations  # min 0  max unbound  avg: 8
+                + (2 if board.l_paddle.y < board.ball.y < board.l_paddle.y + PADDLE_LENGTH else -5)  # min -2 max +2
+                + 0.001*iterations  # min 0  max unbound  avg: 1
             )
 
             reward2 = (
                 0.1 * (score[2] - score[1])
-                + (2 if board.r_paddle.y < board.ball.y < board.r_paddle.y + PADDLE_LENGTH else -2)
+                + (2 if board.r_paddle.y < board.ball.y < board.r_paddle.y + PADDLE_LENGTH else -5)
                 + 0.001*iterations
             )
 
@@ -134,10 +130,11 @@ def run():
             dataset[1].append({'current_state':current_state, 'action':action2, 'reward':reward2, 'next_state': next_state})
             
             # if iterations % 64 == 0 and iterations != 0:
-            loss1 = agent1.update_model(batch_size=64, fit=False)
-            loss2 = agent2.update_model(batch_size=64, fit=False)
-            reward_history[epoch, 2] += loss1
-            reward_history[epoch, 3] += loss2
+            if TRAIN:
+                loss1 = agent1.update_model(batch_size=16, fit=False)
+                loss2 = agent2.update_model(batch_size=16, fit=False)
+                reward_history[epoch, 2] += loss1
+                reward_history[epoch, 3] += loss2
 
             # Update state
             current_state = next_state
@@ -159,11 +156,11 @@ def run():
 
         time_sec = 1000 * (end_time - start_time)
         print(epoch,iterations, " time(ms): {0:.2f}".format(time_sec), " time(ms/itr): {0:.2f}".format(time_sec/iterations))
-        np.save("Pong_QLearning/data/reward_history_over_epoch", reward_history)
-        np.save("Pong_QLearning/data/dataset", dataset)
+    #     np.save("Pong_QLearning/data/reward_history_over_epoch", reward_history)
+    #     np.save("Pong_QLearning/data/dataset", dataset)
 
-    np.save("Pong_QLearning/data/reward_history_over_epoch", reward_history)
-    np.save("Pong_QLearning/data/dataset", dataset)
+    # np.save("Pong_QLearning/data/reward_history_over_epoch", reward_history)
+    # np.save("Pong_QLearning/data/dataset", dataset)
 
-    agent1.model.save("Pong_QLearning/models/Agent_1.keras")
-    agent2.model.save("Pong_QLearning/models/Agent_2.keras")
+    # agent1.model.save("Pong_QLearning/models/Agent_1.keras")
+    # agent2.model.save("Pong_QLearning/models/Agent_2.keras")
