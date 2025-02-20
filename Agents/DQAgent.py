@@ -57,7 +57,7 @@ class DQAgent:
         rewards = np.array(rewards)
         next_states = np.array(next_states)
         X,y = self.get_train_data_from_state_vector(states, actions, rewards, next_states)
-
+        # print(y)
         if fit:
             history = self.model.fit(X,y, epochs=10, batch_size=batch_size, verbose=0)
             return 0

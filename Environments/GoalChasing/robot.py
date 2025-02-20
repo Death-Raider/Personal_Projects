@@ -14,17 +14,22 @@ class Robot:
         self.cooperation = cooperation
         self.closeness_threshold = 3
         self.view = np.zeros((self.closeness_threshold*2+1, self.closeness_threshold*2+1))
-        self.detected_robots: dict[str,list] = {
+        self.detected_robots: dict[str,list[int | tuple | Robot]] = {
             'id':[],
             'pos':[],
             'robot':[]
         }
 
-    def move(self):
+    def move(self,x_max,y_max):
         vx = self.v*np.cos(self.dir)
         vy = self.v*np.sin(self.dir)
-        self.x += vx
-        self.y += vy
+        new_x = self.x + vx
+        new_y = self.y + vy
+        if (0 <= new_x < x_max) and (0 <= new_y < y_max):
+            self.x = new_x
+            self.y = new_y
+            return True
+        return False
     
     def detect_robots(self)->list[tuple]:
         (r,c) = np.where((self.view != 0) & (self.view != self.id))
@@ -32,28 +37,50 @@ class Robot:
             for key in self.detected_robots.keys():
                 self.detected_robots[key] = []
         else: # populate the detected robots folder
-            ids_copy = self.detected_robots['id'].copy()
+            ids_copy = set(self.detected_robots['id'].copy())
+            new_ids = set()
             for x in zip(r,c):
                 id = int(self.view[*x])
                 pos = self.get_dist(x)
                 if id < 0:
                     continue
+                new_ids.add(id)
                 if id not in self.detected_robots['id']:
                     self.detected_robots['id'].append(id)
                     self.detected_robots['pos'].append(pos)
                     self.detected_robots['robot'].append(None)
                 else:
-                    # ids_copy.remove(id)
                     index = self.detected_robots['id'].index(id)
                     self.detected_robots['id'][index] = id
                     self.detected_robots['pos'][index] = pos
-            # if len(ids_copy) > 0 and len(self.detected_robots['id']) > 0:
-            #     self.detected_robots['id'].remove(ids_copy)
+
+            ids_to_remove = ids_copy.difference(new_ids) # get ids which are not in the update view
+            for id in ids_to_remove: # remove them
+                index = self.detected_robots['id'].index(id)
+                for key in self.detected_robots.keys():
+                    self.detected_robots[key].pop(index)
+
+    def get_DQL_state(self):
+        position_view = self.view.copy()
+        angle_view = self.view.copy()
+        (r,c) = np.where(self.view != 0)
+
+        for x in zip(r,c):
+            id = int(self.view[*x])
+            if id < 0:
+                continue
+            if id == self.id:
+                angle_view[*x] = self.dir
+            else:
+                index = self.detected_robots['id'].index(id)
+                angle_view[*x] = self.detected_robots['robot'][index].dir
+    
+        return np.array([position_view,angle_view]).flatten()
 
     def set_dir(self, goal):
-        goal_distance, goal_angle = self.get_dist([goal.y,goal.x])
+        goal_distance, goal_angle = self.get_dist(goal)
         self.dir = goal_angle
-        print(self.id, self.detected_robots)
+        # print(self.id, self.detected_robots)
 
     def object_avoidance_deviation_calculation(self):
         """
@@ -85,23 +112,6 @@ class Robot:
         # check the states of the robots which are close
         # determine deviation angle 
         deviation_angle = 0.2 # for example
-
-        # ---- hard coded logic part ----
-        # calculate estimated point of intersection
-        # if the intersection point lies on the line of self to self goal then do
-            # calculate time to intersection for both the robots
-            # if time is within threshold then do
-                # choose to do one of the following
-                # 1. slow down
-                # 2. speed up
-                # 3. add a deviation angle to recompute for next step
-            # else
-                # the robots will not clash
-        # else
-            # skip the robot as it is just close but not in the way
-        #
-        # ---- Q Learning part ----
-        # calculate deviation angle by q learning 
         self.dir = self.dir + deviation_angle
         return deviation_angle
 
@@ -112,7 +122,7 @@ class Robot:
         self.dir = random.random()
 
     def get_dist(self, other):
-        if isinstance(other, Robot):
+        if isinstance(other, Robot) or isinstance(other, Goal):
             x = other.x
             y = other.y
         elif isinstance(other, list) or isinstance(other, tuple):
