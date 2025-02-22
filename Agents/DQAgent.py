@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import MeanSquaredError, Huber
+from tensorflow.keras.losses import MeanSquaredError, Huber, MeanAbsoluteError
 from collections import deque
 
 class DQAgent:
@@ -17,21 +17,21 @@ class DQAgent:
 
         self.memory = deque(maxlen=max_memory)  # Experience replay buffer
 
-        self.loss_fn = Huber()
+        self.loss_fn = MeanAbsoluteError()
         self.optimizer = Adam(learning_rate=self.learning_rate)
 
     def create_model(self):
         inputs = Input(shape=(self.state_dim,))
         inputs_BN = BatchNormalization()(inputs)
-        x = Dense(units=256, activation='relu')(inputs_BN)
+        x = Dense(units=64, activation='relu')(inputs_BN)
         x = Dropout(0.4)(x)
         x = Dense(units=128, activation='relu')(x)
         x = Dropout(0.4)(x)
         x = BatchNormalization()(x)
-        x = Dense(units=10, activation='relu')(x)
+        x = Dense(units=512, activation='relu')(x)
         out = Dense(units=self.action_dim, activation='linear')(x)
         self.model = Model(inputs=inputs, outputs=out)
-        self.model.compile(loss=self.loss_fn, optimizer=self.optimizer, metrics=['accuracy'])
+        self.model.compile(loss=self.loss_fn, optimizer=self.optimizer, metrics=['mae'])
 
     def choose_action(self, state: np.ndarray):
         # print(len(state.shape))

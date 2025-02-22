@@ -40,7 +40,7 @@ class Robot:
             ids_copy = set(self.detected_robots['id'].copy())
             new_ids = set()
             for x in zip(r,c):
-                id = int(self.view[*x])
+                id = int(self.view[x[0],x[1]])
                 pos = self.get_dist(x)
                 if id < 0:
                     continue
@@ -66,14 +66,14 @@ class Robot:
         (r,c) = np.where(self.view != 0)
 
         for x in zip(r,c):
-            id = int(self.view[*x])
+            id = int(self.view[x[0],x[1]])
             if id < 0:
                 continue
             if id == self.id:
-                angle_view[*x] = self.dir
+                angle_view[x[0],x[1]] = self.dir
             else:
                 index = self.detected_robots['id'].index(id)
-                angle_view[*x] = self.detected_robots['robot'][index].dir
+                angle_view[x[0],x[1]] = self.detected_robots['robot'][index].dir
     
         return np.array([position_view,angle_view]).flatten()
 
