@@ -1,4 +1,4 @@
-# Networking Components using Python Sockets  
+# Disaster Recover and Management Server Simulation for WLAN via sockets
 
 ## **Overview**  
 This project is an exploration of network communication using Python sockets, showcasing basic networking devices such as **Hub**, **Relay/Switch**, and **Client/Server**. The primary goal is to simulate and understand the working of networking components and their communication mechanisms.  
