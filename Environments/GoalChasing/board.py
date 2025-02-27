@@ -22,7 +22,7 @@ class Board:
             thresh = int(p.closeness_threshold)
             x = int(p.x)
             y = int(p.y)
-            arr = self.board[y-thresh:y+thresh+1, x-thresh:x+thresh+1]
+            arr = self.board[np.max([y-thresh,0]):y+thresh+1, np.max([x-thresh,0]):x+thresh+1]
             new_arr = np.pad(arr, ((0,7-arr.shape[0]), (0,7-arr.shape[1])), mode='constant')
             p.view = new_arr
 
