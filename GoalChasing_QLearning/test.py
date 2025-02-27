@@ -50,33 +50,7 @@ def calculate_reward(r, g, move_success):
         reward -= 2
     return reward, distance
 
-robot_count = 4
-board_size = 20
-threshold = 3
-state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 + 4
-action_dim = 8
-SHOW = False
-EPOCHS = 600
-board = Board(board_size)
-
-# create the agents
-agents: list[DQAgent] = [
-    DQAgent(
-        state_dim=state_dim, 
-        action_dim=action_dim, 
-        lr=1e-4,
-        gamma=0.90,                    # Prioritize short-term rewards
-        epsilon_decay=0.998,           # Slower exploration decay
-        memory_size=20000, 
-        target_update_freq = 32
-    ) for i in range(robot_count)
-]
-
-robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size) for i in range(robot_count)] # randomly innitilize robots
-reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
-loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
-
-if SHOW:
+def create_figure():
     plt.ion()
     main_fig = plt.figure(figsize=(10,8))
     gs = gridspec.GridSpec(2,3,height_ratios=[1,1],width_ratios=[1,1,1])
@@ -87,6 +61,35 @@ if SHOW:
         main_fig.add_subplot(gs[1,1]),
         main_fig.add_subplot(gs[1,2])
     ]
+    return main_fig, ax1, axs
+
+robot_count = 4
+board_size = 20
+threshold = 3
+state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 + 4
+action_dim = 8
+SHOW = True
+EPOCHS = 150
+board = Board(board_size)
+
+# create the agents
+agents: list[DQAgent] = [
+    DQAgent(
+        state_dim=state_dim, 
+        action_dim=action_dim, 
+        lr=1e-3,
+        gamma=0.90,                    # Prioritize short-term rewards
+        epsilon_decay=0.998,           # Slower exploration decay
+        memory_size=20000, 
+        target_update_freq = 32
+    ) for i in range(robot_count)
+]
+
+robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size) for i in range(robot_count)] # randomly innitilize robots
+reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
+loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
+if SHOW:
+    main_fig, ax1, axs = create_figure()
 
 for epoch in range(EPOCHS):
     
@@ -96,6 +99,8 @@ for epoch in range(EPOCHS):
         board.add_robot(r,g,a)
 
     # SHOW = epoch == EPOCHS-1
+    # if SHOW:
+    #     main_fig, ax1, axs = create_figure()
     
     reset_positions(board.players, board_size)
     
@@ -220,21 +225,3 @@ for epoch in range(EPOCHS):
 
     print(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
     logger.info(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
-
-
-"""
-PLT CODE:
-main_fig = plt.figure(figsize=(10,8))
-gs = gridspec.GridSpec(2,3,height_ratios=[1,1],width_ratios=[1,1,1])
-ax1 = main_fig.add_subplot(gs[:2,0]) # main images
-axs = [
-    main_fig.add_subplot(gs[0,1]),
-    main_fig.add_subplot(gs[0,2]),
-    main_fig.add_subplot(gs[1,1]),
-    main_fig.add_subplot(gs[1,2])
-]
-axs[r.id-1].imshow(r.view, vmin=-4, vmax=4)
-axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
-ax1.imshow(board.board, vmin=-4, vmax=4)
-plt.show()
-"""

@@ -133,35 +133,8 @@ class Robot:
     def _set_dir(self, ind):
         assert -1 < ind < 8
         self.dir = ind
-    def object_avoidance_deviation_calculation(self):
-        """
-            Returns the deviation angle for the robot's direction from the optimal path.
-            This function can be replaced by a DQL agent to return the angle as an action.
-            Angle "a" is a float from 0 to 2*pi and for calculations can be used as an int from 0 to 360.
-            
-            We can also use another action space (8 movements corresponding to the possible pixel movements)
-            ----------------
-            | ul |  u | ur |
-            ----------------
-            |  l |  x |  r |
-            ----------------
-            | dl |  d | dr |
-            ----------------
-            if the goal direction path exists from current pos then we want to move to the pixel which follows that path
-            We can add a reward/punishment for deviation based on current state of the "view" and "detected_robots".
-            This can also quantize direction into 8 values but then direction is more dynamic for intermediate values like 110 degrees
-            r = 0/360
-            ur = 45
-            u = 90
-            ul = 135
-            l = 180
-            dl = 225
-            d = 270
-            dr = 315
 
-        """
-        # check the states of the robots which are close
-        # determine deviation angle 
+    def object_avoidance_deviation_calculation(self):
         deviation_angle = 2 # for example
         self.dir = deviation_angle
         return deviation_angle
