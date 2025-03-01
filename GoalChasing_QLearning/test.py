@@ -33,7 +33,7 @@ def reset_positions(players, board_size):
         while r.get_dist(g)[0] < board_size*0.50:
             g.set_random_goal(board_size, board_size)
 
-def calculate_reward(r, g, move_success):
+def calculate_reward(r: Robot, g: Goal, move_success):
     distance = r.get_dist(g)[0] # get_dist return [distance, angle(in radian)]
     angle_dir = r.DIR_ANGLES[r.dir]*np.pi/180
 
@@ -41,14 +41,26 @@ def calculate_reward(r, g, move_success):
     
     # Primary reward components
     reward = 1 * (1/distance)  # Distance incentive
-    reward += 4.0 if distance < 1.0 else 0  # Success bonus
     reward += 1 * np.cos(angle_error)  # Direction alignment
     reward -= 0.1  # Step penalty
     
     # Collision/behavior penalties
     if not move_success:
         reward -= 2
-    return reward, distance
+    # Best case reward value:
+    # min number of iter = -0.1*10 = -1    # step penalty 
+    # always decreasing distance 1/10+1/9+1/8+1/7+1/6+1/5+1/4+1/3+1/2    # distance incentive
+    # always moving in correct direction = 1*10    # direction alignment
+    # total reward = -1 + 1.9289 + 10 = 10.9289
+    # average reward over the episode = 10.9289 / 10 = 1.09289
+
+    for i,r_o in enumerate(r.detected_robots['robot']):
+        if r.detected_robots['pos'][i][0] < r.closeness_threshold/2:
+            reward -= 0.1
+        ro_angle = r_o.DIR_ANGLES[r_o.dir]*np.pi/180
+        angle_diff = np.abs(angle_dir - ro_angle) - 1.5
+        reward += 0.2 - 0.2/(1+np.exp(-2*angle_diff))
+    return reward
 
 def create_figure():
     plt.ion()
@@ -66,9 +78,9 @@ def create_figure():
 robot_count = 4
 board_size = 20
 threshold = 3
-state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 + 4
+state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 
 action_dim = 8
-SHOW = True
+SHOW = False
 EPOCHS = 150
 board = Board(board_size)
 
@@ -98,9 +110,9 @@ for epoch in range(EPOCHS):
         a = agents[i]
         board.add_robot(r,g,a)
 
-    # SHOW = epoch == EPOCHS-1
-    # if SHOW:
-    #     main_fig, ax1, axs = create_figure()
+    SHOW = epoch == EPOCHS-1
+    if SHOW:
+        main_fig, ax1, axs = create_figure()
     
     reset_positions(board.players, board_size)
     
@@ -116,7 +128,7 @@ for epoch in range(EPOCHS):
         r.detect_robots()  # detect which robots are in the view
         for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view 
             r.detected_robots["robot"][j] = board.get_robot_by_id(r.detected_robots['id'][j])
-        curr_state = r.get_DQL_state(g, board_size)
+        curr_state = r.get_DQL_state(g)
         curr_states.append(curr_state)
     # print("Step 1 done")
 
@@ -126,7 +138,6 @@ for epoch in range(EPOCHS):
     iter_time_start = time.time()
     done = False
     while not done:
-        prev_distances = [r.get_dist(g)[0] for [r, g, a] in board.players]
         # 2. choose their action
         actions = []
         for i,[r,g,a] in enumerate(board.players):
@@ -153,20 +164,20 @@ for epoch in range(EPOCHS):
         new_states = []
         for i,[r,g,a] in enumerate(board.players):
             r.detect_robots()  # detect which robots are in the view
-            for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view 
+
+            for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view
                 r.detected_robots["robot"][j] = board.get_robot_by_id(r.detected_robots['id'][j])
-            new_state = r.get_DQL_state(g, board_size)
+
+            new_state = r.get_DQL_state(g)
             new_states.append(new_state)
         # print("Step 5 done")
 
         # 6. compute the reward
         rewards = []
-        new_distances = []
         for i,[r,g,a] in enumerate(board.players):
             if not isinstance(reward_dataset[r.id-1][epoch],list):
                 reward_dataset[r.id-1][epoch] = []
-            reward, new_dist = calculate_reward(r,g,move_success[i])
-            new_distances.append(new_dist)
+            reward = calculate_reward(r,g,move_success[i])
             rewards.append(reward)
             reward_dataset[r.id-1][epoch].append(reward)
         # print("Step 6 done", rewards)
@@ -193,12 +204,12 @@ for epoch in range(EPOCHS):
         # print(iter, len(board.players))
         if SHOW:
             for [r,g,a] in board.players:
-                axs[r.id-1].imshow(r.view, vmin=-4, vmax=4)
-                # axs[r.id-1].plot(range(iter)[-100:],loss_dataset[r.id-1][epoch][-100:])
-                # axs[r.id-1].plot(range(iter)[-100:],reward_dataset[r.id-1][epoch][-100:])
+                # axs[r.id-1].imshow(r.view, vmin=-4, vmax=4)
+                axs[r.id-1].plot(range(iter)[-100:],loss_dataset[r.id-1][epoch][-100:])
+                axs[r.id-1].plot(range(iter)[-100:],reward_dataset[r.id-1][epoch][-100:])
                 axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
                 ax1.imshow(board.board, vmin=-4, vmax=4)
-            plt.pause(0.01)
+            plt.pause(0.5)
             for [r,g,a] in board.players:
                 axs[r.id-1].cla()
             ax1.cla()

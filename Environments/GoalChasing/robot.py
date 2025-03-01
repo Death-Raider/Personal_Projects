@@ -14,6 +14,8 @@ class Robot:
         self.cooperation = cooperation
         self.closeness_threshold = 3
         self.view = np.zeros((self.closeness_threshold*2+1, self.closeness_threshold*2+1))
+        self.dist_view = self.view.copy()
+        self.angle_view = self.view.copy()
         self.detected_robots: dict[str,list[int | tuple | Robot]] = {
             'id':[],
             'pos':[],
@@ -48,7 +50,7 @@ class Robot:
                 id = int(self.view[x[0],x[1]])
                 pos = [
                     np.hypot(x[0]-self.closeness_threshold, x[1]-self.closeness_threshold),
-                    self._set_angle(*x, self.closeness_threshold, self.closeness_threshold)
+                    self._set_angle(self.closeness_threshold, self.closeness_threshold, *x)
                 ]
                 # pos = self.get_dist(x)  # error
                 if id < 0:
@@ -69,9 +71,9 @@ class Robot:
                 for key in self.detected_robots.keys():
                     self.detected_robots[key].pop(index)
 
-    def get_DQL_state(self, goal: Goal, board_size):
-        position_view = self.view.copy()
-        angle_view = self.view.copy()
+    def get_DQL_state(self, goal: Goal):
+        self.dist_view = self.view.copy()
+        self.angle_view = np.zeros_like(self.view)
         (r,c) = np.where(self.view != 0)
         
         for x in zip(r,c):
@@ -79,28 +81,21 @@ class Robot:
             if id < 0:
                 continue
             if id == self.id:
-                angle_view[x[0],x[1]] = self.DIR_ANGLES[self.dir] * np.pi/180
+                self.angle_view[x[0],x[1]] = self.DIR_ANGLES[self.dir] * np.pi/180
             else:
                 index = self.detected_robots['id'].index(id)
                 other_dir = self.detected_robots['robot'][index].dir
-                angle_view[x[0],x[1]] = self.DIR_ANGLES[other_dir] * np.pi/180
+                self.angle_view[x[0],x[1]] = self.DIR_ANGLES[other_dir] * np.pi/180
     
         # Add relative goal position (dx, dy) and wall proximity
         goal_dx = goal.x - self.x  # Assuming `self.goal` is accessible
         goal_dy = goal.y - self.y
-        wall_proximity = [
-            self.x < self.closeness_threshold,                   # Near left wall
-            self.y < self.closeness_threshold,                   # Near top wall
-            (board_size - self.x) < self.closeness_threshold,    # Near right wall
-            (board_size - self.y) < self.closeness_threshold     # Near bottom wall
-        ]
         
         # Flatten and concatenate features
-        view_features = np.array([position_view, angle_view]).flatten()
+        view_features = np.array([self.dist_view, self.angle_view]).flatten()
         goal_features = np.array([goal_dx, goal_dy])
-        wall_features = np.array(wall_proximity, dtype=np.float32)
         
-        return np.concatenate([view_features, goal_features, wall_features])
+        return np.concatenate([view_features, goal_features])
 
     def set_random_init_state(self, max_x, max_y):
         self.x = random.randint(0,max_x-1)
@@ -119,9 +114,6 @@ class Robot:
             raise ValueError("Operand not of type list or Robot.")
         dist = np.hypot(self.x - x, self.y - y)
         angle = self._set_angle(self.y,self.x, y,x)
-        # angle = np.arctan2(y - self.y, x - self.x)
-        # if angle < 0:
-        #     angle += 2*np.pi
         return dist, angle
     
     def _set_angle(self, y1,x1, y2,x2):
@@ -191,31 +183,3 @@ class Robot:
             self.y -= other
         else:
             raise ValueError("Operand not of type list, int or float.")
-        
-if __name__ == '__main__':
-
-    r1 = Robot(
-        id=1,
-        x=2,
-        y=1,
-        a=0,
-        v=1,
-        dir=[0,0,1,0,0,0,0,0]
-    )
-    r2 = Robot(
-        id=2,
-        x=2,
-        y=1,
-        a=0,
-        v=1,
-        dir=[0,0,0,0,0,1,0,0]
-    )
-    r1.move(10,10)
-    print(r1.x,r1.y)
-    r1.view[r1.closeness_threshold,r1.closeness_threshold] = 1
-    r1.view[r1.closeness_threshold+1,r1.closeness_threshold] = 2
-    r1.detect_robots()
-    r1.detected_robots['robot'][0] = r2
-    print(r1.detected_robots)
-    print(r1.view)
-    print(r1.get_DQL_state().reshape((2,7,7)))
