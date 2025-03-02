@@ -82,10 +82,12 @@ class Robot:
                 continue
             if id == self.id:
                 self.angle_view[x[0],x[1]] = self.DIR_ANGLES[self.dir] * np.pi/180
+                self.dist_view[x[0],x[1]] = 0
             else:
                 index = self.detected_robots['id'].index(id)
                 other_dir = self.detected_robots['robot'][index].dir
                 self.angle_view[x[0],x[1]] = self.DIR_ANGLES[other_dir] * np.pi/180
+                self.dist_view[x[0],x[1]] = self.get_dist(self.detected_robots['robot'][index])[0]
     
         # Add relative goal position (dx, dy) and wall proximity
         goal_dx = goal.x - self.x  # Assuming `self.goal` is accessible

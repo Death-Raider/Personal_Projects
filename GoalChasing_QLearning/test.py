@@ -40,48 +40,71 @@ def calculate_reward(r: Robot, g: Goal, move_success):
     angle_error = abs(r.get_dist(g)[1] - angle_dir) % (2*np.pi)
     
     # Primary reward components
-    reward = 1 * (1/distance)  # Distance incentive
+    reward = 2 * (1/distance)  # Distance incentive
+    reward += 4 if distance < 1.3 else 0  # Distance incentive
     reward += 1 * np.cos(angle_error)  # Direction alignment
-    reward -= 0.1  # Step penalty
+    reward -= 0.3  # Step penalty
     
     # Collision/behavior penalties
     if not move_success:
         reward -= 2
-    # Best case reward value:
-    # min number of iter = -0.1*10 = -1    # step penalty 
-    # always decreasing distance 1/10+1/9+1/8+1/7+1/6+1/5+1/4+1/3+1/2    # distance incentive
-    # always moving in correct direction = 1*10    # direction alignment
-    # total reward = -1 + 1.9289 + 10 = 10.9289
-    # average reward over the episode = 10.9289 / 10 = 1.09289
 
+    # ---------- collision avoidance policy ----------------- #
     for i,r_o in enumerate(r.detected_robots['robot']):
         if r.detected_robots['pos'][i][0] < r.closeness_threshold/2:
-            reward -= 0.1
+            reward -= 0.3
         ro_angle = r_o.DIR_ANGLES[r_o.dir]*np.pi/180
-        angle_diff = np.abs(angle_dir - ro_angle) - 1.5
-        reward += 0.2 - 0.2/(1+np.exp(-2*angle_diff))
+        angle_diff = np.abs(angle_dir - ro_angle) % (2*np.pi)
+        reward += np.cos(angle_diff/2)**2
+
+    # Best case reward value:
+    # best case steps on average = 15
+    # min number of iter penalty = -0.3*15 = -4.5    # step penalty 
+    # always decreasing distance 2*(sum from n=2 to 15 of 1/n) = 4.63645798646    # distance incentive
+    # always moving in correct direction = 1*15    # direction alignment
+    # colloision avoidance: 
+    #       1. No robot is too close = 15 * -0.3 * 2 = -9   # average 2 robots whicha are close
+    #       2. detected robots are only moving in similar direction to self = 10 * 1 * 2*integral from 0 to 1 of cos^2(x/2) dx = 27.6220647721  # +/- 57 degree variation
+    # total reward = 33.7585227586
+    # average reward over the episode = 33.7585227586 / 15 = 2.25056818391
+
     return reward
 
-def create_figure():
+def create_figure(robot_count):
+    """
+        create the template figure and returns the proper axis for all the robots and the board.
+        first column and first two rows are for the board. Rest are for robots
+        
+        Returns figure, board axis, list of robot axis
+    """
+
+    total_boxes = robot_count + 2 # plus two for the main board rowspan
+    row_count = int(np.ceil(np.sqrt(total_boxes)))
+    col_count = row_count
+    print("grid size = ",row_count,col_count)
     plt.ion()
-    main_fig = plt.figure(figsize=(10,8))
-    gs = gridspec.GridSpec(2,3,height_ratios=[1,1],width_ratios=[1,1,1])
+    main_fig = plt.figure(figsize=(20,20))
+    gs = gridspec.GridSpec(row_count,col_count)
     ax1 = main_fig.add_subplot(gs[:2,0]) # main images
-    axs = [
-        main_fig.add_subplot(gs[0,1]),
-        main_fig.add_subplot(gs[0,2]),
-        main_fig.add_subplot(gs[1,1]),
-        main_fig.add_subplot(gs[1,2])
-    ]
+    axs = []
+    for i in range(row_count):
+        for j in range(col_count):
+            if (i in (0,1)) and (j == 0): # reserved for the board axis
+                continue
+            ax = main_fig.add_subplot(gs[i, j])
+            axs.append(ax)
     return main_fig, ax1, axs
 
-robot_count = 4
+robot_count = 10
 board_size = 20
 threshold = 3
 state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 
 action_dim = 8
 SHOW = False
-EPOCHS = 150
+SHOW_LAST_EPOCH = False
+TRAIN = False
+LOAD_MODEL = False
+EPOCHS = 300
 board = Board(board_size)
 
 # create the agents
@@ -89,9 +112,9 @@ agents: list[DQAgent] = [
     DQAgent(
         state_dim=state_dim, 
         action_dim=action_dim, 
-        lr=1e-3,
+        lr=1e-4,
         gamma=0.90,                    # Prioritize short-term rewards
-        epsilon_decay=0.998,           # Slower exploration decay
+        epsilon_decay=0.9998,           # Slower exploration decay
         memory_size=20000, 
         target_update_freq = 32
     ) for i in range(robot_count)
@@ -101,7 +124,7 @@ robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size) for i in
 reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
 loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
 if SHOW:
-    main_fig, ax1, axs = create_figure()
+    main_fig, ax1, axs = create_figure(robot_count)
 
 for epoch in range(EPOCHS):
     
@@ -110,9 +133,9 @@ for epoch in range(EPOCHS):
         a = agents[i]
         board.add_robot(r,g,a)
 
-    SHOW = epoch == EPOCHS-1
-    if SHOW:
-        main_fig, ax1, axs = create_figure()
+    # SHOW = epoch == EPOCHS-1
+    # if SHOW:
+    #     main_fig, ax1, axs = create_figure(robot_count)
     
     reset_positions(board.players, board_size)
     
@@ -188,7 +211,7 @@ for epoch in range(EPOCHS):
                 loss_dataset[r.id-1][epoch] = []
             done = (len(board.players) == 0)
             a.remember(curr_states[i], actions[i], rewards[i], new_states[i], done)
-            loss = a.replay(batch_size=64)
+            loss = a.replay(batch_size=128)
             loss_dataset[r.id-1][epoch].append(loss)
 
         if iter > 3000 or (len(board.players) == 0):
@@ -204,11 +227,11 @@ for epoch in range(EPOCHS):
         # print(iter, len(board.players))
         if SHOW:
             for [r,g,a] in board.players:
-                # axs[r.id-1].imshow(r.view, vmin=-4, vmax=4)
+                # axs[r.id-1].imshow(r.view, vmin=-robot_count, vmax=robot_count)
                 axs[r.id-1].plot(range(iter)[-100:],loss_dataset[r.id-1][epoch][-100:])
                 axs[r.id-1].plot(range(iter)[-100:],reward_dataset[r.id-1][epoch][-100:])
                 axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
-                ax1.imshow(board.board, vmin=-4, vmax=4)
+                ax1.imshow(board.board, vmin=-robot_count, vmax=robot_count)
             plt.pause(0.5)
             for [r,g,a] in board.players:
                 axs[r.id-1].cla()

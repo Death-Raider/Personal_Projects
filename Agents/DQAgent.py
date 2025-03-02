@@ -5,6 +5,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, BatchNormalization, Dropout
 from tensorflow.keras.optimizers import Adam
+import keras
 
 class DQAgent:
     def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.995, memory_size=2000, batch_size=32, target_update_freq=100):
@@ -34,6 +35,18 @@ class DQAgent:
         x = Dense(32, activation='relu')(x)
         outputs = Dense(self.action_dim, activation='linear')(x)
         return Model(inputs=inputs, outputs=outputs)
+    
+    def save_model(self,directory):
+        if directory[-1] == '/':
+            directory = directory[:-1]
+        self.target_model.save(directory+"/target_model.keras")
+        self.model.save(directory+"/model.keras")
+    
+    def load_model(self, directory):
+        if directory[-1] == '/':
+            directory = directory[:-1]
+        self.target_model = keras.saving.load_model(directory+"/target_model.keras")
+        self.model = keras.saving.load_model(directory+"/model.keras")
 
     def update_target_network(self):
         self.target_model.set_weights(self.model.get_weights())
