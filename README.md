@@ -2,6 +2,20 @@
 
 Welcome to my Personal Projects repository! This repository serves as an organized collection of diverse projects I have worked on, with each project stored in its own branch. The **main branch** acts as a table of contents to provide a quick overview and direct links to the individual project branches.
 
+
+<br>
+<br>
+
+# **How to Use This Repository**
+1. Browse the main branch to explore the project descriptions.
+2. Click on the project links to navigate directly to the corresponding branch.
+3. Clone the desired branch to your local machine to explore its contents:
+   ```
+   git clone -b <branch_name> https://github.com/Death-Raider/Personal_Projects.git
+   ```
+
+Feel free to explore, use, and contribute to any of these projects! 😊
+
 <br>
 <br>
 
@@ -55,6 +69,9 @@ An exploration of network communication using Python sockets. Includes example n
 ### 9. [Minecraft Segmentation](https://github.com/Death-Raider/Personal_Projects/tree/Minecraft-Segmentation)
 A computer vision project focused on segmenting objects in Minecraft screenshots. It include automating in-game tasks and building AI agents for Minecraft environments.
 - Rename branch to minecraft segmentation and automation agent
+
+### 10. [Pong-QAgent](https://github.com/Death-Raider/Personal_Projects/tree/Pong-Agent)
+Implemented one-shot Q-Learning on the game Pong to train the agents to play against each other to achieve the highest score.
 
 ---
 
@@ -164,22 +181,8 @@ Projects utilizing the Robot Operating System (ROS) for robotic applications. Cr
 ### 10. [Partial Differential Equation Modeling](https://github.com/Death-Raider/Personal_Projects/tree/Partial_Differential_Equation_Modeling)
 A mathematical modeling project focused on solving partial differential equations to simulate real-world phenomena like heat transfer, fluid dynamics, and wave propagation. Implemented in JavaScript and supports creation of solution graph.
 
-### 11. [Pong-QAgent](https://github.com/Death-Raider/Personal_Projects/tree/Pong-Agent)
-Implemented one-shot Q-Learning on the game Pong to train the agents to play against each other to achieve the highest score.
-
+### 11. [MetaTrader5 Python Auto Trader](https://github.com/Death-Raider/Personal_Projects/tree/MetaTrader5_autotrader)
+A mathematical modeling project focused on solving partial differential equations to simulate real-world phenomena like heat transfer, fluid dynamics, and wave propagation. Implemented in JavaScript and supports creation of solution graph.
 ---
 
-
-<br>
-<br>
-
-# **How to Use This Repository**
-1. Browse the main branch to explore the project descriptions.
-2. Click on the project links to navigate directly to the corresponding branch.
-3. Clone the desired branch to your local machine to explore its contents:
-   ```
-   git clone -b <branch_name> https://github.com/Death-Raider/Personal_Projects.git
-   ```
-
-Feel free to explore, use, and contribute to any of these projects! 😊
 
