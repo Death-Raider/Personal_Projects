@@ -21,27 +21,71 @@ def bollbands(df: pd.DataFrame, period: int):
     df.fillna(method='bfill', inplace=True)
     return df
 
-def get_signal(df: pd.DataFrame, thresh: list[int] = [80,20]) -> pd.DataFrame:
+def get_signal_combined(df: pd.DataFrame, thresh: list[int] = [80, 20]) -> pd.DataFrame:
+    df = df.copy()  # avoid modifying original
     df['signal'] = 0
-    df.loc[(df['close'] > df['upper_band']), 'signal'] = -1  # Sell signal
-    df.loc[(df['close'] < df['lower_band']), 'signal'] = 1   # Buy signal
-    df['signal'] = np.where(
-        df['signal'] == 0,
-        np.where(
-            np.logical_and(
-                (df['kdj_k'] - df['kdj_d']) > 0, 
-                (df['kdj_j'] > (thresh[1] - 5)) & (df['kdj_j'] < (thresh[1] + 5))
-            ), 
-            1,
-            np.where(
-                np.logical_and(
-                    (df['kdj_k'] - df['kdj_d']) < 0,
-                    (df['kdj_j'] > (thresh[0] - 5)) & (df['kdj_j'] < (thresh[0] + 5))
-                ), 
-                -1, 
-                0
-            )
-        ),
-        df['signal']
+
+    # Conditions for Bollinger Bands
+    bb_sell = df['close'] > df['upper_band']
+    bb_buy = df['close'] < df['lower_band']
+
+    # Conditions for KDJ
+    kdj_buy = (
+        (df['kdj_k'] > df['kdj_d']) &
+        (df['kdj_j'] > (thresh[1] - 5)) &
+        (df['kdj_j'] < (thresh[1] + 5))
     )
+    kdj_sell = (
+        (df['kdj_k'] < df['kdj_d']) &
+        (df['kdj_j'] > (thresh[0] - 5)) &
+        (df['kdj_j'] < (thresh[0] + 5))
+    )
+
+    # Combined Signal
+    df.loc[bb_sell & kdj_sell, 'signal'] = -1  # Sell only if BOTH BB & KDJ say sell
+    df.loc[bb_buy | kdj_buy, 'signal'] = 1     # Buy only if BOTH BB & KDJ say buy
+
     return df
+
+def backtest(df: pd.DataFrame, hold_period) -> pd.DataFrame:
+    trades = []
+
+    for idx, row in df.iterrows():
+        signal = row['signal']
+        if signal == 0:
+            continue
+        
+        entry_price = row['close']
+        entry_time = row['time']
+        
+        # Find exit candle
+        exit_idx = idx + hold_period
+        if exit_idx >= len(df):
+            break
+
+        exit_price = df.loc[exit_idx, 'close']
+        exit_time = df.loc[exit_idx, 'time']
+
+        # Calculate PnL
+        if signal == 1:  # Buy
+            profit = (exit_price - entry_price)
+        elif signal == -1:  # Sell
+            profit = (entry_price - exit_price)
+
+        trades.append({
+            'entry_time': entry_time,
+            'exit_time': exit_time,
+            'signal': signal,
+            'entry_price': entry_price,
+            'exit_price': exit_price,
+            'profit_usd': profit
+        })
+
+    # Create a trades DataFrame
+    trades_df = pd.DataFrame(trades)
+
+    # Results
+    total_profit = trades_df['profit_usd'].sum()
+    win_rate = (trades_df['profit_usd'] > 0).mean()
+
+    return trades_df, total_profit, win_rate
