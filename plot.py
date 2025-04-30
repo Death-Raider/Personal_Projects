@@ -53,14 +53,18 @@ def highlight_sessions(ax1, row, width):
             color=session_color,
             alpha=0.2  # Make the box translucent
         ))
-
-def create_chart(df):
+def init_plot(symbol, count, timeframe):
     fig = plt.figure(figsize=(10, 8))
     gs = fig.add_gridspec(nrows=4, ncols=1)
     ax1 = fig.add_subplot(gs[0:3, 0])
     ax2 = fig.add_subplot(gs[3, 0], sharex=ax1)
-    ax1.set_ylim(df['lower_band'].min() - 10, df['upper_band'].max() + 10)
-    
+    ax11 = ax1.twinx()
+    ax1.set_title(f"{symbol} - Last {count} {timeframe} Candles", fontsize=16)
+    ax1.set_xlabel("Time")
+    ax1.set_ylabel("Price")
+    return ax1, ax2, ax11
+
+def create_chart(df, ax1, ax2)->None:
     width = 0.6
     for idx, row in df.iterrows():
         x = row['index']
@@ -80,32 +84,23 @@ def create_chart(df):
             width,
             height,
             color=color,
-            edgecolor='black'
         )
         ax1.add_patch(rect)
         highlight_sessions(ax1, row, width)  # Highlight sessions
-    return ax1,ax2
 
-def plot_df(df, ax1, ax2, symbol, count):
+def plot_df(df, ax1, ax2, ax11)->None:
     valid = df.dropna()
     ax1.plot(valid['index'], valid['middle_band'], label='Middle Band (SMA)', color='blue', linewidth=1.5)
     ax1.plot(valid['index'], valid['upper_band'], label='Upper Band', color='purple', linestyle='--', linewidth=1)
     ax1.plot(valid['index'], valid['lower_band'], label='Lower Band', color='purple', linestyle='--', linewidth=1)
-    ax11 = ax1.twinx()
     ax11.plot(valid['index'], valid['signal'], label='Signal', color='orange', linestyle='--', linewidth=1)
 
     ax2.plot(df['index'], df['kdj_k'], label='k', color='yellow', linestyle='-', linewidth=1)
     ax2.plot(df['index'], df['kdj_d'], label='d', color='orange', linestyle='-', linewidth=1)
     ax2.plot(df['index'], df['kdj_j'], label='j', color='skyblue', linestyle='-', linewidth=1)
-    ax2.set_xticks(df['index'][::5])
     # ax[0].set_xticklabels(df['time'].dt.strftime('%Y-%m-%d %H:%M')[::5], rotation=45)
-
-    ax1.set_title(f"{symbol} - Last {count} H1 Candles", fontsize=16)
-    ax1.set_xlabel("Time")
-    ax1.set_ylabel("Price")
     plt.setp(ax1.get_xticklabels(), visible=False)
 
     plt.grid(True)
     plt.tight_layout()
-
-    plt.show()
+    return ax1, ax2, ax11,

@@ -4,18 +4,17 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 from intermediate.strats import bollbands, KDJ, backtest, get_signal_combined
-from plot import plot_df, create_chart, get_session
+from plot import plot_df, create_chart, get_session, init_plot
 
 if not mt5.initialize():
     print("Failed to initialize MT5:", mt5.last_error())
     exit()
 
 symbol = "XAUUSD"
-timeframe = mt5.TIMEFRAME_M10
-start_pos = 1
-count = 70000
+timeframe = mt5.TIMEFRAME_M5
+start_pos = 0
+count = int(2880)  # 1 days of data at 1-minute intervals
 
 rates = mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count)
 mt5.shutdown()
@@ -24,8 +23,9 @@ df = pd.DataFrame(rates)
 df['time'] = pd.to_datetime(df['time'], unit='s')
 df = bollbands(df, period=20)
 df = KDJ(df, period=14, k_smooth=3, d_smooth=10)
-# df = get_signal(df, thresh=[80, 20])
 df = get_signal_combined(df, thresh=[80, 30])
+df = df.iloc[:].copy()
+print(df)
 df.reset_index(inplace=True)
 
 total_profits = []
@@ -33,7 +33,7 @@ win_rates = []
 total_trades: list[pd.DataFrame] = []
 for hold_period in np.arange(1, 20):
     t0 = time.time()
-    trades, total_profit, win_rate = backtest(df, hold_period)
+    trades, total_profit, win_rate = backtest(df, hold_period,3,5)
     total_profits.append(total_profit)
     win_rates.append(win_rate)
     total_trades.append(trades)
@@ -50,6 +50,7 @@ confusion_matrix = np.zeros((3, 3), dtype=int)
 profit_loss_matrix = np.zeros((3, 3), dtype=float)
 # Rows: actual signal [0, 1, -1]
 # Columns: [neutral (0), profitable (1), loss (-1)]
+print(max_trader)
 for idx, row in max_trader.iterrows():
     sig = row['signal']
     prof = row['profit_usd']
@@ -95,6 +96,14 @@ plt.title('Cummulative profits vs Trades')
 plt.xlabel('Trades')
 plt.show()
 
-# df['sessions'] = df['time'].dt.hour.apply(get_session)
-# plot_df(df, *create_chart(df), symbol, count)
+total_trades[np.argmax(total_profits)].to_csv('backtest_trades.csv', index=False)
+print(total_trades[np.argmax(total_profits)].describe())
 
+df['sessions'] = df['time'].dt.hour.apply(get_session)
+ax1,ax2,ax11 = init_plot(symbol, 100, 'M5')
+ax1.set_ylim(df['lower_band'].min() - 10, df['upper_band'].max() + 10)
+create_chart(df, ax1, ax2)
+ax1, ax2, ax11 = plot_df(df, ax1, ax2, ax11)
+ax2.plot(df['index'], 0*np.ones(len(df)), label='lower_thresh', color='green', linestyle='--', linewidth=1)
+ax2.plot(df['index'], 100*np.ones(len(df)), label='lower_thresh', color='red', linestyle='--', linewidth=1)
+plt.show()
