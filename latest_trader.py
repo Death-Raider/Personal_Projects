@@ -136,7 +136,7 @@ try:
             if not position:
                 print("Position closed or not found.")
                 open_trade_ticket = None
-                prev_time = None
+                # prev_time = None
                 open_trade_time = None
                 continue
 
