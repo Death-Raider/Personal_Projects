@@ -59,30 +59,27 @@ def get_signal_combined(df: pd.DataFrame, thresh: list[int] = [80, 20]) -> pd.Da
 
     # ---- Combined Strategy ----
     df.loc[(bb_buy | (kdj_buy_cross | j_cross_up)), 'signal'] = 1    # Strong Buy
-    df.loc[(bb_sell & ( kdj_sell_cross | j_cross_down)), 'signal'] = -1  # Strong Sell
+    df.loc[(bb_sell | ( kdj_sell_cross | j_cross_down)), 'signal'] = -1  # Strong Sell
 
     return df
 
 
 def backtest(df: pd.DataFrame, hold_period: int, sl_dollars: float = None, tp_dollars: float = None):
     trades = []
-    idx = 0
+    idx = 1  # Start at 1 to allow look-back
     in_trade = False
-    max_drawdown = max_drawup = 0
 
-    while idx < len(df):
+    while idx < len(df) - 1:
         if not in_trade:
-            max_drawdown = max_drawup = 0
-            signal = df.loc[idx, 'signal']
-
+            signal = df.loc[idx - 1, 'signal']  # <- use signal from PREVIOUS candle (like live)
             if signal == 0:
                 idx += 1
                 continue
 
-            entry_price = df.loc[idx, 'close']
+            entry_price = df.loc[idx-1, 'close']  # Enter trade at next candle open
             entry_time = df.loc[idx, 'time']
 
-            # Set SL/TP prices
+            # Setup SL/TP
             sl_price = tp_price = None
             if sl_dollars is not None and tp_dollars is not None:
                 if signal == 1:
@@ -92,17 +89,16 @@ def backtest(df: pd.DataFrame, hold_period: int, sl_dollars: float = None, tp_do
                     sl_price = entry_price + sl_dollars
                     tp_price = entry_price - tp_dollars
 
-            in_trade = True
             trade_start_idx = idx
+            in_trade = True
             idx += 1
             continue
 
-        # Determine trade exit point
+        # Check exit by hold period
         exit_idx = trade_start_idx + hold_period
-        if idx > exit_idx or idx >= len(df):
-            exit_idx = min(exit_idx, len(df) - 1)
-            exit_price = df.loc[exit_idx, 'close']
-            exit_time = df.loc[exit_idx, 'time']
+        if idx >= exit_idx or idx >= len(df):
+            exit_price = df.loc[min(idx, len(df)-1), 'close']
+            exit_time = df.loc[min(idx, len(df)-1), 'time']
             profit = (exit_price - entry_price) if signal == 1 else (entry_price - exit_price)
 
             trades.append({
@@ -112,25 +108,23 @@ def backtest(df: pd.DataFrame, hold_period: int, sl_dollars: float = None, tp_do
                 'entry_price': entry_price,
                 'exit_price': exit_price,
                 'profit_usd': profit,
-                'max_drawdown': max_drawdown,
-                'max_drawup': max_drawup
             })
 
             in_trade = False
-            idx = exit_idx
+            idx = exit_idx  # move ahead
             continue
 
-        # Check for SL/TP hit during the trade
-        close_price = df.loc[idx, 'close']
+        # SL/TP logic using high/low
+        high = df.loc[idx, 'high']
+        low = df.loc[idx, 'low']
 
-        hit_sl = sl_price is not None and (
-            (signal == 1 and close_price <= sl_price) or
-            (signal == -1 and close_price >= sl_price)
-        )
-        hit_tp = tp_price is not None and (
-            (signal == 1 and close_price >= tp_price) or
-            (signal == -1 and close_price <= tp_price)
-        )
+        hit_sl = hit_tp = False
+        if signal == 1:
+            hit_tp = tp_price is not None and high >= tp_price
+            hit_sl = sl_price is not None and low <= sl_price
+        else:
+            hit_tp = tp_price is not None and low <= tp_price
+            hit_sl = sl_price is not None and high >= sl_price
 
         if hit_sl or hit_tp:
             exit_price = sl_price if hit_sl else tp_price
@@ -144,31 +138,22 @@ def backtest(df: pd.DataFrame, hold_period: int, sl_dollars: float = None, tp_do
                 'entry_price': entry_price,
                 'exit_price': exit_price,
                 'profit_usd': profit,
-                'max_drawdown': max_drawdown,
-                'max_drawup': max_drawup
             })
 
             in_trade = False
             idx += 1
             continue
 
-        # Track drawdown and drawup
-        draw_value = close_price - entry_price if signal == 1 else entry_price - close_price
-        max_drawdown = min(max_drawdown, draw_value)
-        max_drawup = max(max_drawup, draw_value)
-
         idx += 1
 
-    # Compile results
     trades_df = pd.DataFrame(trades)
     if not trades_df.empty:
-        trades_df['max_drawdown'] = trades_df['max_drawdown'].abs()
-        trades_df['drawup_drawdown_ratio'] = trades_df['max_drawup'] / (trades_df['max_drawdown'] + 0.1)
         total_profit = trades_df['profit_usd'].sum()
         win_rate = (trades_df['profit_usd'] > 0).mean()
     else:
         total_profit = win_rate = 0
 
     return trades_df, total_profit, win_rate
+
 
 

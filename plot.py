@@ -86,15 +86,18 @@ def create_chart(df, ax1, ax2)->None:
             color=color,
         )
         ax1.add_patch(rect)
-        highlight_sessions(ax1, row, width)  # Highlight sessions
+        if 'sessions' in row:
+            highlight_sessions(ax1, row, width)  # Highlight sessions
 
 def plot_df(df, ax1, ax2, ax11)->None:
     valid = df.dropna()
     ax1.plot(valid['index'], valid['middle_band'], label='Middle Band (SMA)', color='blue', linewidth=1.5)
     ax1.plot(valid['index'], valid['upper_band'], label='Upper Band', color='purple', linestyle='--', linewidth=1)
     ax1.plot(valid['index'], valid['lower_band'], label='Lower Band', color='purple', linestyle='--', linewidth=1)
-    ax11.plot(valid['index'], valid['signal'], label='Signal', color='orange', linestyle='--', linewidth=1)
-
+    if 'signal' in valid.columns:
+        ax11.plot(valid['index'], valid['signal'], label='Signal', color='orange', linestyle='--', linewidth=1)
+    if 'bias' in valid.columns:
+        ax11.plot(valid['index'], valid['bias'], label='Bias', color='red', linestyle='--', linewidth=1)
     ax2.plot(df['index'], df['kdj_k'], label='k', color='yellow', linestyle='-', linewidth=1)
     ax2.plot(df['index'], df['kdj_d'], label='d', color='orange', linestyle='-', linewidth=1)
     ax2.plot(df['index'], df['kdj_j'], label='j', color='skyblue', linestyle='-', linewidth=1)
