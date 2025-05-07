@@ -35,7 +35,8 @@ def get_bias(df: pd.DataFrame, period: int, extrema_order: int = 5, thresh_lr: f
     df = df.copy()
     df = bollbands(df, period=period)
     
-    df['middle_band'] = df['middle_band'].rolling(window=50).mean().shift(-80)
+    df['middle_band'] = df['middle_band'].rolling(window=50).mean()
+    df['middle_band'] = df['middle_band'].bfill()  # Fill NaN values in middle_band column
 
     local_max_idx = argrelextrema(df['middle_band'].values, np.greater, order=extrema_order)[0]
     local_min_idx = argrelextrema(df['middle_band'].values, np.less, order=extrema_order)[0]
@@ -114,130 +115,159 @@ def get_signal_combined(df: pd.DataFrame, thresh: list[int] = [80, 20], bias: pd
     return df
 
 
-def backtest(df: pd.DataFrame, hold_period: int, sl_dollars: float = None, tp_dollars: float = None):
+def backtest(
+    df: pd.DataFrame, 
+    hold_period: int, 
+    sl_multiplier: float = 1.5,  # Changed to multipliers
+    tp_multiplier: float = 3.0,
+    fake_tp_multiplier: float = 1.0
+):
     trades = []
     idx = 1  # Start at 1 to allow look-back
-    in_trade = False
     tp_hits = 0
     timeout_hits = 0
-    max_drawup = max_drawdown = 0    
+    in_trade = False
     while idx < len(df) - 1:
-        # sl, tp = get_adaptive_sl_tp()
+        if 'signal' not in df.columns:
+            raise ValueError("DataFrame must contain 'signal' column")
+            
+        # Entry logic ---------------------------------------------------------
         if not in_trade:
-            signal = df.loc[idx - 1, 'signal']  # <- use signal from PREVIOUS candle (like live)
+            signal = df.loc[idx - 1, 'signal']  # Signal from previous candle
             if signal == 0:
                 idx += 1
                 continue
 
-            entry_price = df.loc[idx, 'open']  # Enter trade at next candle open
+            entry_price = df.loc[idx, 'open']
             entry_time = df.loc[idx, 'time']
-
-            trade_start_idx = idx
+            entry_idx = idx
+            
+            # Initialize trade state
+            current_sl = None
+            current_tp = None
+            prev_sl_doller = None
+            prev_tp_doller = None
+            max_price = entry_price  # For drawup/drawdown tracking
+            min_price = entry_price
             in_trade = True
             idx += 1
-            # Setup SL/TP
-            sl_price = tp_price = None
-            if sl_dollars is not None and tp_dollars is not None:
-                if signal == 1:
-                    sl_price = entry_price - sl_dollars
-                    tp_price = entry_price + tp_dollars
-                else:
-                    sl_price = entry_price + sl_dollars
-                    tp_price = entry_price - tp_dollars
             continue
 
-        # Check exit by hold period
-        exit_idx = trade_start_idx + hold_period
-        max_drawup = df.loc[trade_start_idx:idx, 'high'].max() - entry_price
-        max_drawdown = entry_price - df.loc[trade_start_idx:idx, 'low'].min()
-        
-        if idx >= exit_idx or idx >= len(df):
-            exit_price = df.loc[min(idx, len(df)-1), 'close']
-            exit_time = df.loc[min(idx, len(df)-1), 'time']
-            profit = (exit_price - entry_price) if signal == 1 else (entry_price - exit_price)
-            tpsl_hit = 0
-            if tp_price is not None and sl_price is not None:
-                if profit > tp_dollars:
-                    profit = tp_dollars
-                    tp_hits += 1
-                    tpsl_hit = 2
-                if profit < -sl_dollars:
-                    profit = -sl_dollars
-                    tp_hits += 1
-                    tpsl_hit = 1
-
-            trades.append({
-                'entry_time': entry_time,
-                'exit_time': exit_time,
-                'signal': signal,
-                'entry_price': entry_price,
-                'exit_price': exit_price,
-                'profit_usd': profit,
-                'tp/sl hit': tpsl_hit,
-                'drawup': max_drawup,
-                'drawdown': max_drawdown
-            })
-
-            in_trade = False
-            idx = exit_idx  # move ahead
-            timeout_hits += 1
-            continue
-
-        # SL/TP logic using high/low
+        # Trade monitoring ----------------------------------------------------
+        current_price = df.loc[idx, 'open']
         high = df.loc[idx, 'high']
         low = df.loc[idx, 'low']
+        
+        # Update max/min prices for drawup/drawdown
+        max_price = max(max_price, high)
+        min_price = min(min_price, low)
+        current_drawup = max_price - entry_price if signal == 1 else entry_price - min_price
+        current_drawdown = entry_price - min_price if signal == 1 else max_price - entry_price
 
-        hit_sl = hit_tp = False
+        # Adaptive SL/TP updates
+        if current_sl is not None and current_tp is not None:
+            prev_sl_doller = entry_price - current_sl if signal == 1 else current_sl - entry_price
+            prev_tp_doller = current_tp - entry_price if signal == 1 else entry_price - current_tp
+
+        current_sl, current_tp = get_adaptive_sl_tp(
+            entry_price=entry_price,
+            current_price=current_price,
+            signal=signal,
+            atr_entry=df.loc[entry_idx, 'atr'],  # Use ATR from entry candle
+            sl_multiplier=sl_multiplier,
+            tp_multiplier=tp_multiplier,
+            fake_tp_multiplier=fake_tp_multiplier,
+            aggressive_trail=True,
+            anti_loss_mode=True
+        )
+
+        new_sl_doller = entry_price - current_sl if signal == 1 else current_sl - entry_price
+        new_tp_doller = current_tp - entry_price if signal == 1 else entry_price - current_tp
+
+        print("updated:",(prev_sl_doller, prev_tp_doller) , (new_sl_doller,new_tp_doller), "PnL:",entry_price - current_price if signal == -1 else current_price - entry_price)
+        # Exit checks ---------------------------------------------------------
+        exit_reason = None
+        exit_price = None
+        
+        # 1. SL/TP hit
         if signal == 1:
-            hit_tp = tp_price is not None and high >= tp_price
-            hit_sl = sl_price is not None and low <= sl_price
+            if low <= current_sl:
+                exit_price = current_sl
+                exit_reason = 'SL'
+            elif high >= current_tp:
+                exit_price = current_tp
+                exit_reason = 'TP'
         else:
-            hit_tp = tp_price is not None and low <= tp_price
-            hit_sl = sl_price is not None and high >= sl_price
+            if high >= current_sl:
+                exit_price = current_sl
+                exit_reason = 'SL'
+            elif low <= current_tp:
+                exit_price = current_tp
+                exit_reason = 'TP'
 
-        if hit_sl or hit_tp:
-            exit_price = sl_price if hit_sl else tp_price
-            exit_time = df.loc[idx, 'time']
-            profit = (exit_price - entry_price) if signal == 1 else (entry_price - exit_price)
+        # 2. Hold period expiration
+        if not exit_reason and (idx - entry_idx >= hold_period):
+            exit_price = df.loc[idx, 'close']
+            exit_reason = 'Timeout'
+
+        # Record trade if exit triggered
+        if exit_reason:
+            profit = (exit_price - entry_price)*100 if signal == 1 else (entry_price - exit_price)*100  # Assuming XAUUSD ($0.01/pip)
+            
             trades.append({
                 'entry_time': entry_time,
-                'exit_time': exit_time,
-                'signal': signal,
+                'exit_time': df.loc[idx, 'time'],
+                'direction': 'Long' if signal == 1 else 'Short',
                 'entry_price': entry_price,
                 'exit_price': exit_price,
-                'profit_usd': profit,
-                'tp/sl hit': 1 if hit_sl else 2,
-                'drawup': max_drawup,
-                'drawdown': max_drawdown
+                'pips': profit,
+                'exit_reason': exit_reason,
+                'max_drawup_pips': current_drawup*100,
+                'max_drawdown_pips': current_drawdown*100,
+                'duration_bars': idx - entry_idx,
+                'take_profit': current_tp - entry_price if signal == 1 else entry_price - current_tp,
+                'stop_loss': entry_price - current_sl if signal == 1 else current_sl - entry_price,
             })
 
+            if exit_reason in ['TP', 'SL']: 
+                tp_hits += 1
+            else:
+                timeout_hits += 1
+
             in_trade = False
-            idx += 1
-            tp_hits += 1
+            idx += 1  # Move to next candle after exit
             continue
 
         idx += 1
-    print("Take Profit/ Stop Loss hits:", tp_hits)
-    print("Timeout hits", timeout_hits)
+
+    # Results calculation
     trades_df = pd.DataFrame(trades)
     if not trades_df.empty:
-        total_profit = trades_df['profit_usd'].sum()
-        win_rate = (trades_df['profit_usd'] > 0).mean()
+        trades_df['win'] = trades_df['pips'] > 0
+        total_pips = trades_df['pips'].sum()
+        win_rate = trades_df['win'].mean()
     else:
-        total_profit = win_rate = 0
+        total_pips = win_rate = 0
 
-    return trades_df, total_profit, win_rate
+    print(f"TP/SL hits: {tp_hits} | Timeouts: {timeout_hits}")
+    print(f"Total P&L: {total_pips:.1f} pips | Win Rate: {win_rate:.1%}")
+    
+    return trades_df, total_pips, win_rate
 
 def get_adaptive_sl_tp(
     entry_price: float,
     current_price: float,
     signal: int,
-    max_tp_dollars: float,
-    min_sl_dollars: float,
-    fake_tp_dollars: float = 3.0,
+    atr_entry: float,
+    tp_multiplier: float,
+    sl_multiplier: float,
+    fake_tp_multiplier: float = 3.0,
     aggressive_trail: bool = True,
     anti_loss_mode: bool = True
 ) -> tuple:
+    max_tp_dollars = tp_multiplier * atr_entry
+    min_sl_dollars = sl_multiplier * atr_entry
+    fake_tp_dollars = fake_tp_multiplier * atr_entry
     # BUY TRADE
     if signal == 1:
         tp = entry_price + max_tp_dollars
