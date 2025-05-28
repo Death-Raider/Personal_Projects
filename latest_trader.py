@@ -132,9 +132,7 @@ def update_df(symbol:str, timeframe:int, df:pd.DataFrame, count=100):
 DEMO_ACCOUNT_NO = 10820447
 DEMO_ACCOUNT_PASS = "eK!K5l#d"
 DEMO_SERVER = "VantageInternational-Demo"
-REAL_ACCOUNT_NO = 1523662
-REAL_ACCOUNT_PASS = "t^g7I4Qy"
-REAL_SERVER = "VantageInternational-Live"
+
 
 if not mt5.initialize(login=DEMO_ACCOUNT_NO, server=DEMO_SERVER, password=DEMO_ACCOUNT_PASS):
     print("Failed to initialize MT5:", mt5.last_error())
