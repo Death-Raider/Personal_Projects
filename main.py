@@ -7,7 +7,12 @@ import matplotlib.pyplot as plt
 from advanced.strats import bollbands, KDJ, backtest, get_signal_combined, get_bias, calculate_atr, get_adaptive_sl_tp
 from plot import plot_df, create_chart, get_session, init_plot
 
-if not mt5.initialize():
+
+DEMO_ACCOUNT_NO = 10820447
+DEMO_ACCOUNT_PASS = "eK!K5l#d"
+DEMO_SERVER = "VantageInternational-Demo"
+
+if not mt5.initialize(login=DEMO_ACCOUNT_NO, server=DEMO_SERVER, password=DEMO_ACCOUNT_PASS):
     print("Failed to initialize MT5:", mt5.last_error())
     exit()
 
@@ -15,8 +20,8 @@ symbol = "XAUUSD"
 timeframe = mt5.TIMEFRAME_M5
 # bias_timeframe = mt5.TIMEFRAME_H1
 start_pos = 0
-count = int(2880)  # 1 days of data at 1-minute intervals
-display_count = 144
+count = int(28800)  # 1 days of data at 1-minute intervals
+display_count = 144*5
 
 rates = mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count)
 mt5.shutdown()
@@ -39,7 +44,7 @@ def prepare_data(rates: list, display_count: int) -> pd.DataFrame:
     df['atr'] = df['atr'].bfill()  # Fill NaN values in ATR column
     # Calculate bias and merge
     bias_df = get_bias(df.copy(), period=200)
-    df = get_signal_combined(df, bias=bias_df['bias'])
+    df = get_signal_combined(df,thresh=[90,20], bias=None) # bias_df['bias']
     df = df.merge(bias_df[['time', 'bias']], on='time', how='left')
     return df.iloc[-display_count:].reset_index(drop=True)
 
@@ -50,9 +55,9 @@ def prepare_data(rates: list, display_count: int) -> pd.DataFrame:
 def optimize_holding_period(
     df: pd.DataFrame,
     hold_range: tuple = (1, 20),
-    sl_multiplier: float = 1.5,
-    tp_multiplier: float = 3.0,
-    fake_tp_multiplier: float = 1.5
+    sl_multiplier: float = 1.2,
+    tp_multiplier: float = 1.5,
+    fake_tp_multiplier: float = 1
 ) -> tuple:
     holding_periods = range(*hold_range)
     results = []
@@ -107,9 +112,9 @@ if __name__ == "__main__":
     # Run optimization
     best_trades, best_hold_period, all_results = optimize_holding_period(
         processed_df, hold_range=(1, 20),
-        sl_multiplier=1.2,
-        tp_multiplier=3,
-        fake_tp_multiplier=1.5
+        sl_multiplier=1,
+        tp_multiplier=1.5,
+        fake_tp_multiplier=1
     )
     
     # Generate analytics

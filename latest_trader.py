@@ -113,8 +113,8 @@ def add_values_df(df: pd.DataFrame):
     df['atr'] = calculate_atr(df, period=14)
     df['atr'] = df['atr'].bfill()  # Fill NaN values in ATR column
     # bias_df = get_latest_data(symbol, timeframe, count=count)
-    bias_df = get_bias(df, period=200)
-    df = get_signal_combined(df, thresh=[80, 30], bias=bias_df['bias'])
+    # bias_df = get_bias(df, period=200)
+    df = get_signal_combined(df, thresh=[90, 20], bias=None) # bias_df['bias']
     return df, bias_df
 
 def update_df(symbol:str, timeframe:int, df:pd.DataFrame, count=100):
@@ -128,7 +128,15 @@ def update_df(symbol:str, timeframe:int, df:pd.DataFrame, count=100):
     df = pd.concat([df, latest_df], ignore_index=True).drop_duplicates(subset=['time'], keep='last', ignore_index=True)
     return df
 
-if not mt5.initialize():
+
+DEMO_ACCOUNT_NO = 10820447
+DEMO_ACCOUNT_PASS = "eK!K5l#d"
+DEMO_SERVER = "VantageInternational-Demo"
+REAL_ACCOUNT_NO = 1523662
+REAL_ACCOUNT_PASS = "t^g7I4Qy"
+REAL_SERVER = "VantageInternational-Live"
+
+if not mt5.initialize(login=DEMO_ACCOUNT_NO, server=DEMO_SERVER, password=DEMO_ACCOUNT_PASS):
     print("Failed to initialize MT5:", mt5.last_error())
     exit()
 
@@ -138,12 +146,12 @@ symbol = "XAUUSD"
 timeframe = mt5.TIMEFRAME_M5
 count = int(2880)
 plotting_count = 144
-hold_period = 12 # chandels from main.py testing
+hold_period = 9 # chandels from main.py testing
 lot_size = 0.01
 
 sl_multiplier = 1.2
-tp_multiplier = 2.0
-fake_tp_multiplier = 1.5
+tp_multiplier = 1.5
+fake_tp_multiplier = tp_multiplier / 2
 
 entry_state = [None, None, None, None, None, None, None] # (open_trade_ticket, open_trade_time, prev_time, signal, atr, stoploss, takeprofit)
 
@@ -157,7 +165,6 @@ try:
         df = update_df(symbol, timeframe, df, count=2)
         df,bias_df =  add_values_df(df)
         df.reset_index(drop=True, inplace=True)
-        print(len(df))
         # get new signals absed on trend
         plotting_df = df.iloc[-plotting_count:].copy()
         plotting_df.reset_index(inplace=True)
@@ -169,6 +176,7 @@ try:
         if (entry_state[2] is None) or (latest_candle_time > entry_state[2]):
             latest_row = plotting_df.iloc[-2]  # <- Use the PREVIOUS fully closed candle
             entry_state[3] = latest_row['signal']  # Update the signal in entry_state
+
             entry_state[4] = latest_row['atr']  # Update the ATR in entry_state
             print(f"Closed Candle Signal: {entry_state[3]}, Close Price: {latest_row['close']}")
 
@@ -183,31 +191,40 @@ try:
             position = mt5.positions_get(ticket=entry_state[0])
             if not position:
                 print("Position closed or not found.")
-                entry_state[0] = None
+                entry_state[0] = None  # Reset
                 entry_state[1] = None
+                entry_state[5] = 0.0
+                entry_state[6] = 0.0
                 continue
             position = position[0]  # Extract the actual position object
             entry_price = position.price_open
             current_price = position.price_current
-            entry_state[6], entry_state[7] = get_adaptive_sl_tp(
+            entry_state[5], entry_state[6] = get_adaptive_sl_tp(
                         entry_price=entry_price,
                         current_price=current_price,
+                        current_sl= position.sl,
+                        current_tp= position.tp,
+                        current_fake_tp= None,
                         signal = 1 if position.type == mt5.ORDER_TYPE_BUY else -1,
-                        atr_entry= df.loc[-2, 'atr'],  # Use ATR from entry candle
+                        atr_entry= df.iloc[-1]['atr'],  # Use ATR from entry candle
                         sl_multiplier = sl_multiplier,
                         tp_multiplier = tp_multiplier,
                         fake_tp_multiplier=fake_tp_multiplier,
                         aggressive_trail=True,
                         anti_loss_mode=True
                     )
-            print(f"Adaptive SL: {entry_state[6]}, TP: {entry_state[7]}")
-            update_tp_sl(entry_state[0], symbol, sl_val=entry_state[6], tp_val=entry_state[7])
+            # print(f"Adaptive SL: {entry_state[5]}, TP: {entry_state[6]}")
+            update_tp_sl(symbol, entry_state[0], sl_val=entry_state[5], tp_val=entry_state[6])
 
         # Check if it's time to close the open position
         if (entry_state[0] is not None and 
             (datetime.now() - entry_state[1]).seconds >= hold_period * timeframe * 60):
+            print("closing ticket")
             close_trade(symbol, entry_state[0], lot_size=lot_size)
             entry_state[0] = None  # Reset
+            entry_state[1] = None
+            entry_state[5] = 0.0
+            entry_state[6] = 0.0
 
         # Plotting
         ax1.set_ylim(plotting_df['lower_band'].min() - 10, plotting_df['upper_band'].max() + 10)

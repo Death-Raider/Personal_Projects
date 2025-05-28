@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+# from latest_trader import execute_trade, close_trade, update_tp_sl, get_adaptive_sl_tp
+import MetaTrader5 as mt5
 
 def get_latest_data(symbol=1, timeframe=2, newest=False):
     count=10
@@ -54,9 +56,21 @@ def update_df(symbol:str, timeframe:int, df:pd.DataFrame, bias_df:pd.DataFrame, 
 
     return df, bias_df
 
-old, new = get_latest_data()
-print(old)
-
-old, _ = update_df('x', 0, old, None, 100)
-
-print(old)
+import MetaTrader5 as mt5
+# display data on the MetaTrader 5 package
+print("MetaTrader5 package author: ",mt5.__author__)
+print("MetaTrader5 package version: ",mt5.__version__)
+DEMO_ACCOUNT_NO = 10820447
+DEMO_ACCOUNT_PASS = "eK!K5l#d"
+# establish MetaTrader 5 connection to a specified trading account
+if not mt5.initialize(login=DEMO_ACCOUNT_NO, server="VantageInternational-Demo",password=DEMO_ACCOUNT_PASS):
+    print("initialize() failed, error code =",mt5.last_error())
+    quit()
+ 
+# display data on connection status, server name and trading account
+print(mt5.terminal_info())
+# display data on MetaTrader 5 version
+print(mt5.version())
+ 
+# shut down connection to the MetaTrader 5 terminal
+mt5.shutdown()

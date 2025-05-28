@@ -103,7 +103,7 @@ def get_signal_combined(df: pd.DataFrame, thresh: list[int] = [80, 20], bias: pd
     # ---- Combined Strategy ----
     if bias is None:
         df.loc[(bb_buy | (kdj_buy_cross | j_cross_up)), 'signal'] = 1    # Strong Buy
-        df.loc[(bb_sell | ( kdj_sell_cross | j_cross_down)), 'signal'] = -1  # Strong Sell
+        df.loc[(bb_sell & ( kdj_sell_cross | j_cross_down)), 'signal'] = -1  # Strong Sell
     else:
         # when bias == 1, works. otherwise no rows are effected
         df.loc[(bb_buy | (kdj_buy_cross | j_cross_up)) & (bias == 1), 'signal'] = 1    # Strong Buy
@@ -172,6 +172,9 @@ def backtest(
         current_sl, current_tp = get_adaptive_sl_tp(
             entry_price=entry_price,
             current_price=current_price,
+            current_tp=current_tp,
+            current_sl=current_sl,
+            current_fake_tp=None,
             signal=signal,
             atr_entry=df.loc[entry_idx, 'atr'],  # Use ATR from entry candle
             sl_multiplier=sl_multiplier,
@@ -184,7 +187,7 @@ def backtest(
         new_sl_doller = entry_price - current_sl if signal == 1 else current_sl - entry_price
         new_tp_doller = current_tp - entry_price if signal == 1 else entry_price - current_tp
 
-        print("updated:",(prev_sl_doller, prev_tp_doller) , (new_sl_doller,new_tp_doller), "PnL:",entry_price - current_price if signal == -1 else current_price - entry_price)
+        # print("updated:",(prev_sl_doller, prev_tp_doller) , (new_sl_doller,new_tp_doller), "PnL:",entry_price - current_price if signal == -1 else current_price - entry_price)
         # Exit checks ---------------------------------------------------------
         exit_reason = None
         exit_price = None
@@ -212,7 +215,7 @@ def backtest(
 
         # Record trade if exit triggered
         if exit_reason:
-            profit = (exit_price - entry_price)*100 if signal == 1 else (entry_price - exit_price)*100  # Assuming XAUUSD ($0.01/pip)
+            profit = (exit_price - entry_price) if signal == 1 else (entry_price - exit_price)  # Assuming XAUUSD ($0.01/pip)
             
             trades.append({
                 'entry_time': entry_time,
@@ -222,8 +225,8 @@ def backtest(
                 'exit_price': exit_price,
                 'pips': profit,
                 'exit_reason': exit_reason,
-                'max_drawup_pips': current_drawup*100,
-                'max_drawdown_pips': current_drawdown*100,
+                'max_drawup_pips': current_drawup,
+                'max_drawdown_pips': current_drawdown,
                 'duration_bars': idx - entry_idx,
                 'take_profit': current_tp - entry_price if signal == 1 else entry_price - current_tp,
                 'stop_loss': entry_price - current_sl if signal == 1 else current_sl - entry_price,
@@ -257,6 +260,9 @@ def backtest(
 def get_adaptive_sl_tp(
     entry_price: float,
     current_price: float,
+    current_sl: float,
+    current_tp: float,
+    current_fake_tp: float,
     signal: int,
     atr_entry: float,
     tp_multiplier: float,
@@ -265,47 +271,81 @@ def get_adaptive_sl_tp(
     aggressive_trail: bool = True,
     anti_loss_mode: bool = True
 ) -> tuple:
+    
     max_tp_dollars = tp_multiplier * atr_entry
     min_sl_dollars = sl_multiplier * atr_entry
     fake_tp_dollars = fake_tp_multiplier * atr_entry
+    sl = current_sl
+    tp = current_tp
     # BUY TRADE
     if signal == 1:
-        tp = entry_price + max_tp_dollars
-        sl = entry_price - min_sl_dollars
-        fake_tp = entry_price + fake_tp_dollars
-        unrealized_profit = current_price - entry_price
+        calc_tp = round(entry_price + max_tp_dollars,2)
+        calc_sl = round(entry_price - min_sl_dollars,2)
+        calc_fake_tp = round(entry_price + fake_tp_dollars,2)
 
-        # If price is moving in our favor and crossed fake TP
-        if current_price >= fake_tp:
-            # SL gets pulled up to break even first
-            sl = entry_price
-            # Then trail with price gain beyond fake TP
-            if aggressive_trail:
-                sl += current_price - fake_tp  # lock partial gains
-
-        # If price is against us, shrink both TP and SL
-        elif current_price < entry_price and anti_loss_mode:
-            sl = entry_price - (min_sl_dollars * 0.5)  # tighter stop
-            tp = entry_price + (max_tp_dollars * 0.4)  # take what we can
-
-    # SELL TRADE
+        if current_tp is None:
+            current_tp = calc_tp
+        if current_sl is None:
+            current_sl = calc_sl
+        
+        if current_price >= entry_price:
+            # market is in our favour
+            # check if fake_tp is hit
+            if current_price >= calc_fake_tp:
+                # fake tp is hit, update the stop loss and take profit but making sure it doesnt go below the current stop loss
+                # and take profit
+                sl = max(current_sl, entry_price) # stop loss is shifted to the entry price
+                tp = max(calc_tp, current_tp) # take profit is shifted to the calculated take profit
+                if aggressive_trail:
+                    # if aggressive trail is enabled, we can shift the stop loss to the change in price above the fake tp
+                    # but not below the current stop loss
+                    sl = max(sl, entry_price + (current_price - calc_fake_tp))
+            else: # price is below fake tp
+                if anti_loss_mode:
+                    # if anti loss mode is enabled, we can shift the stop loss to the entry price
+                    sl = max(current_sl, calc_sl + (min_sl_dollars * 0.4)) # reduce the stop loss
+                    tp = round(entry_price + max_tp_dollars*0.7, 2) # reduce the profits a bit
+        else:
+            # market is against us
+            # check for anti loss mode and check with calc and current values
+            if anti_loss_mode:
+                # if anti loss mode is enabled, we can shift the stop loss to the entry price
+                sl = round(entry_price - min_sl_dollars*0.6, 2)
+                tp = round(entry_price + max_tp_dollars*0.6, 2)
     elif signal == -1:
-        tp = entry_price - max_tp_dollars
-        sl = entry_price + min_sl_dollars
-        fake_tp = entry_price - fake_tp_dollars
-        unrealized_profit = entry_price - current_price
+            calc_tp = round(entry_price - max_tp_dollars,2)
+            calc_sl = round(entry_price + min_sl_dollars,2)
+            calc_fake_tp = round(entry_price - fake_tp_dollars,2)
 
-        if current_price <= fake_tp:
-            sl = entry_price
-            if aggressive_trail:
-                sl -= fake_tp - current_price
-
-        elif current_price > entry_price and anti_loss_mode:
-            sl = entry_price + (min_sl_dollars * 0.5)
-            tp = entry_price - (max_tp_dollars * 0.4)
-
-    else:
-        raise ValueError("Signal must be 1 (buy) or -1 (sell)")
+            if current_tp is None:
+                current_tp = calc_tp
+            if current_sl is None:
+                current_sl = calc_sl
+            
+            if current_price <= entry_price:
+                # market is in our favour
+                # check if fake_tp is hit
+                if current_price <= calc_fake_tp:
+                    # fake tp is hit, update the stop loss and take profit but making sure it doesnt go below the current stop loss
+                    # and take profit
+                    sl = min(current_sl, entry_price) # stop loss is shifted to the entry price
+                    tp = min(calc_tp, current_tp) # take profit is shifted to the calculated take profit
+                    if aggressive_trail:
+                        # if aggressive trail is enabled, we can shift the stop loss to the change in price above the fake tp
+                        # but not below the current stop loss
+                        sl = min(sl, entry_price - ( -current_price + calc_fake_tp))
+                else: # price is below fake tp
+                    if anti_loss_mode:
+                        # if anti loss mode is enabled, we can shift the stop loss to the entry price
+                        sl = min(current_sl, calc_sl - (min_sl_dollars * 0.5)) # reduce the stop loss
+                        tp = round(entry_price - max_tp_dollars*0.7, 2) # reduce the profits a bit
+            else:
+                # market is against us
+                # check for anti loss mode and check with calc and current values
+                if anti_loss_mode:
+                    # if anti loss mode is enabled, we can shift the stop loss to the entry price
+                    sl = round(entry_price + min_sl_dollars*0.4, 2)
+                    tp = round(entry_price - max_tp_dollars*0.4, 2)
 
     return round(sl, 2), round(tp, 2)
 
