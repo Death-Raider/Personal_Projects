@@ -113,8 +113,8 @@ def add_values_df(df: pd.DataFrame):
     df['atr'] = calculate_atr(df, period=14)
     df['atr'] = df['atr'].bfill()  # Fill NaN values in ATR column
     # bias_df = get_latest_data(symbol, timeframe, count=count)
-    # bias_df = get_bias(df, period=200)
-    df = get_signal_combined(df, thresh=[90, 20], bias=None) # bias_df['bias']
+    bias_df = get_bias(df, period=10)
+    df = get_signal_combined(df, thresh=[90, 20], bias=bias_df['bias']) # bias_df['bias']
     return df, bias_df
 
 def update_df(symbol:str, timeframe:int, df:pd.DataFrame, count=100):
@@ -144,7 +144,7 @@ symbol = "XAUUSD"
 timeframe = mt5.TIMEFRAME_M5
 count = int(2880)
 plotting_count = 144
-hold_period = 9 # chandels from main.py testing
+hold_period = 4 # chandels from main.py testing
 lot_size = 0.01
 
 sl_multiplier = 1.2

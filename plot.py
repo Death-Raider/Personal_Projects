@@ -98,6 +98,8 @@ def plot_df(df, ax1, ax2, ax11)->None:
         ax11.plot(valid['index'], valid['signal'], label='Signal', color='orange', linestyle='--', linewidth=1)
     if 'bias' in valid.columns:
         ax11.plot(valid['index'], valid['bias'], label='Bias', color='red', linestyle='--', linewidth=1)
+    if 'slope' in valid.columns:
+        ax1.plot(valid['index'], valid['slope'], label='Slope', color='green', linestyle='--', linewidth=1)
     ax2.plot(df['index'], df['kdj_k'], label='k', color='yellow', linestyle='-', linewidth=1)
     ax2.plot(df['index'], df['kdj_d'], label='d', color='orange', linestyle='-', linewidth=1)
     ax2.plot(df['index'], df['kdj_j'], label='j', color='skyblue', linestyle='-', linewidth=1)

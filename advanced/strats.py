@@ -30,7 +30,6 @@ def calculate_atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
     return atr
 
 def get_bias(df: pd.DataFrame, period: int, extrema_order: int = 5, thresh_lr: float= 0.1) -> pd.DataFrame:
-    assert period > 50, "Period must be greater than 50"
     assert extrema_order > 0, "Extrema order must be greater than 0"
     df = df.copy()
     df = bollbands(df, period=period)
@@ -41,6 +40,8 @@ def get_bias(df: pd.DataFrame, period: int, extrema_order: int = 5, thresh_lr: f
     local_max_idx = argrelextrema(df['middle_band'].values, np.greater, order=extrema_order)[0]
     local_min_idx = argrelextrema(df['middle_band'].values, np.less, order=extrema_order)[0]
     pivot_indices = sorted(np.concatenate((local_max_idx, local_min_idx)))
+    pivot_indices.append(len(df)-1)  # Append the end of the DataFrame
+    pivot_indices.insert(0, 0)  # Ensure we start from the first index
     df['bias'] = 0
 
     for i in range(len(pivot_indices)-1):
@@ -64,56 +65,69 @@ def bollbands(df: pd.DataFrame, period: int):
     df.bfill(inplace=True)
     return df
 
-def get_signal_combined(df: pd.DataFrame, thresh: list[int] = [80, 20], bias: pd.DataFrame = None) -> pd.DataFrame:
+def get_signal_combined(df: pd.DataFrame, thresh: list[int] = [80, 20], bias: pd.Series = None) -> pd.DataFrame:
     df = df.copy()
     df['signal'] = 0
 
-    # ---- Bollinger Bands Conditions ----
-    bb_buy = (
-        (df['close'] < df['lower_band']) | 
-        (df['close'] < df['lower_band'] - 5)
+    # ---- Bollinger Band Extremes ----
+    bb_buy = df['close'] < (df['lower_band'] - 5)
+    bb_sell = df['close'] > (df['upper_band'] + 5)
+
+    # ---- KDJ Crosses ----
+    kdj_buy_cross = (df['kdj_k'].shift(1) < df['kdj_d'].shift(1)) & (df['kdj_k'] > df['kdj_d'])
+    kdj_sell_cross = (df['kdj_k'].shift(1) > df['kdj_d'].shift(1)) & (df['kdj_k'] < df['kdj_d'])
+
+    # ---- J Threshold Crosses ----
+    j_cross_up = (df['kdj_j'].shift(1) < thresh[1]) & (df['kdj_j'] > thresh[1])
+    j_cross_down = (df['kdj_j'].shift(1) > thresh[0]) & (df['kdj_j'] < thresh[0])
+
+    # ---- Divergences ----
+    # Bullish divergence: price makes lower low, J makes higher low
+    bull_div = (df['low'].shift(1) > df['low']) & (df['kdj_j'].shift(1) < df['kdj_j'])
+    # Bearish divergence: price makes higher high, J makes lower high
+    bear_div = (df['high'].shift(1) < df['high']) & (df['kdj_j'].shift(1) > df['kdj_j'])
+
+    # ---- Pullback Entries ----
+    pullback_buy = (
+        (df['kdj_j'] < 20) &
+        (df['kdj_j'].shift(1) < df['kdj_j']) &
+        (df['close'] > df['middle_band'])
     )
-    bb_sell = (
-        (df['close'] > df['upper_band']) | 
-        (df['close'] > df['upper_band'] - 5)
+    pullback_sell = (
+        (df['kdj_j'] > 80) &
+        (df['kdj_j'].shift(1) > df['kdj_j']) &
+        (df['close'] < df['middle_band'])
     )
 
-    # ---- K and D Crossing Conditions ----
-    kdj_buy_cross = (
-        (df['kdj_k'].shift(1) < df['kdj_d'].shift(1)) &  # K was below D
-        (df['kdj_k'] > df['kdj_d'])                     # K now above D
-    )
+    # ---- Breakout Entries ----
+    breakout_buy = (kdj_buy_cross | j_cross_up) & (df['close'] > df['upper_band'])
+    breakout_sell = (kdj_sell_cross | j_cross_down) & (df['close'] < df['lower_band'])
 
-    kdj_sell_cross = (
-        (df['kdj_k'].shift(1) > df['kdj_d'].shift(1)) &  # K was above D
-        (df['kdj_k'] < df['kdj_d'])                     # K now below D
-    )
-
-    # ---- J Crossing Threshold Conditions ----
-    j_cross_up = (
-        (df['kdj_j'].shift(1) < thresh[1]) &  # J was below lower threshold before (e.g., 20)
-        (df['kdj_j'] > thresh[1])             # J crossed above lower threshold
-    )
-
-    j_cross_down = (
-        (df['kdj_j'].shift(1) > thresh[0]) &  # J was above upper threshold before (e.g., 80)
-        (df['kdj_j'] < thresh[0])             # J crossed below upper threshold
-    )
-
-    # ---- Combined Strategy ----
+    # ---- Final Signal Assignment ----
     if bias is None:
-        df.loc[(bb_buy | (kdj_buy_cross | j_cross_up)), 'signal'] = 1    # Strong Buy
-        df.loc[(bb_sell & ( kdj_sell_cross | j_cross_down)), 'signal'] = -1  # Strong Sell
+        # No trend bias — raw signals
+        df.loc[bb_buy | kdj_buy_cross | j_cross_up | pullback_buy | breakout_buy | bull_div, 'signal'] = 1
+        df.loc[bb_sell | kdj_sell_cross | j_cross_down | pullback_sell | breakout_sell | bear_div, 'signal'] = -1
     else:
-        # when bias == 1, works. otherwise no rows are effected
-        df.loc[(bb_buy | (kdj_buy_cross | j_cross_up)) & (bias == 1), 'signal'] = 1    # Strong Buy
-        df.loc[(bb_sell & ( kdj_sell_cross | j_cross_down)) & (bias == 1), 'signal'] = -1  # Strong Sell
-        # when bias == -1, works. otherwise no rows are effected
-        df.loc[(bb_buy & (kdj_buy_cross | j_cross_up)) & (bias == -1), 'signal'] = 1    # Strong Buy
-        df.loc[(bb_sell | ( kdj_sell_cross | j_cross_down)) & (bias == -1), 'signal'] = -1  # Strong Sell
+        # Bullish bias → allow only long entries
+        long_mask = bias == 1
+        df.loc[bb_buy & long_mask, 'signal'] = 1
+        df.loc[kdj_buy_cross & long_mask, 'signal'] = 1
+        df.loc[j_cross_up & long_mask, 'signal'] = 1
+        df.loc[pullback_buy & long_mask, 'signal'] = 1
+        df.loc[breakout_buy & long_mask, 'signal'] = 1
+        df.loc[bull_div & long_mask, 'signal'] = 1
+
+        # Bearish bias → allow only short entries
+        short_mask = bias == -1
+        df.loc[bb_sell & short_mask, 'signal'] = -1
+        df.loc[kdj_sell_cross & short_mask, 'signal'] = -1
+        df.loc[j_cross_down & short_mask, 'signal'] = -1
+        df.loc[pullback_sell & short_mask, 'signal'] = -1
+        df.loc[breakout_sell & short_mask, 'signal'] = -1
+        df.loc[bear_div & short_mask, 'signal'] = -1
 
     return df
-
 
 def backtest(
     df: pd.DataFrame, 
