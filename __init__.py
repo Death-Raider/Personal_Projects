@@ -1,4 +1,5 @@
-import GoalChasing_QLearning.test as GC_QL
+# import GoalChasing_QLearning.multi_DQagent_FederatedLearning as GC_QL
+import GoalChasing_QLearning.single_DQagent as GC_QL
 
 # import Pong_QLearning.D_Q_learning as DQL
 # DQL.run()

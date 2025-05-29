@@ -29,9 +29,12 @@ class DQAgent:
 
     def build_model(self):
         inputs = Input(shape=(self.state_dim,))
-        x = Dense(128, activation='relu')(inputs)
+        x = Dense(256, activation='relu')(inputs)
         x = BatchNormalization()(x)
         x = Dropout(0.4)(x)
+        x = Dense(128, activation='tanh')(inputs)
+        x = BatchNormalization()(x)
+        x = Dropout(0.2)(x)
         x = Dense(32, activation='relu')(x)
         outputs = Dense(self.action_dim, activation='linear')(x)
         return Model(inputs=inputs, outputs=outputs)
@@ -89,6 +92,10 @@ class DQAgent:
         if self.steps % self.target_update_freq == 0:
             self.update_target_network()
         
+        return loss
+    
+    def evaluate(self, states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor):
+        loss = self.train_step(states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor)
         return loss
 
     @tf.function

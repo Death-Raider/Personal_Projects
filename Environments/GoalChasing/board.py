@@ -23,7 +23,7 @@ class Board:
             x = int(p.x)
             y = int(p.y)
             arr = self.board[np.max([y-thresh,0]):y+thresh+1, np.max([x-thresh,0]):x+thresh+1]
-            new_arr = np.pad(arr, ((0,7-arr.shape[0]), (0,7-arr.shape[1])), mode='constant')
+            new_arr = np.pad(arr, ((0,(2*thresh+1)-arr.shape[0]), (0,(2*thresh+1)-arr.shape[1])), mode='constant')
             p.view = new_arr
 
     def update_robots(self):
@@ -46,5 +46,5 @@ class Board:
         # robot -> 1,2,3, ..., id
         self.board = np.zeros((self.size, self.size))
         for [p,g,a] in self.players:
-            self.board[int(p.y), int(p.x)] = int(p.id)
+            self.board[int(p.y):int(p.y+p.h), int(p.x):int(p.x+p.w)] = int(p.id)
             self.board[int(g.y), int(g.x)] = - int(g.id)

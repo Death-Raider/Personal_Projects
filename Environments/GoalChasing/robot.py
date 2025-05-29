@@ -4,15 +4,17 @@ import random
 import numpy as np
 
 class Robot:
-    def __init__(self, id: int, x:float = 0, y:float = 0, a:float = 0, v:float = 0, dir:int = 0, cooperation: int = 1):
+    def __init__(self, id: int, x:float = 0, y:float = 0, h:float = 1, w:float = 1, a:float = 0, v:float = 0, dir:int = 0, cooperation: int = 1, closeness_threshold: int = 3):
         self.id = id
         self.x = x
         self.y = y
+        self.h = h
+        self.w = w
         self.a = a
         self.v = v
         self.dir: int = dir # [NE, N, NW, E, W ,SE, S, SW] -> [135, 90, 45, 180, 0, 225, 270, 315]
         self.cooperation = cooperation
-        self.closeness_threshold = 3
+        self.closeness_threshold = closeness_threshold
         self.view = np.zeros((self.closeness_threshold*2+1, self.closeness_threshold*2+1))
         self.dist_view = self.view.copy()
         self.angle_view = self.view.copy()
