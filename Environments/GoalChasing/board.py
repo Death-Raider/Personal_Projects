@@ -19,7 +19,7 @@ class Board:
     
     def update_views(self):
         for p,g,a in self.players:
-            thresh = int(p.closeness_threshold)
+            thresh = int(p.view_threshold)
             x = int(p.x)
             y = int(p.y)
             arr = self.board[np.max([y-thresh,0]):y+thresh+1, np.max([x-thresh,0]):x+thresh+1]

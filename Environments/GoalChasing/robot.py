@@ -4,7 +4,7 @@ import random
 import numpy as np
 
 class Robot:
-    def __init__(self, id: int, x:float = 0, y:float = 0, h:float = 1, w:float = 1, a:float = 0, v:float = 0, dir:int = 0, cooperation: int = 1, closeness_threshold: int = 3):
+    def __init__(self, id: int, x:float = 0, y:float = 0, h:float = 1, w:float = 1, a:float = 0, v:float = 0, dir:int = 0, cooperation: int = 1, view_threshold: int = 5, closeness_threshold: int = 3):
         self.id = id
         self.x = x
         self.y = y
@@ -15,7 +15,8 @@ class Robot:
         self.dir: int = dir # [NE, N, NW, E, W ,SE, S, SW] -> [135, 90, 45, 180, 0, 225, 270, 315]
         self.cooperation = cooperation
         self.closeness_threshold = closeness_threshold
-        self.view = np.zeros((self.closeness_threshold*2+1, self.closeness_threshold*2+1))
+        self.view_threshold = view_threshold
+        self.view = np.zeros((self.view_threshold*2+1, self.view_threshold*2+1))
         self.dist_view = self.view.copy()
         self.angle_view = self.view.copy()
         self.detected_robots: dict[str,list[int | tuple | Robot]] = {
@@ -45,17 +46,17 @@ class Robot:
         if len(r)==0: # reset the detected robots folder
             for key in self.detected_robots.keys():
                 self.detected_robots[key] = []
+            return 0
         else: # populate the detected robots folder
             ids_copy = set(self.detected_robots['id'].copy())
             new_ids = set()
             for x in zip(r,c):
                 id = int(self.view[x[0],x[1]])
                 pos = [
-                    np.hypot(x[0]-self.closeness_threshold, x[1]-self.closeness_threshold),
-                    self._set_angle(self.closeness_threshold, self.closeness_threshold, *x)
+                    np.hypot(x[0]-self.view_threshold, x[1]-self.view_threshold),
+                    self._set_angle(self.view_threshold, self.view_threshold, *x)
                 ]
-                # pos = self.get_dist(x)  # error
-                if id < 0:
+                if id < 0: # goal is there
                     continue
                 new_ids.add(id)
                 if id not in self.detected_robots['id']:
@@ -72,6 +73,16 @@ class Robot:
                 index = self.detected_robots['id'].index(id)
                 for key in self.detected_robots.keys():
                     self.detected_robots[key].pop(index)
+            
+            # collision detection
+            collisions = 0
+            for i in range(len(self.detected_robots['id'])):
+                other_robot = self.detected_robots['robot'][i]
+                if other_robot is None:
+                    continue
+                if self.get_dist(other_robot)[0] < self.closeness_threshold:
+                    collisions += 1
+            return collisions
 
     def get_DQL_state(self, goal: Goal):
         self.dist_view = self.view.copy()

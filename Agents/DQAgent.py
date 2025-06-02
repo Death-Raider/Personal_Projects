@@ -29,13 +29,16 @@ class DQAgent:
 
     def build_model(self):
         inputs = Input(shape=(self.state_dim,))
-        x = Dense(256, activation='relu')(inputs)
+        x = Dense(256, activation='sigmoid')(inputs)
         x = BatchNormalization()(x)
         x = Dropout(0.4)(x)
-        x = Dense(128, activation='tanh')(inputs)
-        x = BatchNormalization()(x)
-        x = Dropout(0.2)(x)
-        x = Dense(32, activation='relu')(x)
+
+        y = Dense(256, activation='tanh')(inputs)
+        y = BatchNormalization()(y)
+        y = Dropout(0.2)(y)
+        
+        z = x+y
+        x = Dense(32, activation='relu')(z)
         outputs = Dense(self.action_dim, activation='linear')(x)
         return Model(inputs=inputs, outputs=outputs)
     
