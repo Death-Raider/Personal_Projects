@@ -7,10 +7,10 @@ import matplotlib.gridspec as gridspec
 import numpy as np
 import time
 import logging
+import os
 
 logging.basicConfig(filename='GoalChasing_QLearning/output.log', filemode='a', level=logging.DEBUG, format='%(message)s')
 logger = logging.getLogger('goal_chasing')
-
 
 def create_random_agents(id,board_size,**kwargs)->list[Robot,Goal]:
     r1 = Robot(id = id, **kwargs)
@@ -33,7 +33,7 @@ def reset_positions(players, board_size):
         while r.get_dist(g)[0] < board_size*0.50:
             g.set_random_goal(board_size, board_size)
 
-def calculate_reward(r: Robot, g: Goal, move_success: bool, collision_count: int, time: int) -> float:
+def reward_policy(r: Robot, g: Goal, move_success: bool, collision_count: int, time: int) -> float:
     distance = r.get_dist(g)[0] # get_dist return [distance, angle(in radian)]
     angle_dir = r.DIR_ANGLES[r.dir]*np.pi/180
 
@@ -63,18 +63,6 @@ def calculate_reward(r: Robot, g: Goal, move_success: bool, collision_count: int
         ro_angle = r_o.DIR_ANGLES[r_o.dir]*np.pi/180
         angle_diff = np.abs(angle_dir - ro_angle) % (2*np.pi)
         reward += np.cos(angle_diff/2)**2
-
-    # Best case reward value:
-    # best case steps on average = 15
-    # min number of iter penalty = -0.3*15 = -4.5    # step penalty 
-    # always decreasing distance 2*(sum from n=2 to 15 of 1/n) = 4.63645798646    # distance incentive
-    # always moving in correct direction = 1*15    # direction alignment
-    # colloision avoidance: 
-    #       1. No robot is too close = 15 * -0.3 * 2 = -9   # average 2 robots whicha are close
-    #       2. detected robots are only moving in similar direction to self = 10 * 1 * 2*integral from 0 to 1 of cos^2(x/2) dx = 27.6220647721  # +/- 57 degree variation
-    # total reward = 33.7585227586
-    # average reward over the episode = 33.7585227586 / 15 = 2.25056818391
-
     return reward
 
 def create_figure(robot_count):
@@ -102,205 +90,203 @@ def create_figure(robot_count):
             axs.append(ax)
     return main_fig, ax1, axs
 
-robot_count = 20
-board_size = 100
-threshold = 10
-state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 
-action_dim = 8
-SHOW = False
-SHOW_LAST_EPOCH = False
-TRAIN = True
-LOAD_MODEL = True
-agent_directory = "GoalChasing_QLearning/agents/"
-EPOCHS = 120
-board = Board(board_size)
+def save_model_and_data(agent, dir_path):
+    print("Training completed.")
 
-# create the agents
-agent: DQAgent = DQAgent(
-    state_dim=state_dim, 
-    action_dim=action_dim, 
-    lr=1e-3,
-    gamma=0.90,                    # Prioritize short-term rewards
-    epsilon_decay=0.9998,           # Slower exploration decay
-    memory_size=2000, 
-    target_update_freq = 100,
-)
+    if not os.path.exists(f"GoalChasing_QLearning/agents/"):
+        os.makedirs(f"GoalChasing_QLearning/agents/")
+    if not os.path.exists(f"GoalChasing_QLearning/agents/{dir_path}"):
+        os.makedirs(f"GoalChasing_QLearning/agents/{dir_path}")
 
-if LOAD_MODEL:
-    agent.load_model(agent_directory)
+    agent.save_model(directory=f"GoalChasing_QLearning/agents/{dir_path}")
+
+    states = np.array([t[0] for t in agent.memory], dtype=np.float32)
+    actions = np.array([t[1] for t in agent.memory], dtype=np.int32)
+    rewards = np.array([t[2] for t in agent.memory], dtype=np.float32)
+    next_states = np.array([t[3] for t in agent.memory], dtype=np.float32)
+    dones = np.array([t[4] for t in agent.memory], dtype=np.float32)
+    print("Saving training data...")
+
+    if not os.path.exists(f"GoalChasing_QLearning/training_data/"):
+        os.makedirs(f"GoalChasing_QLearning/training_data/")
+    if not os.path.exists(f"GoalChasing_QLearning/training_data/{dir_path}"):
+        os.makedirs(f"GoalChasing_QLearning/training_data/{dir_path}")
+        
+    np.save(f"GoalChasing_QLearning/training_data/{dir_path}/curr_state.npy", states)
+    np.save(f"GoalChasing_QLearning/training_data/{dir_path}/action.npy", actions)
+    np.save(f"GoalChasing_QLearning/training_data/{dir_path}/reward.npy", rewards)
+    np.save(f"GoalChasing_QLearning/training_data/{dir_path}/next_state.npy", next_states)
+    np.save(f"GoalChasing_QLearning/training_data/{dir_path}/dones.npy",dones)
+
+def load_model_and_data(agent, dir_path):
+    agent.load_model(f"GoalChasing_QLearning/agents/{dir_path}")
     agent.update_target_network()
-    if TRAIN:
-        agent.epsilon = 0.4  # Set a higher exploration rate for training
-    else:
-        agent.epsilon = 0.01  # Set a low exploration rate for evaluation
-    print("Model loaded from", agent_directory)
-    states = np.load("GoalChasing_QLearning/training_data/curr_state.npy", allow_pickle=True)
-    actions = np.load("GoalChasing_QLearning/training_data/action.npy", allow_pickle=True)
-    rewards = np.load("GoalChasing_QLearning/training_data/reward.npy", allow_pickle=True)
-    next_states = np.load("GoalChasing_QLearning/training_data/next_state.npy", allow_pickle=True)
-    dones = np.load("GoalChasing_QLearning/training_data/dones.npy", allow_pickle=True)
-    loss = agent.evaluate(states, actions, rewards, next_states, dones)
-    print("reward", rewards.mean())
-    print("Loss on loaded data:", loss)
+    print("Model loaded from", f"GoalChasing_QLearning/agents/{dir_path}")
 
-robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size,h=1,w=1,closeness_threshold=threshold//3, view_threshold=threshold) for i in range(robot_count)] # randomly innitilize robots
-reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
-loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
+    states =        np.load(f"GoalChasing_QLearning/training_data/{dir_path}/curr_state.npy", allow_pickle=True)
+    actions =       np.load(f"GoalChasing_QLearning/training_data/{dir_path}/action.npy", allow_pickle=True)
+    rewards =       np.load(f"GoalChasing_QLearning/training_data/{dir_path}/reward.npy", allow_pickle=True)
+    next_states =   np.load(f"GoalChasing_QLearning/training_data/{dir_path}/next_state.npy", allow_pickle=True)
+    dones =         np.load(f"GoalChasing_QLearning/training_data/{dir_path}/dones.npy", allow_pickle=True)
 
-if SHOW or SHOW_LAST_EPOCH:
-    main_fig, ax1, axs = create_figure(robot_count)
+    agent.memory = [*zip(states, actions, rewards, next_states, dones)] # load to memory
 
-for epoch in range(EPOCHS):
-    
-    board.players = []
-    for i,[r,g] in enumerate(robots):
-        board.add_robot(r,g,agent)
+    return states, actions, rewards, next_states, dones
 
-    # SHOW = epoch == EPOCHS-1
-    # if SHOW:
-    #     main_fig, ax1, axs = create_figure(robot_count)
-    
-    reset_positions(board.players, board_size)
-    
-    # 0. Initilize board
+def set_board(board):
     board.update_robots()
     board.draw_board()
     board.update_views()
-    # print("Step 0 done")
 
-    # 1. get the states for each robot
+def get_curr_state(board):
     curr_states = []
     for i,[r,g,a] in enumerate(board.players):
-        a.replay(batch_size=128)  # Train the agent on the current state
         r.detect_robots()  # detect which robots are in the view
         for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view 
             r.detected_robots["robot"][j] = board.get_robot_by_id(r.detected_robots['id'][j])
         curr_state = r.get_DQL_state(g)
         curr_states.append(curr_state)
-    # print("Step 1 done")
+    return curr_states
 
-    print("-"*100,epoch,"-"*100)
-    logger.info(f'{"-"*100} {epoch} {"-"*100}')
-    iter = 0
-    iter_time_start = time.time()
-    done = False
-    while not done:
-        # 2. choose their action
-        actions = []
-        for i,[r,g,a] in enumerate(board.players):
-            action = a.choose_action(curr_states[i])
-            actions.append(action)
-            r._set_dir(action)
-        # print("Step 2 done", actions, end=" ")
+def choose_action(board, curr_states):
+    actions = []
+    for i,[r,g,a] in enumerate(board.players):
+        action = a.choose_action(curr_states[i])
+        actions.append(action)
+        r._set_dir(action)
+    return actions
 
-        # 3. update the board by moving the players based on the actions
-        move_success = []
-        for [r,g,a] in board.players:
-            move_success.append (
-                r.move(x_max=board_size, y_max=board_size)
-            )
-        # print("   Step 3 done", move_success)
+def move_robots(board, board_size):
+    move_success = []
+    for [r,g,a] in board.players:
+        move_success.append (
+            r.move(x_max=board_size, y_max=board_size)
+        )
+    return move_success
+
+def get_new_states(board):
+    new_states = []
+    collisions = []
+    for i,[r,g,a] in enumerate(board.players):
+        collision_count = r.detect_robots()  # detect which robots are in the view
+        collisions.append(collision_count)
+        for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view
+            r.detected_robots["robot"][j] = board.get_robot_by_id(r.detected_robots['id'][j])
+        new_state = r.get_DQL_state(g)
+        new_states.append(new_state)
+    return new_states, collisions
+
+def get_reward(board, reward_dataset, move_success, collisions, epoch, iter):
+    rewards = []
+    for i,[r,g,a] in enumerate(board.players):
+        if not isinstance(reward_dataset[r.id-1][epoch],list):
+            reward_dataset[r.id-1][epoch] = []
+        reward = reward_policy(r,g,move_success[i], collisions[i], iter)
+        rewards.append(reward)
+        reward_dataset[r.id-1][epoch].append(reward)
+    return rewards
+
+def get_update(board, loss_dataset, epoch, curr_states, actions, rewards, new_states, done, TRAIN=True):
+    for i,[r,g,a] in enumerate(board.players):
+        if not isinstance(loss_dataset[r.id-1][epoch],list):
+            loss_dataset[r.id-1][epoch] = []
+        done = (len(board.players) == 0)
+
+        a.remember(curr_states[i], actions[i], rewards[i], new_states[i], done)
+        if TRAIN:
+            loss = a.replay(batch_size=128)
+            loss_dataset[r.id-1][epoch].append(loss)
+    return done
+
+def game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN=True):
+    actions = choose_action(board, curr_states)
+    move_success = move_robots(board, board_size)
+    set_board(board)
+    new_states, collisions = get_new_states(board)
+    rewards = get_reward(board, reward_dataset, move_success, collisions, epoch, iter)
+    done = get_update(board, loss_dataset, epoch, curr_states, actions, rewards, new_states, done, TRAIN)
+
+    if iter > 3000 or (len(board.players) == 0):
+        done = True
+    curr_states = new_states
+    iter += 1
+    return iter, reward_dataset, loss_dataset, curr_states, actions, move_success, new_states, collisions, rewards, done
+
+def game_plotting(board, ax1, axs, robot_count):
+    for [r,g,a] in board.players:
+        axs[r.id-1].imshow(r.view, vmin=-robot_count, vmax=robot_count)
+        # axs[r.id-1].plot(range(iter)[-100:],loss_dataset[r.id-1][epoch][-100:])
+        # axs[r.id-1].plot(range(iter)[-100:],reward_dataset[r.id-1][epoch][-100:])
+        axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
+        ax1.imshow(board.board, vmin=-robot_count, vmax=robot_count)
+    plt.pause(0.5)
+    for [r,g,a] in board.players:
+        axs[r.id-1].cla()
+    ax1.cla()
+
+def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SHOW=False, SHOW_LAST_EPOCH=False, agent_directory=''):
+    robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size,h=1,w=1,closeness_threshold=threshold//3, view_threshold=threshold) for i in range(robot_count)] # randomly innitilize robots
+    reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
+    loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
+
+    if SHOW:
+        main_fig, ax1, axs = create_figure(robot_count)
+
+    for epoch in range(EPOCHS):
+        print("-"*100,epoch,"-"*100)
+        logger.info(f'{"-"*100} {epoch} {"-"*100}')
         
-        # 4. update the view and environment
-        board.update_robots()
-        board.draw_board()
-        board.update_views()
-        # print("Step 4 done")
-
-        # 5. get the new states for each robot 
-        new_states = []
-        collisions = []
-        for i,[r,g,a] in enumerate(board.players):
-            collision_count = r.detect_robots()  # detect which robots are in the view
-            collisions.append(collision_count)
-            for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view
-                r.detected_robots["robot"][j] = board.get_robot_by_id(r.detected_robots['id'][j])
-
-            new_state = r.get_DQL_state(g)
-            new_states.append(new_state)
-        # print("Step 5 done")
-        # 6. compute the reward
-        rewards = []
-        for i,[r,g,a] in enumerate(board.players):
-            if not isinstance(reward_dataset[r.id-1][epoch],list):
-                reward_dataset[r.id-1][epoch] = []
-            reward = calculate_reward(r,g,move_success[i], collisions[i], iter)
-            rewards.append(reward)
-            reward_dataset[r.id-1][epoch].append(reward)
-        # print("Step 6 done", rewards)
-
-        # 7. Store experience & train
-        for i,[r,g,a] in enumerate(board.players):
-            if not isinstance(loss_dataset[r.id-1][epoch],list):
-                loss_dataset[r.id-1][epoch] = []
-            done = (len(board.players) == 0)
-
-            a.remember(curr_states[i], actions[i], rewards[i], new_states[i], done)
-            if TRAIN:
-                loss = a.replay(batch_size=128)
-                loss_dataset[r.id-1][epoch].append(loss)
-
-        if iter > 3000 or (len(board.players) == 0):
-            done = True
-
-        #     print("loss: ",i,loss)
-        # print("Step 7 done")
-
-        # 8. update the current_states with new_states
-        curr_states = new_states
-        iter += 1
-        # print("Step 8 done")
-        # print(iter, len(board.players))
-
-        if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
-            for [r,g,a] in board.players:
-                axs[r.id-1].imshow(r.view, vmin=-robot_count, vmax=robot_count)
-                # axs[r.id-1].plot(range(iter)[-100:],loss_dataset[r.id-1][epoch][-100:])
-                # axs[r.id-1].plot(range(iter)[-100:],reward_dataset[r.id-1][epoch][-100:])
-                axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
-                ax1.imshow(board.board, vmin=-robot_count, vmax=robot_count)
-            plt.pause(0.5)
-            for [r,g,a] in board.players:
-                axs[r.id-1].cla()
-            ax1.cla()
-        # print("-"*50)
-    iter_time_end = time.time()
-
-    loss_r = []
-    reward_r = []
-    for i in range(len(loss_dataset)):
-        # Replace None values with np.nan
-        mean_list_loss = [val if val is not None else np.nan for val in loss_dataset[i][epoch]]
-        mean_list_reward = [val if val is not None else np.nan for val in reward_dataset[i][epoch]]
+        # reset players for each epoch
+        board.players = []
+        for i,[r,g] in enumerate(robots):
+            board.add_robot(r,g,agent)
         
-        # Avoid empty lists by checking the length before calculating the mean
-        if len(mean_list_loss) > 0 and not all(np.isnan(val) for val in mean_list_loss):
-            loss_r.append(np.nanmean(mean_list_loss))  # Use np.nanmean to ignore np.nan values
-        else:
-            loss_r.append(np.nan)  # Append np.nan if the list is empty or only contains np.nan values
+        reset_positions(board.players, board_size)
         
-        if len(mean_list_reward) > 0 and not all(np.isnan(val) for val in mean_list_reward):
-            reward_r.append(np.nanmean(mean_list_reward))  # Use np.nanmean to ignore np.nan values
-        else:
-            reward_r.append(np.nan)
+        set_board(board)
+        curr_states = get_curr_state(board)
 
-    print(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
-    logger.info(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
+        if (not SHOW) and SHOW_LAST_EPOCH and epoch == EPOCHS-1:
+            main_fig, ax1, axs = create_figure(robot_count)
+            game_plotting(board, ax1, axs, robot_count)        
 
-print("Training completed.")
-agent.save_model(directory=f"GoalChasing_QLearning/agents/")
+        iter = 0
+        iter_time_start = time.time()
+        done = False
 
-states = np.array([t[0] for t in agent.memory], dtype=np.float32)
-actions = np.array([t[1] for t in agent.memory], dtype=np.int32)
-rewards = np.array([t[2] for t in agent.memory], dtype=np.float32)
-next_states = np.array([t[3] for t in agent.memory], dtype=np.float32)
-dones = np.array([t[4] for t in agent.memory], dtype=np.float32)
-print("Saving training data...")
-np.save("GoalChasing_QLearning/training_data/curr_state.npy", states)
-np.save("GoalChasing_QLearning/training_data/action.npy", actions)
-np.save("GoalChasing_QLearning/training_data/reward.npy", rewards)
-np.save("GoalChasing_QLearning/training_data/next_state.npy", next_states)
-np.save("GoalChasing_QLearning/training_data/dones.npy",dones)
-if SHOW or SHOW_LAST_EPOCH:
-    plt.ioff()
-    plt.show()
+        while not done:
+            iter, reward_dataset, loss_dataset, curr_states, \
+            actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN)
+
+            if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
+                game_plotting(board, ax1, axs, robot_count)
+
+        iter_time_end = time.time()
+
+        loss_r = []
+        reward_r = []
+        for i in range(len(loss_dataset)):
+            # Replace None values with np.nan
+            mean_list_loss = [val if val is not None else np.nan for val in loss_dataset[i][epoch]]
+            mean_list_reward = [val if val is not None else np.nan for val in reward_dataset[i][epoch]]
+            
+            # Avoid empty lists by checking the length before calculating the mean
+            if len(mean_list_loss) > 0 and not all(np.isnan(val) for val in mean_list_loss):
+                loss_r.append(np.nanmean(mean_list_loss))  # Use np.nanmean to ignore np.nan values
+            else:
+                loss_r.append(np.nan)  # Append np.nan if the list is empty or only contains np.nan values
+            
+            if len(mean_list_reward) > 0 and not all(np.isnan(val) for val in mean_list_reward):
+                reward_r.append(np.nanmean(mean_list_reward))  # Use np.nanmean to ignore np.nan values
+            else:
+                reward_r.append(np.nan)
+
+        print(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
+        logger.info(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
+
+    save_model_and_data(agent, agent_directory)
+
+    if SHOW or SHOW_LAST_EPOCH:
+        plt.ioff()
+        plt.show()
+
