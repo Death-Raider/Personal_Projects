@@ -80,7 +80,7 @@ class Robot:
                 other_robot = self.detected_robots['robot'][i]
                 if other_robot is None:
                     continue
-                if self.get_dist(other_robot)[0] < self.closeness_threshold:
+                if self.get_dist(other_robot)[0] < self.closeness_threshold*0.5:
                     collisions += 1
             return collisions
 

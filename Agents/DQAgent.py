@@ -2,9 +2,9 @@ import numpy as np
 import random
 from collections import deque
 import tensorflow as tf
-from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Input, BatchNormalization, Dropout
-from tensorflow.keras.optimizers import Adam
+from keras.models import Model
+from keras.layers import Dense, Input, BatchNormalization, Dropout, Reshape, MultiHeadAttention, LayerNormalization, Flatten, Concatenate
+from keras.optimizers import Adam
 import keras
 
 class DQAgent:
@@ -28,18 +28,38 @@ class DQAgent:
         self.update_target_network()
 
     def build_model(self):
-        inputs = Input(shape=(self.state_dim,))
-        x = Dense(256, activation='sigmoid')(inputs)
-        x = BatchNormalization()(x)
-        x = Dropout(0.4)(x)
+        grid_size = (2 * 10 + 1) ** 2       # threshold = 10 → 441
+        per_token_features = 2
+        global_features = 2
 
-        y = Dense(256, activation='tanh')(inputs)
-        y = BatchNormalization()(y)
-        y = Dropout(0.2)(y)
-        
-        z = x+y
-        x = Dense(32, activation='relu')(z)
+        total_input_dim = grid_size * per_token_features + global_features
+        assert self.state_dim == total_input_dim, f"Mismatch: expected {total_input_dim}, got {self.state_dim}"
+
+        inputs = Input(shape=(self.state_dim,))
+
+        # Split into local tokens and global features
+        local_tokens = inputs[:, :grid_size * per_token_features]
+        global_feats = inputs[:, grid_size * per_token_features:]
+
+        # Reshape local tokens for attention: (batch, tokens, features)
+        x = Reshape((grid_size, per_token_features))(local_tokens)
+
+        # Multi-head self-attention
+        attention_out = MultiHeadAttention(num_heads=2, key_dim=8)(x, x, x)
+        x = LayerNormalization()(x + attention_out)
+
+        # Flatten attention output
+        x = Flatten()(x)
+
+        # Concatenate with global features
+        x = Concatenate()([x, global_feats])
+
+        # Dense layers
+        x = Dense(256, activation='relu')(x)
+        x = Dropout(0.3)(x)
+        x = Dense(64, activation='relu')(x)
         outputs = Dense(self.action_dim, activation='linear')(x)
+
         return Model(inputs=inputs, outputs=outputs)
     
     def save_model(self,directory):
@@ -97,8 +117,23 @@ class DQAgent:
         
         return loss
     
-    def evaluate(self, states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor):
-        loss = self.train_step(states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor)
+    def evaluate(self, states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor, batch=100):
+        if batch is None:
+            loss = self.train_step(states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor)
+        else:
+            num_batches = len(states_tensor) // batch
+            loss = 0.0
+            for b in range(num_batches):
+                start = b * batch
+                end = start + batch
+                loss += self.train_step(
+                    states_tensor[start:end],
+                    actions_tensor[start:end],
+                    rewards_tensor[start:end],
+                    next_states_tensor[start:end],
+                    dones_tensor[start:end]
+                )
+            loss /= num_batches
         return loss
 
     @tf.function

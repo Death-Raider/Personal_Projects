@@ -8,6 +8,7 @@ class Board:
         self.size = size
         self.board = np.zeros((size,size))
         self.players: list[list[Robot,Goal,any]]  = []
+        self.max_players = 0
     
         self.action_map = {
             "up": 0, 

@@ -52,6 +52,7 @@ def reward_policy(r: Robot, g: Goal, move_success: bool, collision_count: int, t
         reward -= 2 * collision_count
     else:
         reward += 0.2
+
     # ---------- collision avoidance policy ----------------- #
     for i,r_o in enumerate(r.detected_robots['robot']):
         dist = r.detected_robots['pos'][i][0]
@@ -111,7 +112,7 @@ def save_model_and_data(agent, dir_path):
         os.makedirs(f"GoalChasing_QLearning/training_data/")
     if not os.path.exists(f"GoalChasing_QLearning/training_data/{dir_path}"):
         os.makedirs(f"GoalChasing_QLearning/training_data/{dir_path}")
-        
+
     np.save(f"GoalChasing_QLearning/training_data/{dir_path}/curr_state.npy", states)
     np.save(f"GoalChasing_QLearning/training_data/{dir_path}/action.npy", actions)
     np.save(f"GoalChasing_QLearning/training_data/{dir_path}/reward.npy", rewards)
@@ -166,10 +167,10 @@ def move_robots(board, board_size):
 
 def get_new_states(board):
     new_states = []
-    collisions = []
+    collisions = [0]*board.max_players  # initialize collision counts for each robot
     for i,[r,g,a] in enumerate(board.players):
         collision_count = r.detect_robots()  # detect which robots are in the view
-        collisions.append(collision_count)
+        collisions[r.id-1] = collision_count
         for j in range(len(r.detected_robots['id'])):  #  give the robot information for those in the view
             r.detected_robots["robot"][j] = board.get_robot_by_id(r.detected_robots['id'][j])
         new_state = r.get_DQL_state(g)
@@ -224,11 +225,12 @@ def game_plotting(board, ax1, axs, robot_count):
         axs[r.id-1].cla()
     ax1.cla()
 
-def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SHOW=False, SHOW_LAST_EPOCH=False, agent_directory=''):
+def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SHOW=False, SHOW_LAST_EPOCH=False, SAVE_EVERY_EPOCH=False , agent_directory=''):
     robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size,h=1,w=1,closeness_threshold=threshold//3, view_threshold=threshold) for i in range(robot_count)] # randomly innitilize robots
     reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
     loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
-
+    collision_dataset = np.array([[0]*robot_count for i in range(EPOCHS)], dtype='float32')
+    board.max_players = robot_count
     if SHOW:
         main_fig, ax1, axs = create_figure(robot_count)
 
@@ -257,10 +259,11 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
         while not done:
             iter, reward_dataset, loss_dataset, curr_states, \
             actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN)
-
+            collision_dataset[epoch] += np.array(collisions, dtype='float32')
             if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
                 game_plotting(board, ax1, axs, robot_count)
-
+        print(collision_dataset[epoch])
+        collision_dataset[epoch] = collision_dataset[epoch]/iter 
         iter_time_end = time.time()
 
         loss_r = []
@@ -283,10 +286,11 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
 
         print(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
         logger.info(f"iter: {iter}\ttime per iter: {(iter_time_end-iter_time_start)/iter:.4f}\tEpoch time: {(iter_time_end-iter_time_start):.2f}\taverage_loss: {loss_r}\taverage_reward: {reward_r}")
-
-    save_model_and_data(agent, agent_directory)
+        if SAVE_EVERY_EPOCH:
+            save_model_and_data(agent, agent_directory)
 
     if SHOW or SHOW_LAST_EPOCH:
         plt.ioff()
         plt.show()
+    return collision_dataset, reward_dataset, loss_dataset
 
