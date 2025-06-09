@@ -42,16 +42,14 @@ def reward_policy(r: Robot, g: Goal, move_success: bool, collision_count: int, t
     # Primary reward components
     reward = 2 * (1/distance)  # Distance incentive
     reward += 4 if distance < 1.3 else 0  # Distance incentive
-    reward += 5 * np.cos(angle_error)  # Direction alignment
+    reward += 5 * np.cos(angle_error/2)**2  # Direction alignment
     reward -= time*0.01  # Step penalty
     
     # Collision/behavior penalties
     if not move_success:
         reward -= 2
     if collision_count > 0:
-        reward -= 2 * collision_count
-    else:
-        reward += 0.2
+        reward -=  -10 #2 * collision_count
 
     # ---------- collision avoidance policy ----------------- #
     for i,r_o in enumerate(r.detected_robots['robot']):
@@ -262,7 +260,6 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
             collision_dataset[epoch] += np.array(collisions, dtype='float32')
             if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
                 game_plotting(board, ax1, axs, robot_count)
-        print(collision_dataset[epoch])
         collision_dataset[epoch] = collision_dataset[epoch]/iter 
         iter_time_end = time.time()
 
