@@ -21,14 +21,13 @@ Feel free to explore, use, and contribute to any of these projects! 😊
 
 # **Advanced Projects**
 
-### 1. [Food Calorie Estimation](https://github.com/Death-Raider/Personal_Projects/tree/FoodCalorieEstimation)
-An AI-powered project that estimates the calorie content of food items from images based on IEEE FooDD dataset. Useful for health-conscious individuals and nutrition tracking applications.
-- Change name and updated the code based on the kaggle code
+### 1. [Q and Deep-Q Learning Agent](https://github.com/Death-Raider/Personal_Projects/tree/Pong-Agent)
+Implemented Q-Learning and Deep-Q Learning agents and tested in general environments, notably Pong and Goal Chasing. Showcased Curriculum Learning in DQN results in better performance and generalization capability.
 
 ---
 
-### 2. [WISH - Women In STEM and Healthcare](https://github.com/Death-Raider/Personal_Projects/tree/WISH-Women_In_STEM_and_Healthcare)
-This project is part of an initiative to promote women's engagement in STEM and healthcare fields. Our app focuses on promoting women in the research sector and access to critical information in order to combat bias in research.
+### 2. [MetaTrader5 Python Auto Trader](https://github.com/Death-Raider/Personal_Projects/tree/MetaTrader5_autotrader)
+Implemented automatic trading via technical analysis at different levels of complexity to understand market movement. Includes Adaptive TP and SL based on ATR, Agressive Loss Prevention and Trailing SL to minimize losses, and Profit Thresholding to lock in profits and maximize consistant profits. 
 
 ---
 
@@ -37,10 +36,8 @@ An HR analytics project that examines employee retention, satisfaction, and prod
 
 ---
 
-### 4. [GDG Recruitment Competition - Dataset Creation](https://github.com/Death-Raider/Personal_Projects/tree/GDG_Recruitment_Competetion_Dataset_Creation)
+### 4. [Synthetic Heat Transfer Dataset - GDG Competition](https://github.com/Death-Raider/Personal_Projects/tree/GDG_Recruitment_Competetion_Dataset_Creation)
 A project focusing on creating, preprocessing, and adding noise to the datasets for a recruitment competition. Includes insights on synthetic data generation and preparation techniques.
-- Completely change the name based on what it does, add the GDG details in readme
-- Add the kaggle code for modeling
 
 ---
 
@@ -54,24 +51,26 @@ An AI-driven solution for identifying weeds and diseases in agricultural crops. 
 
 ---
 
-### 7. [Hexapod](https://github.com/Death-Raider/Personal_Projects/tree/Hexapod)
-A robotics project focused on designing and simulating a six-legged robot (hexapod). The project explores kinematics, stability, and locomotion strategies. The Hexapod is visulized with Rviz2.
-- Rename branch to smth different with RL incorporated
+### 7. [Hygwell Assignment - Interview](https://github.com/Death-Raider/Personal_Projects/tree/Hygwell_Assignment_Interview)
+A technical assignment completed for a Hygwell interview. It showcases analytical and technical problem-solving skills with real-world datasets by means of 
+  1. Automated web scraping
+  2. PDF parsing
+  3. Vector Search for sentiment based retrieval
+  4. API creation
+  5. Containerization with Docker
 
 ---
 
-### 8. [Networking Using Sockets](https://github.com/Death-Raider/Personal_Projects/tree/NetworkingUsingSockets)
-An exploration of network communication using Python sockets. Includes example networking devicies like Relay/Bridge, Hub, and client/server.
-- Rename branch to disaster relif based name 
+### 8. [BlackCoffer Assignment - Interview](https://github.com/Death-Raider/Personal_Projects/tree/BlackCoffer_Assignment_Interview)
+A technical assignment completed for a BlackCoffer interview. It showcases analytical and technical problem-solving skills with real-world datasets by means of automated web scraping.
 
 ---
 
 ### 9. [Minecraft Segmentation](https://github.com/Death-Raider/Personal_Projects/tree/Minecraft-Segmentation)
 A computer vision project focused on segmenting objects in Minecraft screenshots. It include automating in-game tasks and building AI agents for Minecraft environments.
-- Rename branch to minecraft segmentation and automation agent
 
-### 10. [Pong-QAgent](https://github.com/Death-Raider/Personal_Projects/tree/Pong-Agent)
-Implemented one-shot Q-Learning on the game Pong to train the agents to play against each other to achieve the highest score.
+### 10. [Food Calorie Estimation](https://github.com/Death-Raider/Personal_Projects/tree/FoodCalorieEstimation)
+An AI-powered project that estimates the calorie content of food items from images based on IEEE FooDD dataset. Useful for health-conscious individuals and nutrition tracking applications.
 
 ---
 
@@ -80,8 +79,8 @@ Implemented one-shot Q-Learning on the game Pong to train the agents to play aga
 
 # **Intermediate Projects**
 
-### 1. [BlackCoffer Assignment - Interview](https://github.com/Death-Raider/Personal_Projects/tree/BlackCoffer_Assignment_Interview)
-A technical assignment completed for a BlackCoffer interview. It showcases analytical and technical problem-solving skills with real-world datasets by means of automated web scraping.
+### 1. [Disaster Relief Custom Router](https://github.com/Death-Raider/Personal_Projects/tree/NetworkingUsingSockets)
+An exploration of network communication using Python sockets. Includes example networking devicies like Relay/Bridge, Hub, and client/server.
 
 ---
 
@@ -95,9 +94,8 @@ A data science project submitted for the GDSC 2023 Recruitment Challenge @ VIT C
 
 ---
 
-### 4. [HTML Template](https://github.com/Death-Raider/Personal_Projects/tree/html_template)
-A versatile and customizable HTML template designed to simplify the initial setup for web development projects. It includes reusable components, a responsive grid system, and starter styles to accelerate development.
-Given a JSON object, automate the process of creating a website.
+### 4. [WISH - Women In STEM and Healthcare](https://github.com/Death-Raider/Personal_Projects/tree/WISH-Women_In_STEM_and_Healthcare)
+This project is part of an initiative to promote women's engagement in STEM and healthcare fields. Our app focuses on promoting women in the research sector and access to critical information in order to combat bias in research.
 
 ---
 
@@ -116,13 +114,8 @@ A scientific project aimed at detecting microbial hotspots in an area based on u
 
 ---
 
-### 8. [Hygwell Assignment - Interview](https://github.com/Death-Raider/Personal_Projects/tree/Hygwell_Assignment_Interview)
-A technical assignment completed for a Hygwell interview. It showcases analytical and technical problem-solving skills with real-world datasets by means of 
-  1. Automated web scraping
-  2. PDF parsing
-  3. Vector Search for sentiment based retrieval
-  4. API creation
-  5. Containerization with Docker
+### 8. [ROS2 Hexapod](https://github.com/Death-Raider/Personal_Projects/tree/Hexapod)
+A robotics project focused on designing and simulating a six-legged robot (hexapod). The project explores kinematics, stability, and locomotion strategies. The Hexapod is visulized with Rviz2.
 
 ---
 
@@ -181,8 +174,10 @@ Projects utilizing the Robot Operating System (ROS) for robotic applications. Cr
 ### 10. [Partial Differential Equation Modeling](https://github.com/Death-Raider/Personal_Projects/tree/Partial_Differential_Equation_Modeling)
 A mathematical modeling project focused on solving partial differential equations to simulate real-world phenomena like heat transfer, fluid dynamics, and wave propagation. Implemented in JavaScript and supports creation of solution graph.
 
-### 11. [MetaTrader5 Python Auto Trader](https://github.com/Death-Raider/Personal_Projects/tree/MetaTrader5_autotrader)
-A mathematical modeling project focused on solving partial differential equations to simulate real-world phenomena like heat transfer, fluid dynamics, and wave propagation. Implemented in JavaScript and supports creation of solution graph.
+### 11. [HTML Template](https://github.com/Death-Raider/Personal_Projects/tree/html_template)
+A versatile and customizable HTML template designed to simplify the initial setup for web development projects. It includes reusable components, a responsive grid system, and starter styles to accelerate development.
+Given a JSON object, automate the process of creating a website.
+
 ---
 
 
