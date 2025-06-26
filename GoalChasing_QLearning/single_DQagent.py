@@ -49,7 +49,7 @@ def reward_policy(r: Robot, g: Goal, move_success: bool, collision_count: int, t
     if not move_success:
         reward -= 2
     if collision_count > 0:
-        reward -=  -10 #2 * collision_count
+        reward -= 10 #2 * collision_count
 
     # ---------- collision avoidance policy ----------------- #
     for i,r_o in enumerate(r.detected_robots['robot']):

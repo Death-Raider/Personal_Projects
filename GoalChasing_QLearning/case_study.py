@@ -19,9 +19,9 @@ agent: GC_QL.DQAgent = GC_QL.DQAgent(
     target_update_freq = 100,
 )
 agent.epsilon = 0.01
-GC_QL.load_model_and_data(agent, 't1')
+GC_QL.load_model_and_data(agent, 't9')
 
-# GC_QL.run(board, threshold, 5, board_size, agent, 100, True, False, False, True, 't10')
+GC_QL.run(board, threshold, 5, board_size, agent, 100, True, False, False, True, 't10')
 #Dual Robot Cases
 # dir can be one of the 8 directions: [NE, N, NW, E, W ,SE, S, SW]
 R1 = GC_QL.Robot(
