@@ -20,8 +20,8 @@
 - That being said, what is mentioned above is only for detecting if we wanna buy or sell, but fails to account for duration! For CFD trading, we can treat it as futures, hence having an unlimited time of expiry. This leads to some intresting situations with the possibility of infinite loss (with leverage) which can cause our account to hit zero. To mitigate this, it is good to set realistic take profits and stop losses. Therefore to execute a trade automatically these variables need to be defined.
   - Buy or Sell
   - lot size
-  - TP
-  - SL
+  - TP/SL
+  - Close Trade (0/1)
 - There may be additional things we can set up as well to mitigate losses before TP or SL have been hit. However those are complex in nature and would require multi agent systems.
 
 # Sources

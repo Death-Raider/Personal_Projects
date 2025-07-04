@@ -21,7 +21,7 @@ timeframe = mt5.TIMEFRAME_M5
 # bias_timeframe = mt5.TIMEFRAME_H1
 start_pos = 0
 count = int(28800)  # 1 days of data at 1-minute intervals
-display_count = 144*10
+display_count = 144*2
 
 rates = mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count)
 mt5.shutdown()
@@ -44,7 +44,7 @@ def prepare_data(rates: list, display_count: int) -> pd.DataFrame:
     df['atr'] = df['atr'].bfill()  # Fill NaN values in ATR column
     # Calculate bias and merge
     bias_df = get_bias(df.copy(), period=10)
-    df = get_signal_combined(df,thresh=[90,20], bias=bias_df['bias']) # bias_df['bias']
+    df = get_signal_combined(df,thresh=[90,20], bias=None) # bias_df['bias']
     # df['slope'] = bias_df['middle_band']
     df = df.merge(bias_df[['time', 'bias']], on='time', how='left')
     return df.iloc[-display_count:].reset_index(drop=True)

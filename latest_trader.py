@@ -143,20 +143,20 @@ print(mt5.account_info())
 symbol = "XAUUSD"
 timeframe = mt5.TIMEFRAME_M5
 count = int(2880)
-plotting_count = 144
-hold_period = 4 # chandels from main.py testing
+plotting_count = 2800
+hold_period = 12 # chandels from main.py testing
 lot_size = 0.01
 
-sl_multiplier = 1.2
-tp_multiplier = 1.5
+sl_multiplier = 1.5
+tp_multiplier = 1.3
 fake_tp_multiplier = tp_multiplier / 2
 
 entry_state = [None, None, None, None, None, None, None] # (open_trade_ticket, open_trade_time, prev_time, signal, atr, stoploss, takeprofit)
 
-ax1,ax2,ax11 = init_plot(symbol, plotting_count, 'M5')
+# ax1,ax2,ax11 = init_plot(symbol, plotting_count, 'M5')
 df = get_latest_data(symbol, timeframe, count=count)
 bias_df = df.copy()
-
+demo = True
 try:
     while True:
         # Get latest data
@@ -174,6 +174,10 @@ try:
         if (entry_state[2] is None) or (latest_candle_time > entry_state[2]):
             latest_row = plotting_df.iloc[-2]  # <- Use the PREVIOUS fully closed candle
             entry_state[3] = latest_row['signal']  # Update the signal in entry_state
+
+            if demo:
+                entry_state[3] = -1
+            demo = False
 
             entry_state[4] = latest_row['atr']  # Update the ATR in entry_state
             print(f"Closed Candle Signal: {entry_state[3]}, Close Price: {latest_row['close']}")
@@ -223,15 +227,15 @@ try:
             entry_state[1] = None
             entry_state[5] = 0.0
             entry_state[6] = 0.0
-
+        time.sleep(0.01)
         # Plotting
-        ax1.set_ylim(plotting_df['lower_band'].min() - 10, plotting_df['upper_band'].max() + 10)
-        create_chart(plotting_df, ax1, ax2)
-        ax1, ax2, ax11 = plot_df(plotting_df, ax1, ax2, ax11)
-        plt.pause(0.01)
-        ax1.cla()
-        ax2.cla()
-        ax11.cla()
+        # ax1.set_ylim(plotting_df['lower_band'].min() - 10, plotting_df['upper_band'].max() + 10)
+        # create_chart(plotting_df, ax1, ax2)
+        # ax1, ax2, ax11 = plot_df(plotting_df, ax1, ax2, ax11)
+        # plt.pause(0.01)
+        # ax1.cla()
+        # ax2.cla()
+        # ax11.cla()
 
 except KeyboardInterrupt:
     print("Exiting on user request")
