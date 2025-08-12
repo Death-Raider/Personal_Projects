@@ -121,16 +121,19 @@ def load_model_and_data(agent, dir_path):
     agent.load_model(f"GoalChasing_QLearning/agents/{dir_path}")
     agent.update_target_network()
     print("Model loaded from", f"GoalChasing_QLearning/agents/{dir_path}")
+    if os.path.exists(f"GoalChasing_QLearning/training_data/{dir_path}"):
+        states =        np.load(f"GoalChasing_QLearning/training_data/{dir_path}/curr_state.npy", allow_pickle=True)
+        actions =       np.load(f"GoalChasing_QLearning/training_data/{dir_path}/action.npy", allow_pickle=True)
+        rewards =       np.load(f"GoalChasing_QLearning/training_data/{dir_path}/reward.npy", allow_pickle=True)
+        next_states =   np.load(f"GoalChasing_QLearning/training_data/{dir_path}/next_state.npy", allow_pickle=True)
+        dones =         np.load(f"GoalChasing_QLearning/training_data/{dir_path}/dones.npy", allow_pickle=True)
 
-    states =        np.load(f"GoalChasing_QLearning/training_data/{dir_path}/curr_state.npy", allow_pickle=True)
-    actions =       np.load(f"GoalChasing_QLearning/training_data/{dir_path}/action.npy", allow_pickle=True)
-    rewards =       np.load(f"GoalChasing_QLearning/training_data/{dir_path}/reward.npy", allow_pickle=True)
-    next_states =   np.load(f"GoalChasing_QLearning/training_data/{dir_path}/next_state.npy", allow_pickle=True)
-    dones =         np.load(f"GoalChasing_QLearning/training_data/{dir_path}/dones.npy", allow_pickle=True)
+        agent.memory = [*zip(states, actions, rewards, next_states, dones)] # load to memory
 
-    agent.memory = [*zip(states, actions, rewards, next_states, dones)] # load to memory
-
-    return states, actions, rewards, next_states, dones
+        return states, actions, rewards, next_states, dones
+    else :
+        print("No training data found in", f"GoalChasing_QLearning/training_data/{dir_path}")
+        return None, None, None, None, None
 
 def set_board(board):
     board.update_robots()
@@ -185,13 +188,12 @@ def get_reward(board, reward_dataset, move_success, collisions, epoch, iter):
         reward_dataset[r.id-1][epoch].append(reward)
     return rewards
 
-def get_update(board, loss_dataset, epoch, curr_states, actions, rewards, new_states, done, TRAIN=True):
+def get_update(board, loss_dataset,iter, epoch, curr_states, actions, rewards, new_states, done, TRAIN=True):
     for i,[r,g,a] in enumerate(board.players):
         if not isinstance(loss_dataset[r.id-1][epoch],list):
             loss_dataset[r.id-1][epoch] = []
-        done = (len(board.players) == 0)
-
-        a.remember(curr_states[i], actions[i], rewards[i], new_states[i], done)
+        done[r.id-1] = iter
+        a.remember(curr_states[i], actions[i], rewards[i], new_states[i], False) # done flag is True if the robot is not in the game
         if TRAIN:
             loss = a.replay(batch_size=128)
             loss_dataset[r.id-1][epoch].append(loss)
@@ -203,10 +205,7 @@ def game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_
     set_board(board)
     new_states, collisions = get_new_states(board)
     rewards = get_reward(board, reward_dataset, move_success, collisions, epoch, iter)
-    done = get_update(board, loss_dataset, epoch, curr_states, actions, rewards, new_states, done, TRAIN)
-
-    if iter > 3000 or (len(board.players) == 0):
-        done = True
+    done = get_update(board, loss_dataset, iter, epoch, curr_states, actions, rewards, new_states, done, TRAIN)
     curr_states = new_states
     iter += 1
     return iter, reward_dataset, loss_dataset, curr_states, actions, move_success, new_states, collisions, rewards, done
@@ -228,6 +227,7 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
     reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
     loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
     collision_dataset = np.array([[0]*robot_count for i in range(EPOCHS)], dtype='float32')
+    dones = np.zeros_like(collision_dataset)
     board.max_players = robot_count
     if SHOW:
         main_fig, ax1, axs = create_figure(robot_count)
@@ -252,15 +252,16 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
 
         iter = 0
         iter_time_start = time.time()
-        done = False
+        done = np.zeros(robot_count)  # done for each robot
 
-        while not done:
+        while not len(board.players) == 0 and iter < 1000:
             iter, reward_dataset, loss_dataset, curr_states, \
             actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN)
             collision_dataset[epoch] += np.array(collisions, dtype='float32')
             if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
                 game_plotting(board, ax1, axs, robot_count)
-        collision_dataset[epoch] = collision_dataset[epoch]/iter 
+            print(iter)
+        dones[epoch] = done
         iter_time_end = time.time()
 
         loss_r = []
@@ -289,5 +290,5 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
     if SHOW or SHOW_LAST_EPOCH:
         plt.ioff()
         plt.show()
-    return collision_dataset, reward_dataset, loss_dataset
+    return collision_dataset, reward_dataset, loss_dataset, dones
 

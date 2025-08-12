@@ -21,7 +21,7 @@ agent: GC_QL.DQAgent = GC_QL.DQAgent(
 agent.epsilon = 0.01
 GC_QL.load_model_and_data(agent, 't9')
 
-GC_QL.run(board, threshold, 5, board_size, agent, 100, True, False, False, True, 't10')
+# GC_QL.run(board, threshold, 5, board_size, agent, 100, True, False, False, False, 't10')
 #Dual Robot Cases
 # dir can be one of the 8 directions: [NE, N, NW, E, W ,SE, S, SW]
 R1 = GC_QL.Robot(
@@ -71,17 +71,17 @@ plt.imshow(board.board, cmap='gray', vmin=-2, vmax=2)
 
 EPOCHS = 1
 iter = 0
-done = False
 
 robot_count = len(board.players)
 board.max_players = robot_count
+done = np.zeros(robot_count)
 
 reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
 loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
 
 curr_states = GC_QL.get_curr_state(board)
 
-while not done:
+while not len(board.players) == 0 and iter < 3000:
     iter, reward_dataset, loss_dataset, curr_states,actions, move_success, new_states, collisions, rewards, done = GC_QL.game_loop(
                                                                                                                     board, 
                                                                                                                     board_size, 
@@ -95,6 +95,7 @@ while not done:
                                                                                                                 )
     print(collisions, rewards)
     print(len(board.players))
+    print(iter,done)
     plt.imshow(board.board, cmap='gray', vmin=-2, vmax=2)
     plt.pause(0.5)
 plt.show()  

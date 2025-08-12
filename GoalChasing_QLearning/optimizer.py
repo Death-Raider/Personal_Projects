@@ -6,7 +6,6 @@ import numpy as np
 SHOW = False
 SHOW_LAST_EPOCH = False
 TRAIN = True
-LOAD_MODEL = False
 # EPOCHS = 120
 INDEXES =       [0,     1,      2,      3,      4,      5,      6,      7,      8,      9   ]
 ROBOT_COUNTS =  [10,    20,     30,     10,     20,     40,     10,     20,     30,     50  ]
@@ -18,7 +17,7 @@ EPOCHS =        [40,    60,     54,     40,     60,     54,     40,     60,     
 threshold = 10
 state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 
 action_dim = 8
-start_id = 6
+start_id = 0
 
 for id, rc, bs, lr, epsilon, epch in zip(INDEXES, ROBOT_COUNTS, BOARD_SIZES, LRS, INIT_EPSILONS, EPOCHS):
     if id < start_id:
@@ -27,8 +26,8 @@ for id, rc, bs, lr, epsilon, epch in zip(INDEXES, ROBOT_COUNTS, BOARD_SIZES, LRS
     robot_count = rc
     board_size = bs
     board = GC_QL.Board(board_size)
-    load_agent_directory = f"t{id-1}"
-    save_agent_directory = f"t{id}"
+    load_agent_directory = f"x{id-1}"
+    save_agent_directory = f"x{id}"
     # create the agents
     agent: GC_QL.DQAgent = GC_QL.DQAgent(
         state_dim=state_dim, 
