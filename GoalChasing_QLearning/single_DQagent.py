@@ -199,8 +199,11 @@ def get_update(board, loss_dataset,iter, epoch, curr_states, actions, rewards, n
             loss_dataset[r.id-1][epoch].append(loss)
     return done
 
-def game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN=True):
-    actions = choose_action(board, curr_states)
+def game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN=True, OVERRIDE_ACTIONS=None):
+    if OVERRIDE_ACTIONS is None:
+        actions = choose_action(board, curr_states)
+    else:
+        actions = OVERRIDE_ACTIONS(board, curr_states)
     move_success = move_robots(board, board_size)
     set_board(board)
     new_states, collisions = get_new_states(board)
@@ -213,8 +216,6 @@ def game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_
 def game_plotting(board, ax1, axs, robot_count):
     for [r,g,a] in board.players:
         axs[r.id-1].imshow(r.view, vmin=-robot_count, vmax=robot_count)
-        # axs[r.id-1].plot(range(iter)[-100:],loss_dataset[r.id-1][epoch][-100:])
-        # axs[r.id-1].plot(range(iter)[-100:],reward_dataset[r.id-1][epoch][-100:])
         axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
         ax1.imshow(board.board, vmin=-robot_count, vmax=robot_count)
     plt.pause(0.5)
@@ -222,7 +223,7 @@ def game_plotting(board, ax1, axs, robot_count):
         axs[r.id-1].cla()
     ax1.cla()
 
-def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SHOW=False, SHOW_LAST_EPOCH=False, SAVE_EVERY_EPOCH=False , agent_directory=''):
+def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SHOW=False, SHOW_LAST_EPOCH=False, SAVE_EVERY_EPOCH=False , agent_directory='', OVERRIDE_ACTIONS=None):
     robots: list[list[Robot,Goal]] = [ create_random_agents(i+1,board_size,h=1,w=1,closeness_threshold=threshold//3, view_threshold=threshold) for i in range(robot_count)] # randomly innitilize robots
     reward_dataset = [[0]*EPOCHS for i in range(robot_count)]
     loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
@@ -256,7 +257,7 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
 
         while not len(board.players) == 0 and iter < 1000:
             iter, reward_dataset, loss_dataset, curr_states, \
-            actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN)
+            actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN, OVERRIDE_ACTIONS=OVERRIDE_ACTIONS)
             collision_dataset[epoch] += np.array(collisions, dtype='float32')
             if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
                 game_plotting(board, ax1, axs, robot_count)

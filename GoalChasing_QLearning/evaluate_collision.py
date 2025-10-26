@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import GoalChasing_QLearning.single_DQagent as GC_QL
+import time
 
 threshold = 10
 state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2 
@@ -24,6 +25,18 @@ eval_df = pd.DataFrame(EVALUATION_MATRIX.copy(), index=ROBOT_COUNT_RANGE, column
 eval_2_df = pd.DataFrame(EVALUATION_MATRIX.copy(), index=ROBOT_COUNT_RANGE, columns=BOARD_SIZE_RANGE)
 values = GC_QL.load_model_and_data(agent, 't9')
 
+def trivial_action(board: GC_QL.Board, curr_states: list):
+    actions = []
+    for i,[r,g,a] in enumerate(board.players):
+        dist, angle = r.get_dist(g)
+        angle_deg = angle * 180/np.pi
+        angle_binary = np.argmin([abs(DIR - angle_deg) for DIR in r.DIR_ANGLES])
+        # print( angle, angle_deg, r.DIR_ANGLES, angle_binary)
+        action = angle_binary # a.choose_action(curr_states[i])
+        actions.append(action)
+        r._set_dir(action)
+    return actions
+
 for rc in ROBOT_COUNT_RANGE:
     for bs in BOARD_SIZE_RANGE:
 
@@ -35,13 +48,14 @@ for rc in ROBOT_COUNT_RANGE:
         epch = 10
 
         agent.epsilon = 0.01
-        col, *_, dones = GC_QL.run(board, threshold, robot_count, board_size, agent, epch, TRAIN=False, SHOW=False, SHOW_LAST_EPOCH=False, SAVE_EVERY_EPOCH=False, 
-                    agent_directory='xx')
+        col, *_, dones = GC_QL.run(board, threshold, robot_count, board_size, agent, epch, TRAIN=False, SHOW=True, SHOW_LAST_EPOCH=False, SAVE_EVERY_EPOCH=False, 
+                    agent_directory='xx', OVERRIDE_ACTIONS=None)
+        # time.sleep(0.2)
         print("collisions:", col)
         print("collisions:", dones)
         eval_df.loc[rc, bs] = col.sum()/dones.sum()
         eval_2_df.loc[rc, bs] = np.sqrt(dones * (col/dones - eval_df.loc[rc, bs])**2).sum() / dones.sum()
         print("Average collision over all robot over all epochs:", np.round(eval_df.loc[rc, bs],2), "with std:", np.round(eval_2_df.loc[rc, bs],2))
 
-eval_df.to_csv("GoalChasing_QLearning/evaluation.csv")
-eval_2_df.to_csv("GoalChasing_QLearning/evaluation_std.csv")
+eval_df.to_csv("GoalChasing_QLearning/evaluation_trivial.csv")
+eval_2_df.to_csv("GoalChasing_QLearning/evaluation_trivial_std.csv")

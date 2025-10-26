@@ -81,6 +81,18 @@ loss_dataset = [[0]*EPOCHS for i in range(robot_count)]
 
 curr_states = GC_QL.get_curr_state(board)
 
+def trivial_action(board: GC_QL.Board, curr_states: list):
+    actions = []
+    for i,[r,g,a] in enumerate(board.players):
+        dist, angle = r.get_dist(g)
+        angle_deg = angle * 180/np.pi
+        angle_binary = np.argmin([abs(DIR - angle_deg) for DIR in r.DIR_ANGLES])
+        # print( angle, angle_deg, r.DIR_ANGLES, angle_binary)
+        action = angle_binary # a.choose_action(curr_states[i])
+        actions.append(action)
+        r._set_dir(action)
+    return actions
+
 while not len(board.players) == 0 and iter < 3000:
     iter, reward_dataset, loss_dataset, curr_states,actions, move_success, new_states, collisions, rewards, done = GC_QL.game_loop(
                                                                                                                     board, 
@@ -91,7 +103,8 @@ while not len(board.players) == 0 and iter < 3000:
                                                                                                                     reward_dataset, 
                                                                                                                     loss_dataset, 
                                                                                                                     done, 
-                                                                                                                    False # train
+                                                                                                                    False, # train,
+                                                                                                                    OVERRIDE_ACTIONS=trivial_action
                                                                                                                 )
     print(collisions, rewards)
     print(len(board.players))
