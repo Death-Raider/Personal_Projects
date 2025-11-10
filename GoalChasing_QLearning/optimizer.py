@@ -1,6 +1,7 @@
 # import GoalChasing_QLearning.multi_DQagent_FederatedLearning as GC_QL
 import GoalChasing_QLearning.single_DQagent as GC_QL
 import numpy as np
+from tqdm import tqdm
 
 # Parameters for training and evaluation
 SHOW = False
@@ -19,7 +20,7 @@ state_dim = (2*threshold+1) * (2*threshold+1) * 2 + 2
 action_dim = 8
 start_id = 0
 
-for id, rc, bs, lr, epsilon, epch in zip(INDEXES, ROBOT_COUNTS, BOARD_SIZES, LRS, INIT_EPSILONS, EPOCHS):
+for id, rc, bs, lr, epsilon, epch in tqdm(zip(INDEXES, ROBOT_COUNTS, BOARD_SIZES, LRS, INIT_EPSILONS, EPOCHS), total=len(INDEXES), desc="Overall Progress"):
     if id < start_id:
         continue
 
@@ -35,8 +36,8 @@ for id, rc, bs, lr, epsilon, epch in zip(INDEXES, ROBOT_COUNTS, BOARD_SIZES, LRS
         lr=lr,
         gamma=0.90,                    # Prioritize short-term rewards
         epsilon_decay=0.9998,           # Slower exploration decay
-        memory_size=2000, 
-        target_update_freq = 100,
+        memory_size=20000, 
+        target_update_freq = 1000,
     )
 
     if id != 0:

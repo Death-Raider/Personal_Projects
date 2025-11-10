@@ -12,7 +12,7 @@ class Robot:
         self.w = w
         self.a = a
         self.v = v
-        self.dir: int = dir # [NE, N, NW, E, W ,SE, S, SW] -> [135, 90, 45, 180, 0, 225, 270, 315]
+        self.dir: int = dir # [NE, N, NW, W, E ,SW, S, SE] -> [135, 90, 45, 180, 0, 225, 270, 315]
         self.cooperation = cooperation
         self.closeness_threshold = closeness_threshold
         self.view_threshold = view_threshold
@@ -27,7 +27,7 @@ class Robot:
         self.DIR_ANGLES = [135, 90, 45, 180, 0, 225, 270, 315]
 
     def move(self,x_max,y_max):
-        #           [NE,  N, NW,  E, W, SE, S, SW]
+        #           [NE,  N, NW,  W, E, SW, S, SE]
         row_order = [-1, -1, -1,  0, 0,  1, 1, 1] # Y
         col_order = [-1,  0,  1, -1, 1, -1, 0, 1] # X
 
@@ -74,16 +74,19 @@ class Robot:
                 for key in self.detected_robots.keys():
                     self.detected_robots[key].pop(index)
             
-            # collision detection
-            collisions = 0
-            for i in range(len(self.detected_robots['id'])):
-                other_robot = self.detected_robots['robot'][i]
-                if other_robot is None:
-                    continue
-                # print("other robot detected:", other_robot, self.get_dist(other_robot))
-                if self.get_dist(other_robot)[0] < self.closeness_threshold*0.5:
-                    collisions += 1
-            return collisions
+            return self.check_collisions()
+        
+    def check_collisions(self):
+        # collision detection
+        collisions = 0
+        for i in range(len(self.detected_robots['id'])):
+            other_robot = self.detected_robots['robot'][i]
+            if other_robot is None:
+                continue
+            # print("other robot detected:", other_robot, self.get_dist(other_robot))
+            if self.get_dist(other_robot)[0] <= self.closeness_threshold*0.5:
+                collisions += 1
+        return collisions
 
     def get_DQL_state(self, goal: Goal):
         self.dist_view = self.view.copy()
@@ -92,7 +95,7 @@ class Robot:
         
         for x in zip(r,c):
             id = int(self.view[x[0],x[1]])
-            if id < 0:
+            if id < 0: # Do not consider Other goal here
                 continue
             if id == self.id:
                 self.angle_view[x[0],x[1]] = self.DIR_ANGLES[self.dir] * np.pi/180

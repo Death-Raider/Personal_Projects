@@ -28,12 +28,10 @@ class DQAgent:
         self.update_target_network()
 
     def build_model(self):
-        grid_size = (2 * 10 + 1) ** 2       # threshold = 10 → 441
         per_token_features = 2
         global_features = 2
 
-        total_input_dim = grid_size * per_token_features + global_features
-        assert self.state_dim == total_input_dim, f"Mismatch: expected {total_input_dim}, got {self.state_dim}"
+        grid_size = (self.state_dim - global_features) // per_token_features
 
         inputs = Input(shape=(self.state_dim,))
 

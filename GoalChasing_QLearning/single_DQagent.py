@@ -4,10 +4,15 @@ from Environments.GoalChasing.goal import Goal
 from Agents.DQAgent import DQAgent
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import matplotlib.patches as patches
+from matplotlib import cm
 import numpy as np
 import time
 import logging
 import os
+from tqdm import tqdm
+
+plt.rcParams['font.family'] = 'Segoe UI Emoji'
 
 logging.basicConfig(filename='GoalChasing_QLearning/output.log', filemode='a', level=logging.DEBUG, format='%(message)s')
 logger = logging.getLogger('goal_chasing')
@@ -19,7 +24,7 @@ def create_random_agents(id,board_size,**kwargs)->list[Robot,Goal]:
     r1.set_random_init_state(board_size, board_size)
     r1.v = 1
     g1.set_random_goal(board_size, board_size)
-    print(r1.get_dist(g1)[0])
+    # print(r1.get_dist(g1)[0])
     while r1.get_dist(g1)[0] < board_size*0.50:
         g1.set_random_goal(board_size, board_size)
     return [r1,g1]
@@ -59,9 +64,22 @@ def reward_policy(r: Robot, g: Goal, move_success: bool, collision_count: int, t
         if dist > r.closeness_threshold * 1.5:
             reward += 0.2  # reward spacing
 
+        # one possible way is to reward if the robot is facing away from the other robot
         ro_angle = r_o.DIR_ANGLES[r_o.dir]*np.pi/180
         angle_diff = np.abs(angle_dir - ro_angle) % (2*np.pi)
         reward += np.cos(angle_diff/2)**2
+        # Another possible way to do the same
+        # x is the angle of the other robot if we consider self as facing north/up (90 degrees)
+        # to make self facing north, we do (pi/2 - angle_dir)
+        # then add the angle of the other robot to get x
+        # x = ( np.pi/2 - angle_dir + ro_angle ) % (2*np.pi)
+        # front if ( self.dir vector) dot ( vector self to other robot ) >= 0 else back
+        # if robot is in front of self:
+        #    reward = np.sin(x)/2 - 0.25 
+        #    i.e. if self is facing right (0 degree), and other robot on our right and is going down, then x = 270 + (90-0) = 0 degrees
+        # if robot is in back of self:
+        #     reward = - (np.sin(x)/2 - 0.25)
+        #     i.e if self is facing right (0 degree), and other robot on our left and is going up, then x = 90 + (90-0) = 180 degrees
     return reward
 
 def create_figure(robot_count):
@@ -73,12 +91,17 @@ def create_figure(robot_count):
     """
 
     total_boxes = robot_count + 2 # plus two for the main board rowspan
-    row_count = int(np.ceil(np.sqrt(total_boxes)))
-    col_count = row_count
-    print("grid size = ",row_count,col_count)
+    row_count = max(2, int(np.ceil(np.sqrt(total_boxes / 1.5))))
+    col_count = max(1, int(np.ceil(total_boxes / row_count)))
+
+    print(f"Grid size = {row_count} rows x {col_count} cols")
     plt.ion()
     main_fig = plt.figure(figsize=(20,20))
-    gs = gridspec.GridSpec(row_count,col_count)
+    gs = gridspec.GridSpec(row_count,col_count,
+                           figure=main_fig,
+                           wspace=0.2,   # horizontal space between subplots
+                            hspace=0.6)    # vertical space between subplots
+    
     ax1 = main_fig.add_subplot(gs[:2,0]) # main images
     axs = []
     for i in range(row_count):
@@ -214,10 +237,72 @@ def game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_
     return iter, reward_dataset, loss_dataset, curr_states, actions, move_success, new_states, collisions, rewards, done
 
 def game_plotting(board, ax1, axs, robot_count):
+    
+    cmap = cm.get_cmap('viridis').copy()
+    cmap.set_bad(color="#E6E6E6")
+
     for [r,g,a] in board.players:
-        axs[r.id-1].imshow(r.view, vmin=-robot_count, vmax=robot_count)
-        axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
-        ax1.imshow(board.board, vmin=-robot_count, vmax=robot_count)
+        # masked = np.ma.masked_where(r.view==0, r.view)
+        masked = np.ma.masked_array(r.view, mask=np.ones_like(r.view, dtype=bool))
+        axs[r.id-1].imshow(masked, cmap=cmap, vmin=-robot_count, vmax=robot_count)
+        # axs[r.id-1].set_title(f"{r.id}\n"+','.join(map(str,r.detected_robots['id'])))
+        axs[r.id-1].set_title(f"{r.id}\n"+r.check_collisions()*"X")
+        view_h, view_w = r.view.shape
+        center_x, center_y = (view_w-1) / 2, (view_h-1) / 2
+
+        # Closeness threshold circle in robot view
+        circle_view = patches.Circle(
+            (center_x, center_y),
+            radius=r.closeness_threshold,
+            fill=False,
+            color='red',
+            linewidth=0.5,
+        )
+        axs[r.id-1].add_patch(circle_view)
+
+        axs[r.id-1].text(center_x, center_y, f"{r.id}🤖", fontsize=12, ha='center', va='center', color="#071068") # add robot icon in view
+        for other_r in r.detected_robots['robot']: # add robot icon of detected robots in view
+            if other_r is None:
+                continue
+            other_index = r.detected_robots['id'].index(other_r.id)
+            other_pos = r.detected_robots['pos'][other_index]
+            other_x = center_x + other_pos[0] * np.cos(other_pos[1])
+            other_y = center_y - other_pos[0] * np.sin(other_pos[1])
+            axs[r.id-1].text(other_x, other_y, f"{other_r.id}🤖", fontsize=10, ha='center', va='center', color="#071068") # add other robot icon in view
+        
+        # add other goal icon in view
+        goal_indicies = np.where(r.view < 0)
+        for gy,gx in zip(goal_indicies[0], goal_indicies[1]):
+            goal_x = gx
+            goal_y = gy
+            axs[r.id-1].text(goal_x, goal_y, f"{-int(r.view[goal_y, goal_x])}⭐", fontsize=10, ha='center', va='center', color='#DAA520') # add goal icon in view
+
+        # Collision threshold circle in robot view
+        collision_view = patches.Circle(
+            (center_x, center_y),
+            radius=r.closeness_threshold*0.5,
+            fill=False,
+            color='black',
+            linewidth=0.5,
+        )
+        axs[r.id-1].add_patch(collision_view)
+
+        circle_board = patches.Circle(
+            (r.x + (r.w-1) / 2, r.y + (r.h-1) / 2),
+            radius=r.closeness_threshold,
+            fill=False,
+            color='red',
+            linewidth=0.5,
+        )
+        ax1.add_patch(circle_board)
+        robot_x, robot_y = r.x, r.y
+        goal_x, goal_y = g.x, g.y
+        ax1.text(robot_x, robot_y, f"{r.id}🤖", fontsize=12, ha='center', va='center', color="#071068") # add robot icon in board
+        ax1.text(goal_x, goal_y, f"{g.id}⭐", fontsize=12, ha='center', va='center', color='#DAA520') # add goal icon in board
+
+    # masked_board = np.ma.masked_where(board.board == 0, board.board)
+    masked_board = np.ma.masked_array(board.board, mask=np.ones_like(board.board, dtype=bool))
+    ax1.imshow(masked_board, cmap=cmap, vmin=-robot_count, vmax=robot_count)
     plt.pause(0.5)
     for [r,g,a] in board.players:
         axs[r.id-1].cla()
@@ -233,8 +318,8 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
     if SHOW:
         main_fig, ax1, axs = create_figure(robot_count)
 
-    for epoch in range(EPOCHS):
-        print("-"*100,epoch,"-"*100)
+    for epoch in tqdm(range(EPOCHS), desc=" - Epoch Progress"):
+        # print("-"*100,epoch,"-"*100)
         logger.info(f'{"-"*100} {epoch} {"-"*100}')
         
         # reset players for each epoch
@@ -254,14 +339,16 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
         iter = 0
         iter_time_start = time.time()
         done = np.zeros(robot_count)  # done for each robot
-
+        pbar = tqdm(total=1000, desc="   - Iteration Progress", leave=False)
         while not len(board.players) == 0 and iter < 1000:
             iter, reward_dataset, loss_dataset, curr_states, \
             actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN, OVERRIDE_ACTIONS=OVERRIDE_ACTIONS)
             collision_dataset[epoch] += np.array(collisions, dtype='float32')
             if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
                 game_plotting(board, ax1, axs, robot_count)
-            print(iter)
+            pbar.update(1)
+        pbar.close()
+            # print(iter)
         dones[epoch] = done
         iter_time_end = time.time()
 
