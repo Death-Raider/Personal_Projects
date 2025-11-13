@@ -1,6 +1,6 @@
-# import GoalChasing_QLearning.optimizer as opt
+import GoalChasing_QLearning.optimizer as opt
 # import GoalChasing_QLearning.case_study as GC_CaseStudy
-import GoalChasing_QLearning.evaluate_collision as eval_collision
+# import GoalChasing_QLearning.evaluate_collision as eval_collision
 
 
 """
