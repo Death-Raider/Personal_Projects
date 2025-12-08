@@ -344,6 +344,8 @@ def run(board, threshold, robot_count, board_size, agent, EPOCHS, TRAIN=True, SH
             iter, reward_dataset, loss_dataset, curr_states, \
             actions, move_success, new_states, collisions, rewards, done = game_loop(board, board_size, curr_states, iter, epoch, reward_dataset, loss_dataset, done, TRAIN, OVERRIDE_ACTIONS=OVERRIDE_ACTIONS)
             collision_dataset[epoch] += np.array(collisions, dtype='float32')
+            if agent.epsilon > agent.epsilon_min:
+                agent.epsilon *= agent.epsilon_decay
             if SHOW or (SHOW_LAST_EPOCH and epoch == EPOCHS-1):
                 game_plotting(board, ax1, axs, robot_count)
             pbar.update(1)

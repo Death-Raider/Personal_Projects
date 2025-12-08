@@ -106,9 +106,6 @@ class DQAgent:
 
         loss = self.train_step(states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor)
 
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-
         self.steps += 1
         if self.steps % self.target_update_freq == 0:
             self.update_target_network()
