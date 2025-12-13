@@ -8,8 +8,8 @@ from advanced.strats import bollbands, KDJ, backtest, get_signal_combined, get_b
 from plot import plot_df, create_chart, get_session, init_plot
 
 
-DEMO_ACCOUNT_NO = 10820447
-DEMO_ACCOUNT_PASS = "eK!K5l#d"
+DEMO_ACCOUNT_NO = 11338578
+DEMO_ACCOUNT_PASS = "p8Bga*9h"
 DEMO_SERVER = "VantageInternational-Demo"
 
 if not mt5.initialize(login=DEMO_ACCOUNT_NO, server=DEMO_SERVER, password=DEMO_ACCOUNT_PASS):
@@ -21,10 +21,11 @@ timeframe = mt5.TIMEFRAME_M5
 # bias_timeframe = mt5.TIMEFRAME_H1
 start_pos = 0
 count = int(28800)  # 1 days of data at 1-minute intervals
-display_count = 144*2
+display_count = 144*5
 
 rates = mt5.copy_rates_from_pos(symbol, timeframe, start_pos, count)
 mt5.shutdown()
+
 # ========================
 # Data Preparation
 # ========================
@@ -43,8 +44,8 @@ def prepare_data(rates: list, display_count: int) -> pd.DataFrame:
     )
     df['atr'] = df['atr'].bfill()  # Fill NaN values in ATR column
     # Calculate bias and merge
-    bias_df = get_bias(df.copy(), period=10)
-    df = get_signal_combined(df,thresh=[90,20], bias=None) # bias_df['bias']
+    bias_df = get_bias(df.copy(), period=10, extrema_order=10)
+    df = get_signal_combined(df,thresh=[90,20], bias=bias_df['bias']) # bias_df['bias']
     # df['slope'] = bias_df['middle_band']
     df = df.merge(bias_df[['time', 'bias']], on='time', how='left')
     return df.iloc[-display_count:].reset_index(drop=True)

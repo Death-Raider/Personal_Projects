@@ -178,11 +178,6 @@ def backtest(
         current_drawup = max_price - entry_price if signal == 1 else entry_price - min_price
         current_drawdown = entry_price - min_price if signal == 1 else max_price - entry_price
 
-        # Adaptive SL/TP updates
-        if current_sl is not None and current_tp is not None:
-            prev_sl_doller = entry_price - current_sl if signal == 1 else current_sl - entry_price
-            prev_tp_doller = current_tp - entry_price if signal == 1 else entry_price - current_tp
-
         current_sl, current_tp = get_adaptive_sl_tp(
             entry_price=entry_price,
             current_price=current_price,
@@ -198,10 +193,6 @@ def backtest(
             anti_loss_mode=True
         )
 
-        new_sl_doller = entry_price - current_sl if signal == 1 else current_sl - entry_price
-        new_tp_doller = current_tp - entry_price if signal == 1 else entry_price - current_tp
-
-        # print("updated:",(prev_sl_doller, prev_tp_doller) , (new_sl_doller,new_tp_doller), "PnL:",entry_price - current_price if signal == -1 else current_price - entry_price)
         # Exit checks ---------------------------------------------------------
         exit_reason = None
         exit_price = None
@@ -303,31 +294,6 @@ def get_adaptive_sl_tp(
         sl = current_sl
         tp = current_tp
 
-        if current_price >= entry_price:
-            # market is in our favour
-            # check if fake_tp is hit
-            if current_price >= calc_fake_tp:
-                # fake tp is hit, update the stop loss and take profit but making sure it doesnt go below the current stop loss
-                # and take profit
-                sl = max(current_sl, entry_price) # stop loss is shifted to the entry price
-                tp = max(calc_tp, current_tp) # take profit is shifted to the calculated take profit
-                if aggressive_trail:
-                    # if aggressive trail is enabled, we can shift the stop loss to the change in price above the fake tp
-                    # but not below the current stop loss
-                    sl = max(sl, entry_price + (current_price - calc_fake_tp))
-            else: # price is below fake tp
-                if anti_loss_mode:
-                    # if anti loss mode is enabled, we can shift the stop loss to the entry price
-                    sl = max(current_sl, calc_sl + (min_sl_dollars * 0.4)) # reduce the stop loss
-                    tp = round(entry_price + max_tp_dollars*0.7, 2) # reduce the profits a bit
-        # else:
-        #     # market is against us
-        #     # check for anti loss mode and check with calc and current values
-        #     if anti_loss_mode:
-        #         # if anti loss mode is enabled, we can shift the stop loss to the entry price
-        #         print("ANTI LOSS MODE ENABLED")
-        #         sl = round(entry_price - min_sl_dollars*0.6, 2)
-        #         tp = round(entry_price + max_tp_dollars*0.4, 2)
     elif signal == -1:
             calc_tp = round(entry_price - max_tp_dollars,2)
             calc_sl = round(entry_price + min_sl_dollars,2)
@@ -340,32 +306,5 @@ def get_adaptive_sl_tp(
             
             tp = current_tp
             sl = current_sl
-            
-            if current_price <= entry_price:
-                # market is in our favour
-                # check if fake_tp is hit
-                if current_price <= calc_fake_tp:
-                    # fake tp is hit, update the stop loss and take profit but making sure it doesnt go below the current stop loss
-                    # and take profit
-                    sl = min(current_sl, entry_price) # stop loss is shifted to the entry price
-                    tp = min(calc_tp, current_tp) # take profit is shifted to the calculated take profit
-                    print("Sell fake tp hit, updating sl and tp", sl, tp)
-                    if aggressive_trail:
-                        # if aggressive trail is enabled, we can shift the stop loss to the change in price below the fake tp
-                        # but not above the current stop loss
-                        sl = min(sl, entry_price - ( -current_price + calc_fake_tp))
-                else: # price is above fake tp
-                    if anti_loss_mode:
-                        print("ANTI LOSS MODE ENABLED")
-                        # if anti loss mode is enabled, we can shift the stop loss to the entry price
-                        sl = min(current_sl, calc_sl - (min_sl_dollars * 0.5)) # reduce the stop loss
-                        tp = round(entry_price - max_tp_dollars*0.7, 2) # reduce the profits a bit
-            # else:
-            #     # market is against us
-            #     # check for anti loss mode and check with calc and current values
-            #     if anti_loss_mode:
-            #         # if anti loss mode is enabled, we can shift the stop loss to the entry price
-            #         sl = round(entry_price + min_sl_dollars*0.6, 2)
-            #         tp = round(entry_price - max_tp_dollars*0.4, 2)
 
     return round(sl, 2), round(tp, 2)

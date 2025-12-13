@@ -129,8 +129,8 @@ def update_df(symbol:str, timeframe:int, df:pd.DataFrame, count=100):
     return df
 
 
-DEMO_ACCOUNT_NO = 10820447
-DEMO_ACCOUNT_PASS = "eK!K5l#d"
+DEMO_ACCOUNT_NO = 11338578
+DEMO_ACCOUNT_PASS = "p8Bga*9h"
 DEMO_SERVER = "VantageInternational-Demo"
 
 
@@ -142,21 +142,21 @@ print(mt5.account_info())
 
 symbol = "XAUUSD"
 timeframe = mt5.TIMEFRAME_M5
-count = int(2880)
-plotting_count = 2800
-hold_period = 12 # chandels from main.py testing
+count = int(28800)
+plotting_count = 144
+hold_period = 5 # chandels from main.py testing
 lot_size = 0.01
 
-sl_multiplier = 1.5
-tp_multiplier = 1.3
-fake_tp_multiplier = tp_multiplier / 2
+sl_multiplier = 1.2
+tp_multiplier = 1.5
+fake_tp_multiplier = 0.5
 
 entry_state = [None, None, None, None, None, None, None] # (open_trade_ticket, open_trade_time, prev_time, signal, atr, stoploss, takeprofit)
 
-# ax1,ax2,ax11 = init_plot(symbol, plotting_count, 'M5')
+ax1,ax2,ax11 = init_plot(symbol, plotting_count, 'M5')
 df = get_latest_data(symbol, timeframe, count=count)
 bias_df = df.copy()
-demo = True
+demo = False
 try:
     while True:
         # Get latest data
@@ -184,8 +184,16 @@ try:
 
             if entry_state[3] != 0:
                 if entry_state[0] is None:
+
+                    sl_value = latest_row['atr'] * sl_multiplier
+                    tp_value = latest_row['atr'] * tp_multiplier
+                    entry_state[5] = latest_row['close'] - sl_value if entry_state[3] == 1 else latest_row['close'] + sl_value
+                    entry_state[6] = latest_row['close'] + tp_value if entry_state[3] == 1 else latest_row['close'] - tp_value
+
                     entry_state[0] = execute_trade(entry_state[3], symbol, lot_size=lot_size, sl_value=entry_state[5], tp_value=entry_state[6])
                     entry_state[1] = datetime.now()
+                else: 
+                    print("Current Position is there")
 
             entry_state[2] = latest_candle_time  # Update after processing the candle
 
@@ -198,25 +206,24 @@ try:
                 entry_state[5] = 0.0
                 entry_state[6] = 0.0
                 continue
-            position = position[0]  # Extract the actual position object
-            entry_price = position.price_open
-            current_price = position.price_current
-            entry_state[5], entry_state[6] = get_adaptive_sl_tp(
-                        entry_price=entry_price,
-                        current_price=current_price,
-                        current_sl= position.sl,
-                        current_tp= position.tp,
-                        current_fake_tp= None,
-                        signal = 1 if position.type == mt5.ORDER_TYPE_BUY else -1,
-                        atr_entry= df.iloc[-1]['atr'],  # Use ATR from entry candle
-                        sl_multiplier = sl_multiplier,
-                        tp_multiplier = tp_multiplier,
-                        fake_tp_multiplier=fake_tp_multiplier,
-                        aggressive_trail=True,
-                        anti_loss_mode=True
-                    )
-            # print(f"Adaptive SL: {entry_state[5]}, TP: {entry_state[6]}")
-            update_tp_sl(symbol, entry_state[0], sl_val=entry_state[5], tp_val=entry_state[6])
+            # position = position[0]  # Extract the actual position object
+            # entry_price = position.price_open
+            # current_price = position.price_current
+            # entry_state[5], entry_state[6] = get_adaptive_sl_tp(
+            #             entry_price=entry_price,
+            #             current_price=current_price,
+            #             current_sl= position.sl,
+            #             current_tp= position.tp,
+            #             current_fake_tp= None,
+            #             signal = 1 if position.type == mt5.ORDER_TYPE_BUY else -1,
+            #             atr_entry= df.iloc[-1]['atr'],  # Use ATR from entry candle
+            #             sl_multiplier = sl_multiplier,
+            #             tp_multiplier = tp_multiplier,
+            #             fake_tp_multiplier=fake_tp_multiplier,
+            #             aggressive_trail=True,
+            #             anti_loss_mode=True
+            #         )
+            # update_tp_sl(symbol, entry_state[0], sl_val=entry_state[5], tp_val=entry_state[6])
 
         # Check if it's time to close the open position
         if (entry_state[0] is not None and 
@@ -227,7 +234,8 @@ try:
             entry_state[1] = None
             entry_state[5] = 0.0
             entry_state[6] = 0.0
-        time.sleep(0.01)
+        time.sleep(0.01)    
+        
         # Plotting
         # ax1.set_ylim(plotting_df['lower_band'].min() - 10, plotting_df['upper_band'].max() + 10)
         # create_chart(plotting_df, ax1, ax2)

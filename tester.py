@@ -60,8 +60,8 @@ import MetaTrader5 as mt5
 # display data on the MetaTrader 5 package
 print("MetaTrader5 package author: ",mt5.__author__)
 print("MetaTrader5 package version: ",mt5.__version__)
-DEMO_ACCOUNT_NO = 10820447
-DEMO_ACCOUNT_PASS = "eK!K5l#d"
+DEMO_ACCOUNT_NO = 11338578
+DEMO_ACCOUNT_PASS = "p8Bga*9h"
 # establish MetaTrader 5 connection to a specified trading account
 if not mt5.initialize(login=DEMO_ACCOUNT_NO, server="VantageInternational-Demo",password=DEMO_ACCOUNT_PASS):
     print("initialize() failed, error code =",mt5.last_error())
