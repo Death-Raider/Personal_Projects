@@ -1,5 +1,0 @@
-threshold: 10
-gamma: 0.90      
-epsilon_decay: 0.9998
-memory_size: 2000
-target_update_freq: 100

@@ -1,0 +1,6 @@
+[*] create GameRunner Class to allow function injection (the run() function from all current envrionment codes)
+    [*] Pong Q Learning
+    [*] Goal Chasing
+[] create multiple example scripts where each script shows a new part being replace (basic_pong.py, diff_reward_pong.py, custom_physics_pong.py, ...)
+    [] Pong Q Learning
+    [] Goal Chasing

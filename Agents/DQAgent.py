@@ -6,6 +6,7 @@ from keras.models import Model
 from keras.layers import Dense, Input, BatchNormalization, Dropout, Reshape, MultiHeadAttention, LayerNormalization, Flatten, Concatenate
 from keras.optimizers import Adam
 import keras
+import time
 
 class DQAgent:
     def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.995, memory_size=2000, batch_size=32, target_update_freq=100):
@@ -90,8 +91,7 @@ class DQAgent:
             batch_size = self.batch_size
         if len(self.memory) < batch_size:
             return
-
-        minibatch = random.sample(self.memory, self.batch_size)
+        minibatch = random.sample(self.memory, batch_size)
         states = np.array([t[0] for t in minibatch], dtype=np.float32)
         actions = np.array([t[1] for t in minibatch], dtype=np.int32)
         rewards = np.array([t[2] for t in minibatch], dtype=np.float32)
@@ -109,7 +109,6 @@ class DQAgent:
         self.steps += 1
         if self.steps % self.target_update_freq == 0:
             self.update_target_network()
-        
         return loss
     
     def evaluate(self, states_tensor, actions_tensor, rewards_tensor, next_states_tensor, dones_tensor, batch=100):

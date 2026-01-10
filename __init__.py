@@ -1,6 +1,11 @@
-# import GoalChasing_QLearning.optimizer as opt
-# import GoalChasing_QLearning.case_study as GC_CaseStudy
-import GoalChasing_QLearning.evaluate_collision as eval_collision
+# import Runners.GoalChasing_QLearning.evaluations.optimizer as opt
+# import GoalChasing_QLearning.evaluations.case_study as GC_CaseStudy
+# import GoalChasing_QLearning.evaluations.evaluate_collision as eval_collision
+
+# from Runners.Pong_QLearning.Q_learning import * 
+# run_game(default_board, {'agent1': agent1, 'agent2': agent2}, epochs=1000, SHOW_LAST_EPOCH=True, SAVE_METRICS=False,)
+
+from Runners.GoalChasing_QLearning.Q_learning import *
 
 
 """
