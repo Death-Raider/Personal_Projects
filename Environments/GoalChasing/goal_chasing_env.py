@@ -298,7 +298,7 @@ class GoalChasingEnvironment(BaseEnvironment):
 
             print(f"Grid size = {row_count} rows x {col_count} cols")
             
-            main_fig = plt.figure(figsize=(20,20))
+            main_fig = plt.figure(figsize=(12,12))
             gs = gridspec.GridSpec(row_count,col_count,
                                 figure=main_fig,
                                 wspace=0.2,   # horizontal space between subplots

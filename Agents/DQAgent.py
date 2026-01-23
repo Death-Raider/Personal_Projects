@@ -9,7 +9,7 @@ import keras
 import time
 
 class DQAgent:
-    def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.995, memory_size=2000, batch_size=32, target_update_freq=100):
+    def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.995, memory_size=2000, batch_size=32, target_update_freq=100, **kwargs):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.lr = lr

@@ -46,7 +46,8 @@ class GameRunner:
             save_metrics: bool = False,
             save_models: bool = False,
             save_directory: str = './saved_models',
-            verbose: int = 1) -> Dict:
+            verbose: int = 1,
+            train: bool = True) -> Dict:
         """
         Run training loop
         
@@ -133,40 +134,41 @@ class GameRunner:
                 dones = self.env.check_done(step)
 
                 # Update agents
-                s1 = time.time()
                 losses = {}
-                for name, agent in self.env.agents.items():
-                    if name not in states or name not in next_states:
-                        continue
-                    # Store experience for replay-based agents
-                    if hasattr(agent, 'remember'):
-                        agent.remember(
-                            states[name],
-                            actions[name],
-                            rewards[name],
-                            next_states[name],
-                            dones[name]
-                        )
-                    # Different update methods for different agent types
-                    
-                    if hasattr(agent, 'replay'):
-                        # DQN-style agents
-                        loss = agent.replay(None)
-                        losses[name] = loss if loss is not None else 0.0
-                        
-                    elif hasattr(agent, 'update_q_value'):
-                        # Q-Learning agents
-                        try:
-                            agent.update_q_value(
+                if train:
+                    s1 = time.time()
+                    for name, agent in self.env.agents.items():
+                        if name not in states or name not in next_states:
+                            continue
+                        # Store experience for replay-based agents
+                        if hasattr(agent, 'remember'):
+                            agent.remember(
                                 states[name],
-                                actions.get(name, 0),
-                                rewards.get(name, 0),
-                                next_states[name]
+                                actions[name],
+                                rewards[name],
+                                next_states[name],
+                                dones[name]
                             )
-                        except:
-                            pass  # Handle index errors gracefully
-                        losses[name] = 0.0
-                # print("First Half: ",time.time()-s1)
+                        # Different update methods for different agent types
+                        
+                        if hasattr(agent, 'replay'):
+                            # DQN-style agents
+                            loss = agent.replay(None)
+                            losses[name] = loss if loss is not None else 0.0
+                            
+                        elif hasattr(agent, 'update_q_value'):
+                            # Q-Learning agents
+                            try:
+                                agent.update_q_value(
+                                    states[name],
+                                    actions.get(name, 0),
+                                    rewards.get(name, 0),
+                                    next_states[name]
+                                )
+                            except:
+                                pass  # Handle index errors gracefully
+                            losses[name] = 0.0
+                    # print("First Half: ",time.time()-s1)
 
                 # Record step metrics
                 for name in self.env.agents.keys():
@@ -233,6 +235,7 @@ class GameRunner:
         os.makedirs(directory, exist_ok=True)
         for name, agent in self.env.agents.items():
             if hasattr(agent, 'save_model'):
+                os.makedirs(f"{directory}/{name}_epoch_{epoch}", exist_ok=True)
                 agent.save_model(f"{directory}/{name}_epoch_{epoch}")
     
     def _save_metrics(self, directory):
@@ -243,7 +246,9 @@ class GameRunner:
         
         serializable_metrics = {
             'rewards': self.metrics['rewards'],
-            'episode_lengths': self.metrics['episode_lengths']
+            'episode_lengths': self.metrics['episode_lengths'],
+            'custom_metrics': self.metrics['custom_metrics'],
+            'losses': self.metrics['losses']
         }
         
         with open(f"{directory}/metrics.json", 'w') as f:
