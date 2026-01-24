@@ -28,7 +28,16 @@ ROBOT_COUNTS = [10,20,30,10,20,40,10,20,30,50]
 BOARD_SIZES = [50,100,100,40,60,100,40,50,60,100]
 LEARNING_RATES = [1e-3,1e-4,1e-5,1e-3,1e-4,1e-5,1e-3,1e-4,1e-4,1e-5]
 INITIAL_EPSILONS = [1,0.4,0.2,0.4,0.2,0.1,0.4,0.2,0.1,0.05]
-EPOCHS = [4,6,5,4,6,5,4,6,5,5]
+EPOCHS = [40,60,50,40,60,50,40,60,50,50]
+
+start_index = 0
+end_index = 3
+INDEX = INDEX[start_index:end_index]
+ROBOT_COUNTS = ROBOT_COUNTS[start_index:end_index]
+BOARD_SIZES = BOARD_SIZES[start_index:end_index]
+LEARNING_RATES = LEARNING_RATES[start_index:end_index]
+INITIAL_EPSILONS = INITIAL_EPSILONS[start_index:end_index]
+EPOCHS = EPOCHS[start_index:end_index]
 
 state_dim = (2 * 10 + 1) ** 2 * 2 + 2
 action_dim = 8
@@ -76,6 +85,10 @@ agents_configs = {
         num_action_samples=8
         )
 }
+
+if start_index != 0:
+    agents_configs['DQN (Greedy)'].load_model(f'./Runners/GoalChasing_QLearning/results/DQN_(Greedy)_{start_index-1}')
+    agents_configs['CADRL-Style'].load_model(f'./Runners/GoalChasing_QLearning/results/CADRL-Style_{start_index-1}')
 
 for indx,num_robots,board_size,lr,init_eps,epochs in zip(INDEX,ROBOT_COUNTS,BOARD_SIZES,LEARNING_RATES,INITIAL_EPSILONS,EPOCHS):
 
