@@ -111,9 +111,7 @@ for indx,num_robots,board_size,lr,init_eps,epochs in zip(INDEX,ROBOT_COUNTS,BOAR
     results = {}
 
     for name, agent in agents_configs.items():
-        logging.info(f"\n{'='*60}")
         logging.info(f"Training: {name}")
-        logging.info('='*60)
         
         # Create fresh environment
         board = Board(size=board_size)
@@ -139,6 +137,7 @@ for indx,num_robots,board_size,lr,init_eps,epochs in zip(INDEX,ROBOT_COUNTS,BOAR
             render_last_epoch=False,
             save_metrics=True,
             save_models=True,
+            save_model_freq=10,
             save_directory=f'./Runners/GoalChasing_QLearning/results/{name.replace(" ", "_")}_{indx}',
             verbose=2,
             train=True

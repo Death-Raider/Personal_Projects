@@ -45,6 +45,7 @@ class GameRunner:
             render_last_epoch: bool = False,
             save_metrics: bool = False,
             save_models: bool = False,
+            save_model_freq: int = 1,
             save_directory: str = './saved_models',
             verbose: int = 1,
             train: bool = True) -> Dict:
@@ -191,7 +192,7 @@ class GameRunner:
             
             # Record epoch metrics
             self.metrics['rewards'].append({
-                name: np.mean(rewards_list) if rewards_list else 0
+                name: float(np.mean(rewards_list)) if rewards_list else 0
                 for name, rewards_list in epoch_rewards.items()
             })
             self.metrics['losses'].append({
@@ -209,7 +210,7 @@ class GameRunner:
                 self._log_epoch(epoch, epoch_rewards, epoch_losses, step)
             
             # Save models periodically
-            if save_models and (epoch + 1) % 10 == 0:
+            if save_models and (epoch + 1) % save_model_freq == 0:
                 self._save_models(save_directory, epoch)
         
         # Final save
