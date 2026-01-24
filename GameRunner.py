@@ -179,7 +179,7 @@ class GameRunner:
                 
                 # Step callback
                 if step_callback:
-                    step_callback(self.env.board, self.env.agents, step, epoch)
+                    step_callback(self.env.board, self.env.agents, step, epoch, self)
 
                 # Render
                 if should_render:
@@ -195,14 +195,14 @@ class GameRunner:
                 for name, rewards_list in epoch_rewards.items()
             })
             self.metrics['losses'].append({
-                name: np.mean(losses_list) if losses_list else 0
+                name: float(np.mean(losses_list)) if losses_list else 0
                 for name, losses_list in epoch_losses.items()
             })
             self.metrics['episode_lengths'].append(step)
             
             # Episode callback
             if episode_callback:
-                episode_callback(self.env.board, self.env.agents, epoch, self.metrics)
+                episode_callback(self.env.board, self.env.agents, epoch, self.metrics, self)
             
             # Verbose logging
             if verbose >= 2:
@@ -247,9 +247,10 @@ class GameRunner:
         serializable_metrics = {
             'rewards': self.metrics['rewards'],
             'episode_lengths': self.metrics['episode_lengths'],
-            'custom_metrics': self.metrics['custom_metrics'],
             'losses': self.metrics['losses']
         }
         
         with open(f"{directory}/metrics.json", 'w') as f:
             json.dump(serializable_metrics, f, indent=2)
+        with open(f"{directory}/custom_metrics.json", 'w') as f:
+            json.dump(self.metrics['custom_metrics'], f, indent=2)

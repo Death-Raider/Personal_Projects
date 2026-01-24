@@ -25,9 +25,9 @@ action_dim = 8
 
 Collison_Data_Matrix = []
 # ============ Optional: Custom Callbacks ============
-def training_callback(board, agents:dict[str,DQAgent], step, epoch):
+def training_callback(board:Board, agents:dict[str,DQAgent], step:int, epoch:int, runner:GameRunner):
     """Called every step during training"""
-    info = env.get_info()
+    info = runner.env.get_info()
     # print(f"Step {step}, Epoch {epoch}:\n\t{info}\n")
     
     all_collisions = [info['robots'].get(e,{'collisions':0})['collisions'] for e in range(num_robots)]
@@ -64,19 +64,13 @@ for name, agent in agents_configs.items():
     
     # Create fresh environment
     board = Board(size=board_size)
+    board.max_players = num_robots
     agents = {}
     for i in range(num_robots):
-        robot = Robot(id=i+1, h=1, w=1, view_threshold=10, closeness_threshold=3)
-        goal = Goal(id=i+1)
-        robot.set_random_init_state(board_size, board_size)
-        robot.v = 1
-        goal.set_random_goal(board_size, board_size)
-        while robot.get_dist(goal)[0] < board_size * 0.5:
-            goal.set_random_goal(board_size, board_size)
-        board.add_robot(robot, goal, None)
         agents[f'agent{i+1}'] = agent
     
     env = GoalChasingEnvironment(board, agents)
+    env.add_robots()
     runner = GameRunner(env)
     
     metrics = runner.run(

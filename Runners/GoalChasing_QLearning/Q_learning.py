@@ -23,38 +23,7 @@ EPOCHS = 3
 # ============ Setup Board ============
 print("Creating Goal Chasing environment...")
 board = Board(size=BOARD_SIZE)
-
-# ============ Create Robots and Goals ============
-print(f"Creating {NUM_ROBOTS} robots with goals...")
-
-robots_and_goals = []
-for i in range(NUM_ROBOTS):
-    # Create robot
-    robot = Robot(
-        id=i + 1,
-        h=1,
-        w=1,
-        closeness_threshold=CLOSENESS_THRESHOLD,
-        view_threshold=VIEW_THRESHOLD
-    )
-    
-    # Create goal
-    goal = Goal(id=i + 1)
-    
-    # Random initialization
-    robot.set_random_init_state(BOARD_SIZE, BOARD_SIZE)
-    robot.v = 1
-    goal.set_random_goal(BOARD_SIZE, BOARD_SIZE)
-    
-    # Ensure goal is far from robot
-    while robot.get_dist(goal)[0] < BOARD_SIZE * 0.5:
-        goal.set_random_goal(BOARD_SIZE, BOARD_SIZE)
-    
-    robots_and_goals.append((robot, goal))
-
-# Add robots to board
-for robot, goal in robots_and_goals:
-    board.add_robot(robot, goal, None)  # Agent will be assigned by environment
+board.max_players = NUM_ROBOTS
 
 # ============ Create Agent ============
 # State dimension: (view_size * view_size * 2) + global_features
@@ -95,6 +64,7 @@ env = GoalChasingEnvironment(
         'reset_on_goal': True  # Remove robots when they reach goals
     }
 )
+env.add_robots()
 
 # ============ Create Runner ============
 runner = GameRunner(env)

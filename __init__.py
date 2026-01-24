@@ -6,8 +6,8 @@
 # run_game(default_board, {'agent1': agent1, 'agent2': agent2}, epochs=1000, SHOW_LAST_EPOCH=True, SAVE_METRICS=False,)
 
 # from Runners.GoalChasing_QLearning.Q_learning import *
-# from Runners.GoalChasing_QLearning.CADRL_Learning import *
-from Runners.GoalChasing_QLearning.collision_evaluation import *
+from Runners.GoalChasing_QLearning.CADRL_Learning import *
+# from Runners.GoalChasing_QLearning.collision_evaluation import *
 
 # import os
 # import json
