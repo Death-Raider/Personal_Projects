@@ -1,6 +1,6 @@
 import MetaTrader5 as mt5
 import pandas as pd
-from advanced.strats import bollbands, KDJ, backtest, get_signal_combined, get_bias, get_adaptive_sl_tp, calculate_atr
+
 import time
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -107,15 +107,9 @@ def get_latest_data(symbol, timeframe, count=100):
     df['time'] = pd.to_datetime(df['time'], unit='s')
     return df
 
-def add_values_df(df: pd.DataFrame):
-    df = bollbands(df, period=20)
-    df = KDJ(df, period=14, k_smooth=3, d_smooth=10)
-    df['atr'] = calculate_atr(df, period=14)
-    df['atr'] = df['atr'].bfill()  # Fill NaN values in ATR column
-    # bias_df = get_latest_data(symbol, timeframe, count=count)
-    bias_df = get_bias(df, period=10)
-    df = get_signal_combined(df, thresh=[90, 20], bias=bias_df['bias']) # bias_df['bias']
-    return df, bias_df
+def add_values_df(df):
+    # add the code to calculate indicators and add to df here
+    return df
 
 def update_df(symbol:str, timeframe:int, df:pd.DataFrame, count=100):
     latest_df = get_latest_data(symbol, timeframe, count=count)
@@ -144,7 +138,7 @@ symbol = "XAUUSD"
 timeframe = mt5.TIMEFRAME_M5
 count = int(28800)
 plotting_count = 144
-hold_period = 5 # chandels from main.py testing
+hold_period = 5 # candels from main.py testing
 lot_size = 0.01
 
 sl_multiplier = 1.2
@@ -155,13 +149,14 @@ entry_state = [None, None, None, None, None, None, None] # (open_trade_ticket, o
 
 ax1,ax2,ax11 = init_plot(symbol, plotting_count, 'M5')
 df = get_latest_data(symbol, timeframe, count=count)
-bias_df = df.copy()
 demo = False
 try:
     while True:
         # Get latest data
         df = update_df(symbol, timeframe, df, count=2)
-        df,bias_df =  add_values_df(df)
+
+        df =  add_values_df(df)
+
         df.reset_index(drop=True, inplace=True)
         # get new signals absed on trend
         plotting_df = df.iloc[-plotting_count:].copy()
@@ -209,20 +204,7 @@ try:
             # position = position[0]  # Extract the actual position object
             # entry_price = position.price_open
             # current_price = position.price_current
-            # entry_state[5], entry_state[6] = get_adaptive_sl_tp(
-            #             entry_price=entry_price,
-            #             current_price=current_price,
-            #             current_sl= position.sl,
-            #             current_tp= position.tp,
-            #             current_fake_tp= None,
-            #             signal = 1 if position.type == mt5.ORDER_TYPE_BUY else -1,
-            #             atr_entry= df.iloc[-1]['atr'],  # Use ATR from entry candle
-            #             sl_multiplier = sl_multiplier,
-            #             tp_multiplier = tp_multiplier,
-            #             fake_tp_multiplier=fake_tp_multiplier,
-            #             aggressive_trail=True,
-            #             anti_loss_mode=True
-            #         )
+            # entry_state[5], entry_state[6] = get_adaptive_sl_tp()
             # update_tp_sl(symbol, entry_state[0], sl_val=entry_state[5], tp_val=entry_state[6])
 
         # Check if it's time to close the open position
