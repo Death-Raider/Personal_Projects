@@ -1,0 +1,95 @@
+{
+  "mt5": {
+    "account": 12002299,
+    "password": "2gX9&L&Z",
+    "server": "VantageInternational-Demo"
+  },
+  
+  "trading": {
+    "symbol": "XAUUSD",
+    "active_timeframe": "M5",
+    "update_interval_seconds": 120,
+    "max_iterations": 100,
+    
+    "timeframes": {
+      "M1": 1,
+      "M5": 5,
+      "M15": 15,
+      "H1": 16385,
+      "H4": 16388
+    },
+    
+    "data_bars": {
+      "M1": 1500,
+      "M5": 800,
+      "M15": 600,
+      "H1": 300,
+      "H4": 100
+    }
+  },
+  
+  "risk_management": {
+    "account_balance": 1000,
+    "max_risk_per_trade_pct": 1.0,
+    "base_risk_per_trade_pct": 0.5,
+    "contract_size": 100,
+    "min_lot_size": 0.01,
+    "max_lot_size": 1.0,
+    
+    "daily_drawdown_limit_pct": 5.0,
+    "max_portfolio_heat_pct": 10.0,
+    
+    "use_kelly_criterion": true,
+    "kelly_fraction": 0.35,
+    
+    "use_volatility_scaling": true,
+    "vol_target": 30.0,
+    
+    "calculate_var": true,
+    "var_confidence": 0.95,
+    "var_horizon_days": 1
+  },
+  
+  "position_management": {
+    "ttl_options_bars": [5,10,15,20],
+    
+    "tp_atr_multiplier": 2.0,
+    "tp_atr_period":100,
+    "tp_atr_delay": 2,
+    
+    "sl_trailing_enabled": true,
+    "sl_initial_atr_multiplier": 1.5,
+    "sl_trail_trigger_rr": 0.5,
+    "sl_trail_distance_pct": 0.3,
+    
+    "update_tp_sl_every_bars": 1
+  },
+  
+  "volume_profile": {
+    "lookback_bars": 200, 
+    "price_bins": 30,
+    "value_area_pct": 70.0
+  },
+  
+  "signals": {
+    "min_consecutive_bars": 1,
+    "min_confidence_score": 40,
+    "min_risk_reward": 1.5,
+    "min_relative_volume": 0.9
+  },
+  
+  "logging": {
+    "log_directory": "advanced/logs",
+    "log_level": "INFO",
+    "log_trades": true,
+    "log_risk": true,
+    "log_system": true
+  },
+  
+  "output": {
+    "csv_directory": "advanced/data",
+    "charts_base_directory": "advanced",
+    "save_charts_every_n_iterations": 10,
+    "chart_lookback_bars": 144
+  }
+}
