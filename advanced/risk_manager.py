@@ -14,7 +14,7 @@ class ProfessionalRiskManager:
         self.var_cache = None
         self.var_last_calc = None
     
-    def assess_risk(self, df_row, vpoc, val, vah, signal):
+    def assess_risk(self, df_row, vpoc, val, vah, signal, signal_strength=1.0, signal_components=None):
         if signal == 0:
             return self._no_trade_decision("No signal")
         
@@ -25,6 +25,10 @@ class ProfessionalRiskManager:
         liquidity_risk = self._calculate_liquidity_risk(df_row)
         trend_risk = self._calculate_trend_risk(df_row)
         volume_confidence = self._calculate_volume_confidence(df_row)
+        
+        vp_position_score = self._calculate_vp_position_score(df_row, vpoc, val, vah)
+        order_flow_score = self._calculate_order_flow_score(df_row)
+        vwap_relation_score = self._calculate_vwap_relation_score(df_row)
         
         risk_score = (
             volatility_risk * 0.30 +
@@ -48,23 +52,9 @@ class ProfessionalRiskManager:
         if rr_ratio < config.get('signals', 'min_risk_reward'):
             return self._no_trade_decision(f"Poor R:R ratio: {rr_ratio:.2f}")
         
-        base_size = self._calculate_base_position_size(sl_distance)
+        position_size = 0.01
         
-        if config.get('risk_management', 'use_volatility_scaling'):
-            base_size = self._apply_volatility_scaling(base_size, df_row)
-        
-        if config.get('risk_management', 'use_kelly_criterion') and len(self.trade_history) > 20:
-            base_size = self._apply_kelly_criterion(base_size)
-        
-        base_size = self._apply_risk_level_adjustment(base_size, risk_level)
-        
-        base_size = np.clip(
-            base_size,
-            config.get('risk_management', 'min_lot_size'),
-            config.get('risk_management', 'max_lot_size')
-        )
-        
-        var = self._calculate_var(df_row, base_size) if config.get('risk_management', 'calculate_var') else 0
+        var = self._calculate_var(df_row, position_size) if config.get('risk_management', 'calculate_var') else 0
         
         current_price = df_row['close']
         if signal == 1:
@@ -76,11 +66,12 @@ class ProfessionalRiskManager:
             stop_price = entry_price + sl_distance
             target_price = entry_price - tp_distance
         
-        dollar_risk = sl_distance * base_size * config.get('risk_management', 'contract_size')
+        dollar_risk = sl_distance * position_size * config.get('risk_management', 'contract_size')
         
         decision = {
             'should_trade': True,
             'signal': signal,
+            'signal_strength': signal_strength,
             'direction': 'long' if signal == 1 else 'short',
             
             'risk_level': risk_level,
@@ -92,6 +83,10 @@ class ProfessionalRiskManager:
             'trend_risk': trend_risk,
             'volume_confidence': volume_confidence,
             
+            'vp_position_score': vp_position_score,
+            'order_flow_score': order_flow_score,
+            'vwap_relation_score': vwap_relation_score,
+            
             'entry_price': round(entry_price, 2),
             'stop_price': round(stop_price, 2),
             'target_price': round(target_price, 2),
@@ -100,12 +95,15 @@ class ProfessionalRiskManager:
             'tp_distance': round(tp_distance, 2),
             'risk_reward': round(rr_ratio, 2),
             
-            'position_size': round(base_size, 2),
+            'position_size': position_size,
             'dollar_risk': round(dollar_risk, 2),
             'var': round(var, 2),
             
             'warnings': []
         }
+        
+        if signal_components:
+            decision['signal_components'] = signal_components
         
         logger.log_risk_assessment(datetime.now(), decision)
         
@@ -132,10 +130,100 @@ class ProfessionalRiskManager:
         dd_limit = config.get('risk_management', 'daily_drawdown_limit_pct')
         
         if current_dd >= dd_limit:
-            logger.log_drawdown_warning(current_dd, dd_limit)
+            # logger.log_drawdown_warning(current_dd, dd_limit)
             return False
         
         return True
+    
+    def _calculate_vp_position_score(self, row, vpoc, val, vah):
+        price = row['close']
+        cum_delta = row.get('cumulative_delta', 0)
+        rel_vol = row.get('relative_volume', 1.0)
+        
+        va_width = vah - val
+        if va_width == 0:
+            return 0
+        
+        distance_from_vpoc = (price - vpoc) / va_width
+        
+        score = 0
+        
+        if price <= val:
+            if cum_delta > 5000 and rel_vol > 1.2:
+                score = 80
+            elif cum_delta > 0:
+                score = 50
+            else:
+                score = 20
+        elif price >= vah:
+            if cum_delta < -5000 and rel_vol > 1.2:
+                score = -80
+            elif cum_delta < 0:
+                score = -50
+            else:
+                score = -20
+        else:
+            score = distance_from_vpoc * 40
+        
+        return score
+    
+    def _calculate_order_flow_score(self, row):
+        cum_delta = row.get('cumulative_delta', 0)
+        vol_delta = row.get('volume_delta', 0)
+        rel_vol = row.get('relative_volume', 1.0)
+        
+        score = 0
+        
+        if abs(cum_delta) > 10000:
+            base_score = 90 if cum_delta > 0 else -90
+        elif abs(cum_delta) > 5000:
+            base_score = 70 if cum_delta > 0 else -70
+        elif abs(cum_delta) > 2000:
+            base_score = 50 if cum_delta > 0 else -50
+        else:
+            base_score = 20 if cum_delta > 0 else -20
+        
+        if rel_vol > 1.5:
+            score = base_score
+        elif rel_vol > 1.0:
+            score = base_score * 0.8
+        else:
+            score = base_score * 0.5
+        
+        return score
+    
+    def _calculate_vwap_relation_score(self, row):
+        price = row['close']
+        vwap = row.get('vwap', price)
+        atr = row.get('atr', price * 0.01)
+        cum_delta = row.get('cumulative_delta', 0)
+        rel_vol = row.get('relative_volume', 1.0)
+        
+        if atr == 0:
+            return 0
+        
+        distance = (price - vwap) / atr
+        
+        score = 0
+        
+        if distance > 1.0:
+            if cum_delta > 5000 and rel_vol > 1.2:
+                score = 85
+            elif cum_delta > 0:
+                score = 60
+            else:
+                score = 30
+        elif distance < -1.0:
+            if cum_delta < -5000 and rel_vol > 1.2:
+                score = -85
+            elif cum_delta < 0:
+                score = -60
+            else:
+                score = -30
+        else:
+            score = distance * 50
+        
+        return score
     
     def _calculate_volatility_risk(self, row):
         rv = row.get('realized_vol', 20)
@@ -271,66 +359,6 @@ class ProfessionalRiskManager:
         adjusted_target = base_target * confidence_mult * er_mult
         
         return adjusted_target
-    
-    def _calculate_base_position_size(self, sl_distance):
-        base_risk_pct = config.get('risk_management', 'base_risk_per_trade_pct')
-        base_dollar_risk = self.account_balance * (base_risk_pct / 100)
-        
-        contract_size = config.get('risk_management', 'contract_size')
-        
-        size = base_dollar_risk / (sl_distance * contract_size)
-        
-        return size
-    
-    def _apply_volatility_scaling(self, base_size, row):
-        vol_target = config.get('risk_management', 'vol_target')
-        current_vol = row.get('realized_vol', vol_target)
-        
-        vol_scalar = vol_target / max(current_vol, 1)
-        vol_scalar = np.clip(vol_scalar, 0.5, 2.0)
-        
-        return base_size * vol_scalar
-    
-    def _apply_kelly_criterion(self, base_size):
-        if len(self.trade_history) < 20:
-            return base_size
-        
-        recent_trades = self.trade_history[-50:]
-        
-        wins = [t for t in recent_trades if t['pnl'] > 0]
-        losses = [t for t in recent_trades if t['pnl'] < 0]
-        
-        if len(losses) == 0:
-            return base_size
-        
-        win_rate = len(wins) / len(recent_trades)
-        avg_win = np.mean([t['pnl'] for t in wins]) if wins else 0
-        avg_loss = abs(np.mean([t['pnl'] for t in losses])) if losses else 1
-        
-        win_loss_ratio = avg_win / avg_loss if avg_loss > 0 else 1
-        
-        kelly_pct = (win_rate * win_loss_ratio - (1 - win_rate)) / win_loss_ratio
-        kelly_pct = max(kelly_pct, 0)
-        
-        kelly_fraction = config.get('risk_management', 'kelly_fraction')
-        fractional_kelly = kelly_pct * kelly_fraction
-        
-        kelly_size = self.account_balance * fractional_kelly / 100
-        kelly_lots = kelly_size / (config.get('risk_management', 'contract_size') * 100)
-        
-        return min(base_size, kelly_lots)
-    
-    def _apply_risk_level_adjustment(self, base_size, risk_level):
-        multipliers = {
-            'VERY_LOW': 1.0,
-            'LOW': 0.9,
-            'MODERATE': 0.7,
-            'HIGH': 0.5,
-            'VERY_HIGH': 0.3,
-            'EXTREME': 0.0
-        }
-        
-        return base_size * multipliers.get(risk_level, 0.5)
     
     def _calculate_var(self, row, position_size):
         confidence = config.get('risk_management', 'var_confidence')

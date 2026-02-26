@@ -6,7 +6,7 @@
   },
   
   "trading": {
-    "symbol": "XAUUSD",
+    "symbol": "BTCUSD",
     "active_timeframe": "M5",
     "update_interval_seconds": 120,
     "max_iterations": 100,
@@ -21,10 +21,10 @@
     
     "data_bars": {
       "M1": 1500,
-      "M5": 800,
-      "M15": 600,
-      "H1": 300,
-      "H4": 100
+      "M5": 1000,
+      "M15": 1000,
+      "H1": 1000,
+      "H4": 1000
     }
   },
   
@@ -37,25 +37,19 @@
     "max_lot_size": 1.0,
     
     "daily_drawdown_limit_pct": 5.0,
-    "max_portfolio_heat_pct": 10.0,
-    
-    "use_kelly_criterion": true,
-    "kelly_fraction": 0.35,
-    
-    "use_volatility_scaling": true,
-    "vol_target": 30.0,
+    "max_portfolio_heat_pct": 10.0,    
     
     "calculate_var": true,
-    "var_confidence": 0.95,
+    "var_confidence": 0.90,
     "var_horizon_days": 1
   },
   
   "position_management": {
-    "ttl_options_bars": [5,10,15,20],
+    "ttl_options_bars": [1,2,3,4,5],
     
-    "tp_atr_multiplier": 2.0,
+    "tp_atr_multiplier": 2,
     "tp_atr_period":100,
-    "tp_atr_delay": 2,
+    "tp_atr_delay": 5,
     
     "sl_trailing_enabled": true,
     "sl_initial_atr_multiplier": 1.5,
@@ -75,7 +69,10 @@
     "min_consecutive_bars": 1,
     "min_confidence_score": 40,
     "min_risk_reward": 1.5,
-    "min_relative_volume": 0.9
+    "min_relative_volume": 0.7,
+    "vp_score" : 0.35,
+    "flow_score" : 0.35,
+    "vwap_score" : 0.30
   },
   
   "logging": {

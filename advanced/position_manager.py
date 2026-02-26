@@ -8,8 +8,12 @@ class PositionManager:
         self.active_positions = {}
     
     def create_position(self, entry_decision, entry_time):
-        position_id = f"{entry_decision['direction']}_{entry_time.strftime('%Y%m%d_%H%M%S')}"
+
+        if len(self.active_positions) > 0:
+            return None
         
+        position_id = f"{entry_decision['direction']}_{entry_time.strftime('%Y%m%d_%H%M%S')}"
+        print(position_id, len(self.active_positions))
         ttl = self._select_ttl(entry_decision)
         
         position = {
@@ -47,6 +51,9 @@ class PositionManager:
     
     def _select_ttl(self, decision): # TODO: Make this for more range of ttl_options
         ttl_options = config.get('position_management', 'ttl_options_bars')
+        
+        if len(ttl_options) == 0:
+            return -1
         
         risk_level = decision['risk_level']
         er = decision.get('efficiency_ratio', 0.5)
@@ -185,7 +192,7 @@ class PositionManager:
             if low <= position['current_target']:
                 return 'TP', position['current_target']
         
-        if position['bars_in_trade'] >= position['ttl_bars']:
+        if position['bars_in_trade'] >= position['ttl_bars'] and (position['ttl_bars'] != -1):
             return 'TTL', close
         
         return None, None

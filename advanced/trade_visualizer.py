@@ -5,6 +5,7 @@ from matplotlib.patches import Rectangle
 from pathlib import Path
 from datetime import datetime
 from config_loader import config
+
 class TradeVisualizer:
     def __init__(self):
         self.colors = {
