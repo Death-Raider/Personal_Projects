@@ -6,6 +6,60 @@ class SignalGenerator:
     def __init__(self):
         self.signal_history = []
         self.min_consecutive = config.get('signals', 'min_consecutive_bars')
+
+    def calculate_metrics_corr(self, m5_data):
+        new_df = []
+        for row in m5_data['df'].itertuples():
+            latest_m5 = pd.Series(row._asdict())
+            
+            m5_metrics = self.calculate_metrics(
+                latest_m5,
+                m5_data.get('vpoc'),
+                m5_data.get('val'),
+                m5_data.get('vah')
+            )
+            new_df.append(m5_metrics)
+        new_df = pd.DataFrame(new_df)
+        print(new_df)
+        print(new_df.corr())
+        return new_df
+    
+    def calculate_metrics(self, row, vpoc=None, val=None, vah=None):
+        """
+        Calculate INDEPENDENT signal metrics.
+        Each component measures a different market aspect.
+        Target correlation < 0.5 between components.
+        """
+        metrics = {}
+        
+        metrics['vp_position_score'] = self._calculate_vp_position_score_independent(row, vpoc, val, vah)
+        metrics['order_flow_score'] = self._calculate_order_flow_score_independent(row)
+        metrics['vwap_relation_score'] = self._calculate_vwap_relation_score_independent(row)
+        metrics['liquidity_filter'] = self._calculate_liquidity_filter_smooth(row)
+        metrics['vrp_filter'] = self._calculate_vrp_filter_smooth(row)
+        
+        vp_weight = config.get('signals', 'vp_score')
+        flow_weight = config.get('signals', 'flow_score')
+        vwap_weight = config.get('signals', 'vwap_score')
+        
+        metrics['raw_score'] = (
+            metrics['vp_position_score'] * vp_weight +
+            metrics['order_flow_score'] * flow_weight +
+            metrics['vwap_relation_score'] * vwap_weight
+        )
+        
+        metrics['filtered_score'] = (
+            metrics['raw_score'] * 
+            metrics['liquidity_filter'] * 
+            metrics['vrp_filter']
+        )
+        
+        return metrics
+    
+    def calculate_bias(self, df):
+        if df is None or len(df) < 50:
+            return 0.0
+        return self._determine_bias_smooth(df)
     
     def generate_signal_mtf(self, market_data):
         if 'M5' not in market_data or market_data['M5']['df'] is None:
@@ -20,47 +74,28 @@ class SignalGenerator:
         
         latest_m5 = m5_data['df'].iloc[-1]
         
-        vp_score = self._calculate_vp_position_score(
-            latest_m5, 
-            m5_data.get('vpoc'), 
-            m5_data.get('val'), 
+        m5_metrics = self.calculate_metrics(
+            latest_m5,
+            m5_data.get('vpoc'),
+            m5_data.get('val'),
             m5_data.get('vah')
         )
         
-        flow_score = self._calculate_order_flow_score(latest_m5)
+        mtf_multiplier = self._calculate_mtf_confluence_smooth(m5_data, h1_data, h4_data)
         
-        vwap_score = self._calculate_vwap_relation_score(latest_m5)
+        m5_metrics['mtf_multiplier'] = mtf_multiplier
+        m5_metrics['final_score'] = m5_metrics['filtered_score'] * mtf_multiplier
         
-        raw_score = (
-            vp_score * config.get('signals', 'vp_score') +
-            flow_score * config.get('signals', 'flow_score') +
-            vwap_score * config.get('signals', 'vwap_score')
-        )
+        components = {k: round(v, 2) for k, v in m5_metrics.items()}
         
-        liquidity_filter = self._calculate_liquidity_filter(latest_m5)
-        vrp_filter = self._calculate_vrp_filter(latest_m5)
+        min_threshold = config.get('signals', 'min_confidence_score')
         
-        mtf_multiplier = self._calculate_mtf_confluence(m5_data, h1_data, h4_data)
-        
-        filtered_score = raw_score * liquidity_filter * vrp_filter * mtf_multiplier
-        
-        components = {
-            'vp_position_score': round(vp_score, 2),
-            'order_flow_score': round(flow_score, 2),
-            'vwap_relation_score': round(vwap_score, 2),
-            'raw_score': round(raw_score, 2),
-            'liquidity_filter': round(liquidity_filter, 3),
-            'vrp_filter': round(vrp_filter, 3),
-            'mtf_multiplier': round(mtf_multiplier, 2),
-            'filtered_score': round(filtered_score, 2)
-        }
-        
-        if filtered_score > config.get('signals', 'min_confidence_score'):
+        if m5_metrics['final_score'] > min_threshold:
             signal = 1
-            strength = min(filtered_score / 100, 1.0)
-        elif filtered_score < -config.get('signals', 'min_confidence_score'):
+            strength = min(m5_metrics['final_score'] / 100, 1.0)
+        elif m5_metrics['final_score'] < -min_threshold:
             signal = -1
-            strength = min(abs(filtered_score) / 100, 1.0)
+            strength = min(abs(m5_metrics['final_score']) / 100, 1.0)
         else:
             signal = 0
             strength = 0.0
@@ -86,10 +121,8 @@ class SignalGenerator:
             return 0
         
         latest = df.iloc[-1]
-        
         er = latest.get('efficiency_ratio', 0.5)
         rel_vol = latest.get('relative_volume', 1.0)
-        cum_delta = latest.get('cumulative_delta', 0)
         
         raw_signal = 0
         
@@ -97,8 +130,6 @@ class SignalGenerator:
             raw_signal = self._ranging_signal_legacy(latest, df)
         elif er > 0.6:
             raw_signal = self._trending_signal_legacy(latest, df)
-        else:
-            raw_signal = 0
         
         self.signal_history.append(raw_signal)
         if len(self.signal_history) > 10:
@@ -115,148 +146,134 @@ class SignalGenerator:
         
         return 0
     
-    def _calculate_vp_position_score(self, row, vpoc, val, vah):
+    def _calculate_vp_position_score_independent(self, row, vpoc, val, vah):
+        """
+        PURE price structure - no order flow
+        Measures ONLY: where price is in value area
+        """
         if vpoc is None or val is None or vah is None:
-            return 0
+            return 0.0
         
         price = row['close']
-        cum_delta = row.get('cumulative_delta', 0)
-        rel_vol = row.get('relative_volume', 1.0)
-        
         va_width = vah - val
+        
         if va_width == 0:
-            return 0
+            return 0.0
         
-        score = 0
+        distance_from_vpoc_normalized = (price - vpoc) / va_width
         
-        if price <= val:
-            if cum_delta > 5000 and rel_vol > 1.2:
-                score = 80
-            elif cum_delta > 0:
-                score = 50
-            else:
-                score = 20
-        elif price >= vah:
-            if cum_delta < -5000 and rel_vol > 1.2:
-                score = -80
-            elif cum_delta < 0:
-                score = -50
-            else:
-                score = -20
-        else:
-            distance_from_vpoc = (price - vpoc) / va_width
-            score = distance_from_vpoc * 40
+        base_score = np.tanh(distance_from_vpoc_normalized * 2) * 70
         
-        return score
+        if price < val:
+            extension_penalty = ((val - price) / va_width) * 30
+            base_score -= extension_penalty
+        elif price > vah:
+            extension_penalty = ((price - vah) / va_width) * 30
+            base_score += extension_penalty
+        
+        return np.clip(base_score, -100, 100)
     
-    def _calculate_order_flow_score(self, row):
+    def _calculate_order_flow_score_independent(self, row):
+        """
+        PURE order flow - no price displacement
+        Measures ONLY: buying vs selling pressure
+        Uses ONLY delta and volume metrics
+        """
         cum_delta = row.get('cumulative_delta', 0)
         vol_delta = row.get('volume_delta', 0)
         rel_vol = row.get('relative_volume', 1.0)
         
-        if abs(cum_delta) > 10000:
-            base_score = 90 if cum_delta > 0 else -90
-        elif abs(cum_delta) > 5000:
-            base_score = 70 if cum_delta > 0 else -70
-        elif abs(cum_delta) > 2000:
-            base_score = 50 if cum_delta > 0 else -50
-        else:
-            base_score = 20 if cum_delta > 0 else -20
+        persistent_flow = np.tanh(cum_delta / 10000) * 50
         
-        if rel_vol > 1.5:
-            score = base_score
-        elif rel_vol > 1.0:
-            score = base_score * 0.8
-        else:
-            score = base_score * 0.5
+        current_bar_flow = np.tanh(vol_delta / 500) * 30
         
-        return score
+        volume_conviction = (rel_vol - 1.0) * 20
+        volume_conviction = np.clip(volume_conviction, -20, 20)
+        
+        total_score = persistent_flow + current_bar_flow + volume_conviction
+        
+        return np.clip(total_score, -100, 100)
     
-    def _calculate_vwap_relation_score(self, row):
+    def _calculate_vwap_relation_score_independent(self, row):
+        """
+        PURE institutional activity indicator
+        Measures ONLY: deviation from VWAP in ATR terms + efficiency
+        NO order flow, NO simple price displacement
+        """
         price = row['close']
         vwap = row.get('vwap', price)
         atr = row.get('atr', price * 0.01)
-        cum_delta = row.get('cumulative_delta', 0)
-        rel_vol = row.get('relative_volume', 1.0)
+        er = row.get('efficiency_ratio', 0.5)
+        spread = row.get('spread_proxy', 0.01)
         
         if atr == 0:
-            return 0
+            return 0.0
         
-        distance = (price - vwap) / atr
+        distance_in_atr = (price - vwap) / atr
         
-        if distance > 1.0:
-            if cum_delta > 5000 and rel_vol > 1.2:
-                score = 85
-            elif cum_delta > 0:
-                score = 60
-            else:
-                score = 30
-        elif distance < -1.0:
-            if cum_delta < -5000 and rel_vol > 1.2:
-                score = -85
-            elif cum_delta < 0:
-                score = -60
-            else:
-                score = -30
-        else:
-            score = distance * 50
+        deviation_score = np.tanh(distance_in_atr * 0.8) * 50
         
-        return score
+        trend_strength = (er - 0.5) * 2
+        trend_multiplier = 1.0 + (trend_strength * 0.5)
+        
+        spread_quality = 1.0 - np.tanh((spread - 0.01) / 0.01) * 0.3
+        spread_quality = np.clip(spread_quality, 0.7, 1.0)
+        
+        total_score = deviation_score * trend_multiplier * spread_quality
+        
+        return np.clip(total_score, -100, 100)
     
-    def _calculate_liquidity_filter(self, row):
+    def _calculate_liquidity_filter_smooth(self, row):
+        """Smooth liquidity filter (0.3 to 1.0)"""
         illiq = row.get('amihud_illiquidity', 0.5)
         spread = row.get('spread_proxy', 0.01)
         
-        if illiq < 0.3 and spread < 0.01:
-            return 1.0
-        elif illiq > 1.0 or spread > 0.02:
-            return 0.3
-        else:
-            return 0.7
+        illiq_penalty = np.tanh((illiq - 0.5) / 0.5) * 0.35
+        spread_penalty = np.tanh((spread - 0.01) / 0.01) * 0.35
+        
+        filter_value = 1.0 - illiq_penalty - spread_penalty
+        
+        return np.clip(filter_value, 0.3, 1.0)
     
-    def _calculate_vrp_filter(self, row):
+    def _calculate_vrp_filter_smooth(self, row):
+        """Smooth VRP filter (0.5 to 1.0)"""
         vrp = row.get('vol_risk_premium', 0)
         
-        if abs(vrp) > 15:
-            return 0.5
-        elif abs(vrp) > 10:
-            return 0.7
-        else:
-            return 1.0
+        penalty = abs(vrp) / 20
+        penalty = np.clip(penalty, 0, 0.5)
+        
+        filter_value = 1.0 - penalty
+        
+        return np.clip(filter_value, 0.5, 1.0)
     
-    def _calculate_mtf_confluence(self, m5_data, h1_data, h4_data):
+    def _calculate_mtf_confluence_smooth(self, m5_data, h1_data, h4_data):
+        """Smooth MTF multiplier (0.5 to 2.0)"""
         if not h1_data or not h4_data:
             return 1.0
         
-        h1_regime = h1_data.get('regime', 'neutral')
-        h4_regime = h4_data.get('regime', 'neutral')
+        h1_bias_score = self._determine_bias_smooth(h1_data.get('df'))
+        h4_bias_score = self._determine_bias_smooth(h4_data.get('df'))
         
-        h1_bias = self._determine_bias(h1_data.get('df'))
-        h4_bias = self._determine_bias(h4_data.get('df'))
+        alignment = (h1_bias_score * h4_bias_score + 1) / 2
         
-        if h4_bias == h1_bias and h4_bias != 'neutral':
-            return 2.0
-        elif h4_bias != 'neutral' and h1_bias == 'neutral':
-            return 1.5
-        elif h4_bias == 'neutral' and h1_bias == 'neutral':
-            return 1.0
-        else:
-            return 0.5
+        multiplier = 0.5 + (alignment * 1.5)
+        
+        return np.clip(multiplier, 0.5, 2.0)
     
-    def _determine_bias(self, df):
+    def _determine_bias_smooth(self, df):
+        """Returns continuous bias score (-1 to +1)"""
         if df is None or len(df) < 50:
-            return 'neutral'
+            return 0.0
         
         latest = df.iloc[-1]
         cum_delta = latest.get('cumulative_delta', 0)
         er = latest.get('efficiency_ratio', 0.5)
         
-        if cum_delta > 8000 and er > 0.5:
-            return 'bullish'
-        elif cum_delta < -8000 and er > 0.5:
-            return 'bearish'
-        else:
-            return 'neutral'
+        delta_bias = np.tanh(cum_delta / 10000)
+        er_weight = np.clip(er, 0, 1)
+        final_bias = delta_bias * er_weight
+        
+        return np.clip(final_bias, -1.0, 1.0)
     
     def _ranging_signal_legacy(self, latest, df):
         if len(df) < 100:

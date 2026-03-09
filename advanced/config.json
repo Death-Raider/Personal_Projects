@@ -6,7 +6,7 @@
   },
   
   "trading": {
-    "symbol": "BTCUSD",
+    "symbol": "XAUUSD",
     "active_timeframe": "M5",
     "update_interval_seconds": 120,
     "max_iterations": 100,
@@ -31,7 +31,7 @@
   "risk_management": {
     "account_balance": 1000,
     "max_risk_per_trade_pct": 1.0,
-    "base_risk_per_trade_pct": 0.5,
+    "base_risk_per_trade_pct": 0.3,
     "contract_size": 100,
     "min_lot_size": 0.01,
     "max_lot_size": 1.0,
@@ -45,16 +45,16 @@
   },
   
   "position_management": {
-    "ttl_options_bars": [1,2,3,4,5],
+    "ttl_options_bars": [30,30,30,30],
     
     "tp_atr_multiplier": 2,
-    "tp_atr_period":100,
-    "tp_atr_delay": 5,
+    "tp_atr_period":15,
+    "tp_atr_delay": 15,
     
     "sl_trailing_enabled": true,
     "sl_initial_atr_multiplier": 1.5,
-    "sl_trail_trigger_rr": 0.5,
-    "sl_trail_distance_pct": 0.3,
+    "sl_trail_trigger_rr": 1.3,
+    "sl_trail_distance_pct": 0.5,
     
     "update_tp_sl_every_bars": 1
   },
@@ -67,16 +67,16 @@
   
   "signals": {
     "min_consecutive_bars": 1,
-    "min_confidence_score": 40,
+    "min_confidence_score": 10,
     "min_risk_reward": 1.5,
     "min_relative_volume": 0.7,
-    "vp_score" : 0.35,
-    "flow_score" : 0.35,
-    "vwap_score" : 0.30
+    "vp_score" : 0.20,
+    "flow_score" : 0.60,
+    "vwap_score" : 0.20
   },
   
   "logging": {
-    "log_directory": "advanced/logs",
+    "log_directory": "logs",
     "log_level": "INFO",
     "log_trades": true,
     "log_risk": true,
@@ -84,7 +84,7 @@
   },
   
   "output": {
-    "csv_directory": "advanced/data",
+    "csv_directory": "data",
     "charts_base_directory": "advanced",
     "save_charts_every_n_iterations": 10,
     "chart_lookback_bars": 144

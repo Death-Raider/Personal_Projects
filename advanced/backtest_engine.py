@@ -110,6 +110,7 @@ class BacktestEngine:
                         }
                     }
                     # print(market_data)
+                    
                     signal, strength, components = signal_generator.generate_signal_mtf(market_data)
                     # print(signal, strength, components)
                 else:
@@ -133,13 +134,16 @@ class BacktestEngine:
                 )
                 
                 if exit_reason:
+                    comp = active_pos.get('components', {})
+                    stren = active_pos.get('strength', 1.0)
                     result = pos_mgr.close_position(
                         active_pos['id'],
                         exit_price,
                         exit_reason,
                         latest_row['time']
                     )
-                    
+                    result['components'] = comp
+                    result['strength'] = stren
                     self.trades.append(result)
                     risk_mgr.record_trade(result)
                     
@@ -153,9 +157,11 @@ class BacktestEngine:
                 decision = risk_mgr.assess_risk(
                     latest_row, vpoc, val, vah, signal, strength, components
                 )
-                print(decision)
+                # print(decision)
                 if decision.get('should_trade'):
                     position = pos_mgr.create_position(decision, latest_row['time'])
+                    pos_mgr.active_positions[position['id']]['strength'] = strength
+                    pos_mgr.active_positions[position['id']]['components'] = components
         
         print(f"  Completed: {len(df)} bars processed")
         

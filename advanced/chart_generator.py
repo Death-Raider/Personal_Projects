@@ -3,6 +3,7 @@ from matplotlib.patches import Rectangle
 import pandas as pd
 from pathlib import Path
 from config_loader import config
+from signal_generator import signal_generator
 
 class ChartGenerator:
     def __init__(self):
@@ -14,7 +15,11 @@ class ChartGenerator:
             'vwap': 'blue',
             'regime_trending': 'green',
             'regime_ranging': 'orange',
-            'regime_transitional': 'yellow'
+            'regime_transitional': 'yellow',
+            'vp_score': '#FF6B6B',
+            'flow_score': '#4ECDC4',
+            'vwap_score': '#45B7D1',
+            'final_score': '#FFA07A'
         }
     
     def generate_chart(self, df, timeframe, vpoc, val, vah, regime, signal=None):
@@ -24,18 +29,34 @@ class ChartGenerator:
         lookback = min(144, len(df))
         plot_df = df.tail(lookback).reset_index(drop=True)
         
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 10), 
-                                       gridspec_kw={'height_ratios': [3, 1]})
+        if len(plot_df) < 50:
+            return
+        
+        metrics_list = []
+        for idx, row in plot_df.iterrows():
+            metrics = signal_generator.calculate_metrics(row, vpoc, val, vah)
+            metrics_list.append(metrics)
+        
+        metrics_df = pd.DataFrame(metrics_list)
+        
+        fig = plt.figure(figsize=(18, 12))
+        gs = fig.add_gridspec(4, 1, hspace=0.3, height_ratios=[3, 1, 1, 1])
+        
+        ax1 = fig.add_subplot(gs[0])
+        ax2 = fig.add_subplot(gs[1])
+        ax3 = fig.add_subplot(gs[2])
+        ax4 = fig.add_subplot(gs[3])
         
         self._plot_candlesticks(ax1, plot_df)
-        
         self._plot_levels(ax1, vpoc, val, vah)
-        
         self._plot_vwap(ax1, plot_df)
-        
         self._add_regime_label(ax1, regime, timeframe)
         
         self._plot_volume(ax2, plot_df)
+        
+        self._plot_component_scores(ax3, metrics_df)
+        
+        self._plot_final_scores(ax4, metrics_df)
         
         ax1.set_title(f'{timeframe} Chart - Regime: {regime.upper()}', 
                      fontsize=14, fontweight='bold')
@@ -43,9 +64,23 @@ class ChartGenerator:
         ax1.grid(True, alpha=0.2, linestyle='--')
         ax1.legend(loc='upper left', fontsize=9)
         
-        ax2.set_xlabel('Bar Index', fontsize=11)
         ax2.set_ylabel('Volume', fontsize=11)
         ax2.grid(True, alpha=0.2, linestyle='--')
+        
+        ax3.set_ylabel('Component Scores', fontsize=11)
+        ax3.grid(True, alpha=0.2, linestyle='--')
+        ax3.legend(loc='upper left', fontsize=8)
+        ax3.axhline(y=0, color='black', linestyle='-', linewidth=0.8, alpha=0.3)
+        
+        ax4.set_xlabel('Bar Index', fontsize=11)
+        ax4.set_ylabel('Final Score', fontsize=11)
+        ax4.grid(True, alpha=0.2, linestyle='--')
+        ax4.legend(loc='upper left', fontsize=8)
+        ax4.axhline(y=0, color='black', linestyle='-', linewidth=0.8, alpha=0.3)
+        
+        min_threshold = config.get('signals', 'min_confidence_score')
+        ax4.axhline(y=min_threshold, color='green', linestyle='--', linewidth=1, alpha=0.5, label='Buy Threshold')
+        ax4.axhline(y=-min_threshold, color='red', linestyle='--', linewidth=1, alpha=0.5, label='Sell Threshold')
         
         plt.tight_layout()
         plt.savefig(chart_path, dpi=120, bbox_inches='tight')
@@ -113,5 +148,34 @@ class ChartGenerator:
                  else self.colors['down'] for _, row in df.iterrows()]
         
         ax.bar(df.index, df['tick_volume'], color=colors, alpha=0.6, width=0.8)
+    
+    def _plot_component_scores(self, ax, metrics_df):
+        ax.plot(metrics_df.index, metrics_df['vp_position_score'], 
+               color=self.colors['vp_score'], linewidth=1.5, 
+               label='VP Score', alpha=0.8)
+        
+        ax.plot(metrics_df.index, metrics_df['order_flow_score'], 
+               color=self.colors['flow_score'], linewidth=1.5, 
+               label='Flow Score', alpha=0.8)
+        
+        ax.plot(metrics_df.index, metrics_df['vwap_relation_score'], 
+               color=self.colors['vwap_score'], linewidth=1.5, 
+               label='VWAP Score', alpha=0.8)
+    
+    def _plot_final_scores(self, ax, metrics_df):
+        ax.plot(metrics_df.index, metrics_df['raw_score'], 
+               color='gray', linewidth=1, label='Raw Score', 
+               alpha=0.5, linestyle='--')
+        
+        ax.plot(metrics_df.index, metrics_df['filtered_score'], 
+               color=self.colors['final_score'], linewidth=2, 
+               label='Filtered Score', alpha=0.9)
+        
+        ax.fill_between(metrics_df.index, 0, metrics_df['filtered_score'],
+                       where=metrics_df['filtered_score'] > 0,
+                       color='green', alpha=0.2)
+        ax.fill_between(metrics_df.index, 0, metrics_df['filtered_score'],
+                       where=metrics_df['filtered_score'] < 0,
+                       color='red', alpha=0.2)
 
 chart_generator = ChartGenerator()

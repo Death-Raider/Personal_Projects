@@ -1,6 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from config_loader import config
+from signal_generator import signal_generator
 
 class CSVManager:
     def __init__(self):
@@ -9,6 +10,12 @@ class CSVManager:
     def append_bar_data(self, timeframe, bar_data, vpoc, val, vah, regime, signal):
         csv_path = self.base_dir / timeframe / 'historical_data.csv'
         csv_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        metrics = signal_generator.calculate_metrics(bar_data, vpoc, val, vah)
+        
+        bias_score = 0.0
+        if timeframe in ['H1', 'H4']:
+            bias_score = signal_generator._determine_bias_smooth(None)
         
         row_dict = {
             'timestamp': bar_data.get('time'),
@@ -32,7 +39,15 @@ class CSVManager:
             'val': val,
             'vah': vah,
             'regime': regime,
-            'signal': signal
+            'signal': signal,
+            'vp_position_score': metrics.get('vp_position_score'),
+            'order_flow_score': metrics.get('order_flow_score'),
+            'vwap_relation_score': metrics.get('vwap_relation_score'),
+            'liquidity_filter': metrics.get('liquidity_filter'),
+            'vrp_filter': metrics.get('vrp_filter'),
+            'raw_score': metrics.get('raw_score'),
+            'filtered_score': metrics.get('filtered_score'),
+            'bias_score': bias_score
         }
         
         row_df = pd.DataFrame([row_dict])

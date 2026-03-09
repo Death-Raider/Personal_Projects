@@ -19,12 +19,6 @@ class IncrementalMetricsCalculator:
         ]
 
     def _get_increment_condition(self,df:pd.DataFrame):
-        """
-                MC
-        IC    0    1
-        0   Full  -
-        1     -   Inc
-        """
         metrics_condition = all(metric in df.columns for metric in self.metrics) # MC
         increment_condition = False # IC
         if metrics_condition:

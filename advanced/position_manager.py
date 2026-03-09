@@ -13,7 +13,6 @@ class PositionManager:
             return None
         
         position_id = f"{entry_decision['direction']}_{entry_time.strftime('%Y%m%d_%H%M%S')}"
-        print(position_id, len(self.active_positions))
         ttl = self._select_ttl(entry_decision)
         
         position = {
