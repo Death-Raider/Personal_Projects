@@ -70,11 +70,11 @@ env.add_robots()
 runner = GameRunner(env)
 
 # ============ Optional: Custom Callbacks ============
-def training_callback(board, agents:dict[str,DQAgent], step, epoch):
+def training_callback(board, agents:dict[str,DQAgent], step, epoch, runner):
     """Called every step during training"""
     i = 0
     agents[f'agent{i+1}'].epsilon *= agents[f'agent{i+1}'].epsilon_decay
-    agents[f'agent{i+1}'].epsilon = min(agents[f'agent{i+1}'].epsilon, agents[f'agent{i+1}'].epsilon_min)
+    agents[f'agent{i+1}'].epsilon = max(agents[f'agent{i+1}'].epsilon, agents[f'agent{i+1}'].epsilon_min)
 
     assert agents['agent1'].epsilon == agents['agent2'].epsilon, "different agent objects"
 
@@ -85,7 +85,7 @@ def training_callback(board, agents:dict[str,DQAgent], step, epoch):
         print("")
         # print(f"  Epoch {epoch}, Step {step}: {info['num_active_robots']} robots active")
 
-def epoch_callback(board, agents, epoch, metrics):
+def epoch_callback(board, agents, epoch, metrics, runner):
     """Called after each epoch"""
     if epoch % 1 == 0:
         avg_reward = np.mean([r[f'agent{i+1}'] for r in metrics['rewards'][-10:] for i in range(NUM_ROBOTS)])
@@ -105,8 +105,8 @@ metrics = runner.run(
     termination_condition=None,  # Use default termination
     step_callback=training_callback,
     episode_callback=epoch_callback,
-    render=False,
-    render_last_epoch=True,
+    render=True,
+    render_last_epoch=False,
     save_metrics=False,
     save_models=False,
     save_directory='./saved_models/goal_chasing_basic',

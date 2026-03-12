@@ -1,3 +1,4 @@
 __pycache__
 *.keras
 *.npy
+/Guide_Review-2/*

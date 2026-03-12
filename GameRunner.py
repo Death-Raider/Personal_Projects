@@ -48,7 +48,8 @@ class GameRunner:
             save_model_freq: int = 1,
             save_directory: str = './saved_models',
             verbose: int = 1,
-            train: bool = True) -> Dict:
+            train: bool = True,
+            action_override: Optional[Dict[str, Any]] = None) -> Dict:
         """
         Run training loop
         
@@ -109,7 +110,10 @@ class GameRunner:
                 actions = {}
                 for name, agent in self.env.agents.items():
                     if name in states:
-                        actions[name] = agent.choose_action(states[name])
+                        if action_override and name in action_override:
+                            actions[name] = action_override[name](states[name])
+                        else:
+                            actions[name] = agent.choose_action(states[name])
 
                 # Execute actions in environment
                 self.env.execute_actions(actions)

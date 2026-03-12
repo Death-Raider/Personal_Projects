@@ -30,7 +30,7 @@ LEARNING_RATES = [1e-3,1e-4,1e-5,1e-3,1e-4,1e-5,1e-3,1e-4,1e-4,1e-5]
 INITIAL_EPSILONS = [1,0.4,0.2,0.4,0.2,0.1,0.4,0.2,0.1,0.05]
 EPOCHS = [40,60,50,40,60,50,40,60,50,50]
 
-start_index = 0
+start_index = 1
 end_index = 3
 INDEX = INDEX[start_index:end_index]
 ROBOT_COUNTS = ROBOT_COUNTS[start_index:end_index]
@@ -86,11 +86,11 @@ agents_configs = {
         )
 }
 
-if start_index != 0:
-    agents_configs['DQN (Greedy)'].load_model(f'./Runners/GoalChasing_QLearning/results/DQN_(Greedy)_{start_index-1}')
-    agents_configs['CADRL-Style'].load_model(f'./Runners/GoalChasing_QLearning/results/CADRL-Style_{start_index-1}')
-
 for indx,num_robots,board_size,lr,init_eps,epochs in zip(INDEX,ROBOT_COUNTS,BOARD_SIZES,LEARNING_RATES,INITIAL_EPSILONS,EPOCHS):
+
+    if start_index != 0:
+        agents_configs['DQN (Greedy)'].load_model(f'./Runners/GoalChasing_QLearning/results/DQN_(Greedy)_{start_index-1}/agent1_epoch_final')
+        agents_configs['CADRL-Style'].load_model(f'./Runners/GoalChasing_QLearning/results/CADRL-Style_{start_index-1}/agent1_epoch_final')
 
     logging.info(f"\n{'#'*80}\nCurriculum Step {indx+1}/10: {num_robots} Robots, Board Size: {board_size}x{board_size}, LR: {lr}, Init Eps: {init_eps}, Epochs: {epochs}\n{'#'*80}\n")
 
