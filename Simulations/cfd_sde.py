@@ -1,24 +1,3 @@
-"""
-CFD First-Passage Time: Stochastic Volatility SDE System
-=========================================================
-2D system (zero-drift ABM + stochastic vol):
-
-    dX_t  =  σ_t  dW_t^(1)
-    dσ_t  =  β(σ̄ - σ_t) dt  +  η dW_t^(2)
-
-    corr(dW^(1), dW^(2)) = ρ
-
-Trade exits when X_t hits +TP (take-profit) or -SL (stop-loss).
-
-Numerical approach:
-  1. Euler-Maruyama Monte Carlo  — many paths, exact boundary checking
-  2. Finite-difference PDE on the 2D Kolmogorov backward equation
-     for exit probability u(x, σ) = P(hit TP before SL | X=x, σ=σ)
-
-References:
-  Heston (1993), Linetsky (2004), Kou & Wang (2003)
-"""
-
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -72,8 +51,10 @@ def _sax(ax, title="", xl="", yl="", grid=True):
 # EDGE DEFINING MODELS
 # ══════════════════════════════════════════════════════════════════════════════
 
+MU = 0.05
+
 null         = lambda p_self,x, sigma, t: np.zeros_like(x)
-fixed_edge   = lambda p_self,x, sigma, t: np.full_like(x, 0.10)
+fixed_edge   = lambda p_self,x, sigma, t: np.full_like(x, MU)
 vol_adjusted = lambda p_self,x, sigma, t: 0.15 / (sigma + 1e-6)
 mean_rev     = lambda p_self,x, sigma, t: -0.05 * x
 
@@ -92,30 +73,32 @@ def model_M(params, features_fn):
 
 class Params:
     # Trade boundaries (in price units / pips / points)
-    TP   =  2.0       # take-profit
-    SL   = -1.5       # stop-loss  (negative)
+    S    = 5018.70  # initial spot price (for scaling)
+    TP   =  5.5       # take-profit
+    SL   = -4       # stop-loss  (negative)
 
     # Stochastic vol (CIR-like mean-reversion on σ)
-    beta      = 2.0   # mean-reversion speed
-    sigma_bar = 0.8   # long-run vol level
-    eta       = 0.4   # vol-of-vol
-    sigma0    = 0.8   # initial σ
-    mu_fn     = vol_adjusted   # drift in price (set to 0 for pure exit problem)
-    r_kill = 0.05     # tune this — higher = more time-pressure
+    mu        = MU
+    beta      = 0.02088 # 0.031  # mean-reversion speed
+    sigma_bar = 3.9648 # 0.00834 * S   # long-run vol level
+    eta       = 0.16703 # 0.00214 * S   # vol-of-vol
+    sigma0    = 3.8989 # 0.00323 * S   # initial σ
+    mu_fn     = fixed_edge   # drift in price (set to 0 for pure exit problem)
+    r_kill = 0.1     # tune this — higher = more time-pressure
 
     # Correlation between price and vol innovations
-    rho     = -0.3    # typically negative (leverage effect)
+    rho     =  0.01283221 # 0.413    # typically negative (leverage effect)
 
     # Simulation
-    T       = 8.0     # time horizon (long enough to capture most exits)
-    dt      = 1e-3    # Euler-Maruyama time step
+    T       = 1/r_kill    # time horizon (long enough to capture most exits)
+    dt      = 1e-4    # Euler-Maruyama time step
     N_paths = 3000    # Monte Carlo paths
     seed    = 42
 
     # PDE grid
-    Nx      = 120     # grid points in X
-    Ns      = 80      # grid points in σ
-    sigma_max = 3.0   # upper bound for σ grid
+    Nx      = 100     # grid points in X
+    Ns      = 100      # grid points in σ
+    sigma_max = 5   # upper bound for σ grid
 
 P = Params()
 
@@ -202,7 +185,7 @@ def run_monte_carlo(p: Params = Params(), x0=0.0):
 #
 # The infinitesimal generator of (X, σ) applied to u gives:
 #
-#   ½ σ² u_xx  +  β(σ̄-σ) u_σ  +  ½ η² u_σσ  +  ρ σ η u_xσ  =  0
+#   0 = ½σ²u_xx + μu_x + β(σ̄-σ)u_σ + ½η²u_σσ + ρσηu_xσ - ru
 #
 # on domain  x ∈ (SL, TP),  σ ∈ (0, σ_max)
 #
@@ -564,7 +547,7 @@ def plot_all(paths_x, paths_sig, exit_val, exit_time,
 
     # 2D heatmap of u(x, σ)
     ax7 = fig.add_subplot(r2[0])
-    u_smooth = gaussian_filter(u_pde, sigma=0.8)
+    u_smooth = u_pde #gaussian_filter(u_pde, sigma=0.8)
     im = ax7.imshow(u_smooth.T, origin="lower", aspect="auto",
                     extent=[p.SL, p.TP, s_grid[0], s_grid[-1]],
                     cmap=CMAP_PROB, vmin=0, vmax=1)
@@ -599,7 +582,7 @@ def plot_all(paths_x, paths_sig, exit_val, exit_time,
 
     # Slices of u at fixed σ values
     ax9 = fig.add_subplot(r2[2])
-    sig_slices  = [0.3, 0.6, 1.0, 1.5, 2.2]
+    sig_slices  = np.linspace(0, p.sigma0, 5) #[0.3, 0.6, 1.0, 1.5, 2.2]
     sl_colors_p = [ACCENT, ACC2, ACC3, ACC4, WARN]
     for sv, sc in zip(sig_slices, sl_colors_p):
         j_idx = np.argmin(np.abs(s_grid - sv))
@@ -727,6 +710,47 @@ def plot_all(paths_x, paths_sig, exit_val, exit_time,
 # MAIN
 # ══════════════════════════════════════════════════════════════════════════════
 
+def sweep_boundaries(p, mu_M, sigma_current,
+                     tp_multiples=np.linspace(0.1, 5, 10),
+                     sl_multiples=np.linspace(0.1, 5, 10)):
+    """
+    For each (TP, SL) combination expressed as vol multiples,
+    compute E[PnL | x=0, sigma=sigma_current] under model M.
+    
+    Returns a 2D surface of expected PnL over TP/SL space.
+    This tells you which boundary placements give positive edge
+    under your current model and vol regime.
+    """
+    results = np.zeros((len(tp_multiples), len(sl_multiples)))
+    
+    for i, tp_mult in enumerate(tp_multiples):
+        for j, sl_mult in enumerate(sl_multiples):
+            p_sweep      = Params()
+            p_sweep.TP   =  tp_mult * sigma_current
+            p_sweep.SL   = -sl_mult * sigma_current
+            p_sweep.sigma0    = sigma_current
+            p_sweep.sigma_bar = p.sigma_bar
+            p_sweep.eta       = p.eta
+            p_sweep.beta      = p.beta
+            p_sweep.rho       = p.rho
+            p_sweep.r_kill    = p.r_kill
+            p_sweep.mu_fn     = lambda x,s,t: np.full_like(x, mu_M)
+            
+            u, x_grid, s_grid = solve_pde(p_sweep)
+            
+            i0   = np.argmin(np.abs(x_grid - 0))
+            j0   = np.argmin(np.abs(s_grid - sigma_current))
+            p_tp = u[i0, j0]
+            
+            E_pnl = p_tp * p_sweep.TP + (1-p_tp) * p_sweep.SL
+            results[i, j] = E_pnl
+            print(f"TP_mult={tp_mult:.2f}  SL_mult={sl_mult:.2f}",
+                  f"P(TP)={p_tp:.4f}  E[PnL]={E_pnl:.4f}")
+    
+    return results, tp_multiples, sl_multiples
+
+
+
 if __name__ == "__main__":
     p = Params()
 
@@ -758,3 +782,47 @@ if __name__ == "__main__":
     plot_all(paths_x, paths_sig, exit_val, exit_time,
              diag, u_pde, x_grid, s_grid, sens, p,
              save_path="Simulations/cfd_sde_dashboard.png")
+    
+    u_model, _, _          = solve_pde(p)
+    p.mu_fn = lambda x,s,t: np.full_like(x, 0.0)  # null model with zero drift
+    u_null, x_grid, s_grid = solve_pde(p)
+
+    i0 = np.argmin(np.abs(x_grid))
+    j0 = np.argmin(np.abs(s_grid - p.sigma0))
+
+    p_null  = u_null[i0, j0]
+    p_model = u_model[i0, j0]
+    edge    = p_model - p_null
+
+    # MC confidence interval on the null
+    n       = 3000
+    se_mc   = np.sqrt(p_null * (1-p_null) / n)
+    z       = edge / se_mc
+
+    print(f"P(TP) null  : {p_null:.4f}")
+    print(f"P(TP) model : {p_model:.4f}")
+    print(f"Edge        : {edge:.4f}")
+    print(f"MC SE       : {se_mc:.4f}")
+    print(f"Z-score     : {z:.2f}")
+    print(f"Significant : {abs(z) > 1.96}")
+
+    results, tp_m, sl_m = sweep_boundaries(p, mu_M=p.mu, 
+                                        sigma_current=p.sigma0)
+
+    plt.figure(figsize=(10, 8))
+    plt.contourf(sl_m, tp_m, results, levels=20, cmap='RdYlGn')
+    plt.colorbar(label='E[PnL]')
+    plt.contour(sl_m, tp_m, results, levels=[0], 
+                colors='black', linewidths=2)
+    plt.xlabel('SL multiple of sigma')
+    plt.ylabel('TP multiple of sigma')
+    plt.title('Expected PnL across TP/SL space\n'
+            f'sigma={p.sigma0:.1f}, mu_M={p.mu}')
+    plt.axvline(-p.SL/p.sigma0, color='red', ls='--', 
+                label=f'current SL={p.SL}pts')
+    plt.axhline(p.TP/p.sigma0, color='red', ls='--',
+                label=f'current TP={p.TP}pts')
+    plt.legend()
+    plt.savefig("Simulations/cfd_sde_tp_sl_sweep.png", dpi=120, bbox_inches="tight",
+                facecolor=BG, edgecolor="none")
+    plt.show()
