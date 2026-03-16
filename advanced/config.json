@@ -7,7 +7,7 @@
   
   "trading": {
     "symbol": "XAUUSD",
-    "active_timeframe": "M5",
+    "active_timeframe": ["M1","M5","M15","H1","H4"],
     "update_interval_seconds": 120,
     "max_iterations": 100,
     
@@ -20,15 +20,25 @@
     },
     
     "data_bars": {
-      "M1": 15000,
-      "M5": 15000,
-      "M15": 15000,
-      "H1": 15000,
-      "H4": 15000
+      "M1": 1500,
+      "M5": 1500,
+      "M15": 1500,
+      "H1": 1500,
+      "H4": 1500
     }
-  },  
+  }, 
+
+  "position_management":{
+    "sl_trailing_enabled" : true,
+    "update_tp_sl_every_bars" : 2,
+    "sl_trail_trigger_rr" : 0.5,
+    "sl_trail_distance_pct" : 0.5,
+    "tp_atr_delay" : 10,
+    "tp_atr_multiplier" : 1.5
+  }, 
+
   "logging": {
-    "log_directory": "logs",
+    "log_directory": "advanced/logs",
     "log_level": "INFO",
     "log_trades": true,
     "log_risk": true,

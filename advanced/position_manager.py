@@ -13,7 +13,6 @@ class PositionManager:
             return None
         
         position_id = f"{entry_decision['direction']}_{entry_time.strftime('%Y%m%d_%H%M%S')}"
-        ttl = self._select_ttl(entry_decision)
         
         position = {
             'id': position_id,
@@ -32,7 +31,6 @@ class PositionManager:
             'sl_distance_initial': entry_decision['sl_distance'],
             'tp_distance_initial': entry_decision['tp_distance'],
             
-            'ttl_bars': ttl,
             'bars_in_trade': 0,
             
             'highest_price': entry_decision['entry_price'],
@@ -47,24 +45,6 @@ class PositionManager:
         
         self.active_positions[position_id] = position
         return position
-    
-    def _select_ttl(self, decision): # TODO: Make this for more range of ttl_options
-        ttl_options = config.get('position_management', 'ttl_options_bars')
-        
-        if len(ttl_options) == 0:
-            return -1
-        
-        risk_level = decision['risk_level']
-        er = decision.get('efficiency_ratio', 0.5)
-        
-        if risk_level in ['LOW', 'VERY_LOW'] and er > 0.7:
-            return ttl_options[-1]
-        elif risk_level in ['HIGH', 'VERY_HIGH']:
-            return ttl_options[0]
-        elif er > 0.6:
-            return ttl_options[2]
-        else:
-            return ttl_options[1]
     
     def update_position(self, position_id, current_bar, atr_series):
         if position_id not in self.active_positions:
@@ -190,10 +170,7 @@ class PositionManager:
             
             if low <= position['current_target']:
                 return 'TP', position['current_target']
-        
-        if position['bars_in_trade'] >= position['ttl_bars'] and (position['ttl_bars'] != -1):
-            return 'TTL', close
-        
+                
         return None, None
     
     def close_position(self, position_id, exit_price, exit_reason, exit_time):

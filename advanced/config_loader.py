@@ -23,7 +23,7 @@ class Config:
     
     def _ensure_directories(self, directory):
         Path(self._config['logging']['log_directory']).mkdir(exist_ok=True)
-        Path(self._config['output']['csv_directory']).mkdir(exist_ok=True)
+        (Path(self._config['output']['charts_base_directory']) / Path(self._config['output']['csv_directory'])).mkdir(exist_ok=True)
         
         for tf in self._config['trading']['timeframes'].keys():
             Path(os.path.join(directory, tf)).mkdir(exist_ok=True)

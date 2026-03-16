@@ -1,19 +1,9 @@
-"""
-QUANTRIX Statistical Risk Model Feature Engineering
-=====================================================
-Generates comprehensive risk metric columns from OHLCV DataFrame across timeframes.
-Each function operates on a pd.DataFrame with columns: [open, high, low, close, volume]
-and appends new feature columns in-place, returning the enriched DataFrame.
-"""
-
 import numpy as np
 import pandas as pd
 from scipy import stats, signal
-from scipy.linalg import eig
 from scipy.fft import fft, fftfreq
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LinearRegression, Ridge, HuberRegressor
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn.mixture import GaussianMixture
 import warnings
@@ -877,37 +867,3 @@ def build_all_timeframes(dfs: dict) -> dict:
         n_feat = len(enriched[tf].columns) - len(df.columns)
         print(f"    Added {n_feat} risk feature columns.")
     return enriched
-
-
-if __name__ == "__main__":
-    np.random.seed(42)
-    N = 500
-
-    def make_ohlcv(n):
-        close  = 100 * np.cumprod(1 + np.random.randn(n) * 0.005)
-        noise  = np.random.rand(n) * 0.5
-        high   = close * (1 + noise * 0.01)
-        low    = close * (1 - noise * 0.01)
-        open_  = close * (1 + np.random.randn(n) * 0.002)
-        volume = np.random.randint(1000, 50000, n).astype(float)
-        return pd.DataFrame({"open": open_, "high": high,
-                             "low": low, "close": close, "volume": volume})
-
-    dfs = {
-        "M5":  make_ohlcv(N),
-        # "M15": make_ohlcv(N),.
-        # "H1":  make_ohlcv(N),
-        # "H4":  make_ohlcv(N),
-    }
-
-    results = build_all_timeframes(dfs)
-
-    for tf, df_out in results.items():
-        print(f"\n[{tf}] shape: {df_out.shape}")
-        risk_cols = [c for c in df_out.columns if tf in c]
-        print(f"  Sample columns: {risk_cols[:10]} ...")
-        print(df_out[risk_cols[:5]].tail(3).to_string())
-
-    column_names = results["M5"].columns
-    print(f"\nTotal columns in M5: {len(column_names)}")
-    print(f"All column names: {list(column_names)}")

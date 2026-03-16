@@ -8,11 +8,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from sklearn.linear_model import RidgeCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.pipeline import Pipeline
 
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import StandardScaler

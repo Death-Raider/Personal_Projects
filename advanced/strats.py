@@ -1,15 +1,10 @@
-from data_fetcher import data_fetcher
-from config_loader import config
-
-import pandas as pd
-import numpy as np
-import time
-
 from statistical_modeling.Risk_Modeling import build_risk_features
 from statistical_modeling.risk_dashboard import plot_risk_dashboard
 from ols import main as ols_main
 from ols import load_model
 from pde_backtest import main as pde_main
+from data_fetcher import data_fetcher
+from config_loader import config
 
 if not data_fetcher.connect():
     raise Exception("Failed to connect to MT5")
@@ -28,29 +23,29 @@ for tf in timeframe:
     tf_data[tf] = df
 
     ols_main(args = {
-        "csv": df[tf].copy(),   # Path to input CSV file
+        "csv": tf_data[tf].copy(),   # Path to input CSV file
         "tp": 5.5,             # Take-profit in price units
         "sl": 4,             # Stop-loss in price units
         "window": 10,          # Forward slope window W
         "gap": 10,             # Gap for walk-forward CV (must >= max feature window)
-        "out": f"advanced/pde_model_{tf}"  # Output directory for model and diagnostics
+        "out": f"advanced/{tf}/pde_model"  # Output directory for model and diagnostics
     })
 
-    model, scalar, feature_cols = load_model(f"advanced/pde_model_{tf}")
+    model, scalar, feature_cols = load_model(f"advanced/{tf}/pde_model")
     tf_data[tf]['mu_pred'] = model.predict(scalar.transform(tf_data[tf][feature_cols].fillna(0).values))
 
     # Backtest from PDE and trained OLS model
     pde_bt, pde_path_df = pde_main(args = {
-        "csv": tf_data[tf],   # Path to input CSV file
+        "csv": tf_data[tf].copy(),   # Path to input CSV file
         "tp": 5.5,              # Take-profit in price units
         "sl": 4,                # Stop-loss in price units
         "mu_col": "mu_pred",          
         "threshold": 1,             
-        "out": "advanced/pde_model_vis"  # Output directory for model and diagnostics
+        "out": f"advanced/{tf}/pde_model"  # Output directory for model and diagnostics
     })
 
     plot_risk_dashboard(
         tf_data[tf], 
         tag=tf,
-        save_path=f"advanced/statistical_modeling/risk_dashboard_{tf}.png"
+        save_path=f"advanced/{tf}/risk_dashboard.png"
     )

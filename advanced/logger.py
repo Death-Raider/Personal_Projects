@@ -9,7 +9,6 @@ class TradingLogger:
         self.date_str = datetime.now().strftime('%Y%m%d')
         
         self.trade_logger = self._setup_logger('trades', f'trades_{self.date_str}.log')
-        self.risk_logger = self._setup_logger('risk', f'risk_{self.date_str}.log')
         self.system_logger = self._setup_logger('system', f'system_{self.date_str}.log')
     
     def _setup_logger(self, name, filename):
@@ -29,19 +28,6 @@ class TradingLogger:
         logger.addHandler(console)
         
         return logger
-    
-    def log_trade_decision(self, timestamp, decision):
-        if not config.get('logging', 'log_trades'):
-            return
-        
-        msg = (
-            f"DECISION | {timestamp} | "
-            f"Signal: {decision.get('signal', 0)} | "
-            f"Should Trade: {decision.get('should_trade', False)} | "
-            f"Risk Level: {decision.get('risk_level', 'N/A')} | "
-            f"Confidence: {decision.get('confidence', 0):.1f}"
-        )
-        self.trade_logger.info(msg)
     
     def log_tp_sl_calculation(self, timestamp, tp, sl, adaptive_tp, adaptive_sl):
         msg = (
@@ -65,19 +51,6 @@ class TradingLogger:
             f"Price: {exit_price:.2f} | P&L: ${pnl:.2f} | Reason: {reason}"
         )
         self.trade_logger.info(msg)
-    
-    def log_risk_assessment(self, timestamp, risk_metrics):
-        if not config.get('logging', 'log_risk'):
-            return
-        
-        msg = (
-            f"RISK | {timestamp} | "
-            f"Score: {risk_metrics.get('risk_score', 0):.1f} | "
-            f"Vol Risk: {risk_metrics.get('volatility_risk', 0):.1f} | "
-            f"Liq Risk: {risk_metrics.get('liquidity_risk', 0):.1f} | "
-            f"VaR: ${risk_metrics.get('var', 0):.2f}"
-        )
-        self.risk_logger.info(msg)
     
     def log_drawdown_warning(self, current_dd_pct, limit_pct):
         msg = f"WARNING | Daily drawdown at {current_dd_pct:.2f}% (limit: {limit_pct:.2f}%)"

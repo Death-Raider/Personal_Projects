@@ -851,29 +851,3 @@ def _section_header(fig, subplot_spec, text):
              fontfamily="monospace", transform=fig.transFigure,
              va="bottom", zorder=4)
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# STANDALONE TEST
-# ══════════════════════════════════════════════════════════════════════════════
-
-if __name__ == "__main__":
-    from Risk_Modeling import build_risk_features
-
-    np.random.seed(7)
-    N = 400
-    close  = 100 * np.cumprod(1 + np.random.randn(N) * 0.006)
-    noise  = np.abs(np.random.randn(N)) * 0.4
-    df_raw = pd.DataFrame({
-        "open":   close * (1 + np.random.randn(N) * 0.002),
-        "high":   close * (1 + noise * 0.012),
-        "low":    close * (1 - noise * 0.012),
-        "close":  close,
-        "volume": np.random.randint(5000, 80000, N).astype(float),
-    })
-
-    print("Building features …")
-    df_feat = build_risk_features(df_raw, timeframe="M5")
-    print(f"Feature shape: {df_feat.shape}")
-
-    plot_risk_dashboard(df_feat, tag="M5",
-                        save_path="advanced/statistical_modeling/risk_dashboard_M5.png")
