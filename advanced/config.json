@@ -7,9 +7,9 @@
   
   "trading": {
     "symbol": "XAUUSD",
-    "active_timeframe": ["M1","M5","M15","H1","H4"],
-    "update_interval_seconds": 120,
-    "max_iterations": 100,
+    "active_timeframe": ["M1"],
+    "update_interval_seconds": 20,
+    "max_iterations": 200,
     
     "timeframes": {
       "M1": 1,

@@ -14,19 +14,28 @@ class TradingLogger:
     def _setup_logger(self, name, filename):
         logger = logging.getLogger(name)
         logger.setLevel(getattr(logging, config.get('logging', 'log_level')))
-        
-        handler = logging.FileHandler(self.log_dir / filename)
+
         formatter = logging.Formatter(
             '%(asctime)s | %(levelname)s | %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        
-        console = logging.StreamHandler()
+
+        # File handler — always UTF-8 so Greek letters survive on all OS
+        file_handler = logging.FileHandler(
+            self.log_dir / filename, encoding='utf-8')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+        # Console handler — force UTF-8 on Windows (cp1252 can't encode μ σ β etc)
+        import sys, io
+        stream = io.TextIOWrapper(
+            sys.stdout.buffer, encoding='utf-8', errors='replace',
+            line_buffering=True
+        ) if hasattr(sys.stdout, 'buffer') else sys.stdout
+        console = logging.StreamHandler(stream)
         console.setFormatter(formatter)
         logger.addHandler(console)
-        
+
         return logger
     
     def log_tp_sl_calculation(self, timestamp, tp, sl, adaptive_tp, adaptive_sl):

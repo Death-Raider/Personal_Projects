@@ -45,6 +45,8 @@ class DataFetcher:
         
         df = pd.DataFrame(rates)
         df['time'] = pd.to_datetime(df['time'], unit='s')
+        df.rename(columns={'tick_volume': 'volume'}, inplace=True)
+        df.drop(columns=['real_volume'], inplace=True, errors='ignore')
         
         return df
     
@@ -67,8 +69,8 @@ class DataFetcher:
         # commented out to make sure the latest bar is always included in the df, even if it has the same timestamp as the last bar in the existing df
         # uncomment only if previous candle data is needed and not the current forming candle data
         #  
-        # if last_bar_time is not None and new_last_bar <= last_bar_time:
-        #     return df, False
+        if last_bar_time is not None and new_last_bar <= last_bar_time:
+            return df, False
         
         bars_to_keep = config.get('trading', 'data_bars', timeframe_name)
         updated_df = pd.concat([df, new_data.tail(2)], ignore_index=True)
