@@ -8971,3 +8971,58 @@
 2026-03-18 02:03:03 | INFO | POSITION_CREATED | SHORT @ 5004.24  SL=5008.24  TP=4998.74  signal=strong regime short μ=-0.231
 2026-03-18 02:03:04 | INFO | TRADE_OPENED | [M1] SHORT  @ 5004.24  reason=strong regime short μ=-0.231
 2026-03-18 02:03:24 | INFO | LOOP_START | Iteration 2
+2026-03-18 02:03:48 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:04:08 | INFO | LOOP_START | Iteration 3
+2026-03-18 02:04:37 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:04:57 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:05:17 | INFO | LOOP_START | Iteration 4
+2026-03-18 02:05:44 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:06:04 | INFO | LOOP_START | Iteration 5
+2026-03-18 02:06:32 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:06:52 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:07:12 | INFO | LOOP_START | Iteration 6
+2026-03-18 02:07:40 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:08:00 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:08:20 | INFO | LOOP_START | Iteration 7
+2026-03-18 02:08:46 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:09:06 | INFO | LOOP_START | Iteration 8
+2026-03-18 02:09:30 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:09:50 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:10:10 | INFO | LOOP_START | Iteration 9
+2026-03-18 02:10:37 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:10:57 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:11:17 | INFO | LOOP_START | Iteration 10
+2026-03-18 02:11:24 | INFO | CHARTS_REGENERATED | [M1] surface=0
+2026-03-18 02:11:44 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:12:04 | INFO | LOOP_START | Iteration 11
+2026-03-18 02:12:32 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:12:52 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:13:12 | INFO | LOOP_START | Iteration 12
+2026-03-18 02:13:39 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:13:59 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:14:19 | INFO | LOOP_START | Iteration 13
+2026-03-18 02:14:42 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:15:02 | INFO | LOOP_START | Iteration 14
+2026-03-18 02:15:31 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:15:51 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:16:11 | INFO | LOOP_START | Iteration 15
+2026-03-18 02:16:34 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:16:54 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:17:14 | INFO | LOOP_START | Iteration 16
+2026-03-18 02:17:43 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:18:03 | INFO | LOOP_START | Iteration 17
+2026-03-18 02:18:27 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:18:47 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:19:07 | INFO | LOOP_START | Iteration 18
+2026-03-18 02:19:30 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:19:50 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:20:10 | INFO | LOOP_START | Iteration 19
+2026-03-18 02:20:37 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:20:57 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:21:17 | INFO | LOOP_START | Iteration 20
+2026-03-18 02:21:21 | INFO | CHARTS_REGENERATED | [M1] surface=0
+2026-03-18 02:21:41 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:22:01 | INFO | LOOP_START | Iteration 21
+2026-03-18 02:22:28 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:22:48 | INFO | NO_NEW_DATA | [M1] No new data, skipping iteration
+2026-03-18 02:23:08 | INFO | LOOP_START | Iteration 22
