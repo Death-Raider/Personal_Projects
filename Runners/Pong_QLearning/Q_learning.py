@@ -27,8 +27,8 @@ Sources:
     - https://www.geeksforgeeks.org/q-learning-in-python/ 
 """
 
-from Environments.Pong.board import Board
-from Environments.Pong.pong_env import PongEnvironment
+from Environments.Pong_obs.board import Board
+from Environments.Pong_obs.pong_env import PongEnvironment
 from Agents.QAgent import QAgent
 from GameRunner import GameRunner
 

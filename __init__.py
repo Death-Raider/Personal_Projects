@@ -2,10 +2,10 @@
 # import GoalChasing_QLearning.evaluations.case_study as GC_CaseStudy
 # import GoalChasing_QLearning.evaluations.evaluate_collision as eval_collision
 
-# from Runners.Pong_QLearning.Q_learning import * 
-# run_game(default_board, {'agent1': agent1, 'agent2': agent2}, epochs=1000, SHOW_LAST_EPOCH=True, SAVE_METRICS=False,)
+from Runners.Pong_QLearning.Q_learning import * 
+run_game(default_board, {'agent1': agent1, 'agent2': agent2}, epochs=1000, SHOW_LAST_EPOCH=True, SAVE_METRICS=False,render=True)
 
-from Runners.GoalChasing_QLearning.Q_learning import *
+# from Runners.GoalChasing_QLearning.Q_learning import *
 # from Runners.GoalChasing_QLearning.CADRL_Learning import *
 # from Runners.GoalChasing_QLearning.collision_evaluation import *
 
@@ -20,7 +20,7 @@ from Runners.GoalChasing_QLearning.Q_learning import *
 # os.mkdir(directory)
 
 # with open(f"{directory}/metrics.json", 'w') as f:
-#     json.dump('Hiii', f, indent=2)
+#     json.dump('Hiii', f, indent=2) 
 
 # m = Sequential([
 #     Input(shape=(10,)),\
