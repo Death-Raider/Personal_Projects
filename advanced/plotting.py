@@ -336,7 +336,7 @@ def plot_backtest(bt, save_path="pde_backtest.png"):
                        facecolor=SURF2,
                        edgecolor=ACCENT, alpha=0.9))
 
-    plt.savefig(save_path, dpi=110, bbox_inches="tight",
+    plt.savefig(save_path+ ".png", dpi=110, bbox_inches="tight",
                 facecolor=BG, edgecolor="none")
     plt.close(fig)
     print(f"\n  ✔  Saved → {save_path}")
@@ -490,9 +490,6 @@ def long_short_analysis(bt):
               f"{'PnL':>8} {'AvgPnL':>8}")
         print(f"  {'─'*45}")
 
-        vol_bins  = [0, 0.5, 1.0, 1.5, 2.0, 999]
-        vol_labels= ["<0.5","0.5-1","1-1.5","1.5-2",">2"]
-
         if "sigma" in p_dir.columns and "sigma_bar" in p_dir.columns:
             # Map vol ratio at trade start to each trade
             trade_vr = {}
@@ -504,6 +501,23 @@ def long_short_analysis(bt):
                     trade_vr[tid] = vr
             t_dir_vr = t_dir.copy()
             t_dir_vr["vol_ratio"] = t_dir_vr["trade_id"].map(trade_vr)
+
+            # ── Dynamic vol bins from observed distribution ────────────────────
+            all_vr = list(trade_vr.values())
+            if len(all_vr) >= 5:
+                # Percentile edges so each bin gets roughly equal trades
+                pcts   = np.linspace(0, 100, 6)          # 5 bins
+                edges  = np.unique(np.percentile(all_vr, pcts))
+                edges[0]  = 0.0
+                edges[-1] = np.inf
+            else:
+                edges = np.array([0, 0.5, 1.0, 1.5, 2.0, np.inf])
+
+            vol_bins   = edges.tolist()
+            vol_labels = [
+                f"{edges[i]:.2f}–{'∞' if np.isinf(edges[i+1]) else f'{edges[i+1]:.2f}'}"
+                for i in range(len(edges) - 1)
+            ]
 
             for lo, hi, lbl in zip(vol_bins[:-1], vol_bins[1:], vol_labels):
                 mask = ((t_dir_vr["vol_ratio"] >= lo) &
@@ -677,3 +691,222 @@ def plot_drawdown(bt, save_path="drawdown.png"):
                 facecolor=BG, edgecolor="none")
     plt.close(fig)
     print(f"  ✔  Drawdown chart → {save_path}")
+
+def plot_mu_analysis(df, mu_mle, mu_col=None,
+                     save_path="mu_analysis.png"):
+    """
+    Pre-backtest comparison of MLE drift vs OLS/model mu (if provided).
+ 
+    Panels:
+      1. Price
+      2. MLE mu  (+ OLS overlaid if available)
+      3. Rolling correlation between the two (if both present)
+      4. Distributions
+      5. Summary stats printed
+    """
+    from scipy import stats as spstats
+ 
+    n_panels = 4 if mu_col is not None else 3
+    fig, axes = plt.subplots(n_panels, 1,
+                             figsize=(20, 4 * n_panels),
+                             facecolor=BG)
+    fig.suptitle("μ Estimator Analysis  ·  MLE vs Model",
+                 color=ACCENT, fontsize=12,
+                 fontweight="bold", fontfamily="monospace")
+ 
+    idx = np.arange(len(df))
+ 
+    # ── Panel 1: Price ────────────────────────────────────────────
+    ax = axes[0]
+    ax.plot(idx, df["close"].values, color=ACCENT, lw=0.7, alpha=0.9)
+    _sax(ax, "Price", "", "close")
+ 
+    # ── Panel 2: mu series ────────────────────────────────────────
+    ax = axes[1]
+    ax.plot(idx, mu_mle, color=ACC3, lw=0.7,
+            alpha=0.85, label="μ MLE")
+    if mu_col is not None:
+        ax.plot(idx, mu_col, color=ACC2, lw=0.7,
+                alpha=0.75, label="μ model")
+    ax.axhline(0, color=LGREY, lw=0.8, ls=":", alpha=0.7)
+    ax.legend(fontsize=8, facecolor=SURF2,
+              edgecolor=BORDER, labelcolor=TWHITE)
+    _sax(ax, "Drift Estimate μ", "", "μ")
+ 
+    # ── Panel 3: Rolling correlation (only if both present) ───────
+    if mu_col is not None:
+        ax = axes[2]
+        roll_corr = (pd.Series(mu_mle)
+                     .rolling(200)
+                     .corr(pd.Series(mu_col)))
+        ax.plot(idx, roll_corr.values, color=ACC4, lw=0.8, alpha=0.9)
+        ax.axhline(0,    color=LGREY, lw=0.7, ls=":", alpha=0.6)
+        ax.axhline( 0.5, color=ACC3,  lw=0.6, ls="--", alpha=0.5)
+        ax.axhline(-0.5, color=DANGER,lw=0.6, ls="--", alpha=0.5)
+        ax.set_ylim(-1, 1)
+        _sax(ax, "Rolling Correlation MLE vs Model (w=200)", "", "corr")
+        dist_ax = axes[3]
+    else:
+        dist_ax = axes[2]
+ 
+    # ── Distribution panel ────────────────────────────────────────
+    ax = dist_ax
+    valid_mle = mu_mle[~np.isnan(mu_mle)]
+    ax.hist(valid_mle, bins=80, color=ACC3, alpha=0.55,
+            label="MLE", density=True)
+    if mu_col is not None:
+        valid_col = mu_col[~np.isnan(mu_col)]
+        ax.hist(valid_col, bins=80, color=ACC2, alpha=0.45,
+                label="model", density=True)
+    ax.axvline(0, color=LGREY, lw=0.9, ls="--", alpha=0.8)
+    ax.legend(fontsize=8, facecolor=SURF2,
+              edgecolor=BORDER, labelcolor=TWHITE)
+    _sax(ax, "Distribution of μ", "μ", "density")
+ 
+    plt.tight_layout(rect=[0, 0, 1, 0.97])
+    plt.savefig(save_path, dpi=110, bbox_inches="tight",
+                facecolor=BG, edgecolor="none")
+    plt.close(fig)
+    print(f"  ✔  μ analysis → {save_path}")
+ 
+    # ── Console summary ───────────────────────────────────────────
+    print(f"\n{'═'*55}")
+    print(f"  μ ESTIMATOR SUMMARY")
+    print(f"{'═'*55}")
+    for name, arr in [("MLE", valid_mle),
+                      *([("Model", valid_col)] if mu_col is not None else [])]:
+        t_stat, p_val = spstats.ttest_1samp(arr, 0)
+        print(f"  {name:<8}  mean={arr.mean():+.6f}  "
+              f"std={arr.std():.6f}  "
+              f"t={t_stat:.3f}  p={p_val:.4f}  "
+              f"pct>0={np.mean(arr>0)*100:.1f}%")
+    if mu_col is not None:
+        r, p = spstats.pearsonr(
+            mu_mle[~np.isnan(mu_mle) & ~np.isnan(mu_col)],
+            mu_col[~np.isnan(mu_mle) & ~np.isnan(mu_col)])
+        print(f"\n  Pearson r  : {r:.4f}  p={p:.4f}")
+        print(f"  Sign agree : "
+              f"{np.mean(np.sign(valid_mle[:len(valid_col)]) == np.sign(valid_col))*100:.1f}%")
+    print(f"{'═'*55}")
+
+def diagnose_short_edge(bt) -> dict:
+    """
+    Investigates why shorts win despite negative PDE edge.
+    Returns a dict of computed stats for further use.
+ 
+    Prints:
+      1. μ distribution at short entry vs long entry
+      2. PDE surface breakdown — which surfaces drive short wins
+      3. Win rate vs μ quantile for shorts
+      4. PDE edge vs actual outcome correlation for shorts
+    """
+    from scipy import stats as sp
+ 
+    trades  = bt.trades_df.copy()
+    path    = bt.path_df.copy()
+    p_null  = abs(bt.p_base.SL) / (bt.p_base.TP + abs(bt.p_base.SL))
+ 
+    if "direction" not in trades.columns or len(trades) == 0:
+        print("  No trade data."); return {}
+ 
+    # ── Entry bar stats — join path entry row onto each trade ─────
+    entry_rows = (path[path["trade_open"]]
+                  .groupby("trade_id")
+                  .first()
+                  .reset_index()[["trade_id", "mu", "p_tp",
+                                  "sigma", "sigma_bar", "surface_id"]])
+    trades = trades.merge(entry_rows, on="trade_id", how="left")
+    trades["vol_ratio"] = trades["sigma"] / (trades["sigma_bar"] + 1e-9)
+    trades["won"]       = (trades["outcome"] == "TP").astype(int)
+    trades["edge"]      = trades["p_tp"] - p_null
+ 
+    longs  = trades[trades["direction"] == "long"]
+    shorts = trades[trades["direction"] == "short"]
+ 
+    print(f"\n{'═'*65}")
+    print(f"  SHORT EDGE DIAGNOSIS")
+    print(f"{'═'*65}")
+    print(f"  p_null = {p_null:.4f}   TP={bt.p_base.TP}  SL={bt.p_base.SL}")
+ 
+    # ── 1. μ distribution at entry ────────────────────────────────
+    print(f"\n  {'─'*60}")
+    print(f"  1. μ AT ENTRY")
+    print(f"  {'─'*60}")
+    for name, df_ in [("LONG", longs), ("SHORT", shorts)]:
+        mu = df_["mu"].dropna()
+        t, p = sp.ttest_1samp(mu, 0)
+        print(f"  {name:<6}  mean={mu.mean():+.4f}  std={mu.std():.4f}  "
+              f"pct<0={np.mean(mu<0)*100:.1f}%  "
+              f"t={t:.3f}  p={p:.4f}")
+ 
+    # ── 2. Surface-wise short win rate ────────────────────────────
+    if len(shorts) == 0:
+        print("  No short trades to analyse.")
+        return {}
+    print(f"\n  {'─'*60}")
+    print(f"  2. SHORT WIN RATE BY SURFACE  (top 10 by trade count)")
+    print(f"  {'─'*60}")
+    print(f"  {'Surf':>5}  {'Trades':>6}  {'Win%':>6}  "
+          f"{'PDE edge':>9}  {'μ mean':>8}  {'σ₀/σ̄':>6}")
+    surf_grp = (shorts.groupby("surface_id")
+                .apply(lambda x: pd.Series({
+                    "n"       : len(x),
+                    "win_pct" : x["won"].mean(),
+                    "edge"    : x["edge"].mean(),
+                    "mu"      : x["mu"].mean(),
+                    "vr"      : x["vol_ratio"].mean(),
+                }))
+                .sort_values("n", ascending=False)
+                .head(10))
+    for sid, row in surf_grp.iterrows():
+        mk = "✔" if row["win_pct"] > p_null else "✗"
+        print(f"  {int(sid)+1:>5}  {int(row['n']):>6}  "
+              f"{row['win_pct']*100:>5.1f}%  "
+              f"{row['edge']:>+9.4f}  "
+              f"{row['mu']:>+8.4f}  "
+              f"{row['vr']:>6.3f}  {mk}")
+ 
+    # ── 3. Short win rate by μ quantile ───────────────────────────
+    print(f"\n  {'─'*60}")
+    print(f"  3. SHORT WIN RATE BY μ QUANTILE")
+    print(f"  {'─'*60}")
+    shorts_valid = shorts.dropna(subset=["mu"]).copy()
+    shorts_valid["mu_q"] = pd.qcut(shorts_valid["mu"], q=5,
+                                    duplicates="drop")
+    mu_grp = (shorts_valid.groupby("mu_q", observed=True)
+              .apply(lambda x: pd.Series({
+                  "n"      : len(x),
+                  "win_pct": x["won"].mean(),
+                  "avg_pnl": x["pnl"].mean(),
+              }))
+              .reset_index())
+    print(f"  {'μ range':<22} {'Trades':>6} {'Win%':>6} {'AvgPnL':>8}")
+    for _, row in mu_grp.iterrows():
+        mk = "✔" if row["win_pct"] > p_null else "✗"
+        print(f"  {str(row['mu_q']):<22} {int(row['n']):>6} "
+              f"{row['win_pct']*100:>5.1f}%  "
+              f"{row['avg_pnl']:>+8.3f}  {mk}")
+ 
+    # ── 4. PDE edge vs outcome correlation for shorts ─────────────
+    print(f"\n  {'─'*60}")
+    print(f"  4. PDE EDGE PREDICTIVE POWER FOR SHORTS")
+    print(f"  {'─'*60}")
+    s = shorts.dropna(subset=["edge", "won"])
+    r_edge, p_edge = sp.pointbiserialr(s["won"], s["edge"])
+    r_mu,   p_mu   = sp.pointbiserialr(s["won"], s["mu"].fillna(0))
+    r_vr,   p_vr   = sp.pointbiserialr(s["won"], s["vol_ratio"].fillna(1))
+    print(f"  corr(won, PDE edge)  : r={r_edge:+.4f}  p={p_edge:.4f}")
+    print(f"  corr(won, μ)         : r={r_mu:+.4f}  p={p_mu:.4f}")
+    print(f"  corr(won, vol_ratio) : r={r_vr:+.4f}  p={p_vr:.4f}")
+ 
+    above = s[s["edge"] >  0]
+    below = s[s["edge"] <= 0]
+    print(f"\n  edge>0   n={len(above):>5}  win%={above['won'].mean()*100:.1f}%  "
+          f"pnl={above['pnl'].sum():+.0f}")
+    print(f"  edge<=0  n={len(below):>5}  win%={below['won'].mean()*100:.1f}%  "
+          f"pnl={below['pnl'].sum():+.0f}")
+    print(f"{'═'*65}")
+ 
+    return dict(trades=trades, longs=longs, shorts=shorts,
+                surf_grp=surf_grp, mu_grp=mu_grp,
+                r_edge=r_edge, r_mu=r_mu)

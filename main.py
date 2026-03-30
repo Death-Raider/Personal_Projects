@@ -4,7 +4,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-from advanced.strats import bollbands, KDJ, backtest, get_signal_combined, get_bias, calculate_atr, get_adaptive_sl_tp
+from intermediate.strats import bollbands, KDJ, backtest, get_signal_combined
 from plot import plot_df, create_chart, get_session, init_plot
 
 

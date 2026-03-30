@@ -4,12 +4,39 @@
     "password": "2gX9&L&Z",
     "server": "VantageInternational-Demo"
   },
-  
+  "model_params": {
+    "ols_window": 10,
+    "mle_window": 10,
+    "column" : "close"
+  },
+  "strategy_params": {
+    "edge_threshold_long" : 0.05,
+    "edge_threshold_short" : 0.05,
+    "vol_ratio_threshold" : 1.5,
+    "mu_threshold_long" : 0.05,
+    "mu_threshold_short" : -0.05,
+    "edge_threshold" : 0.03,
+    "vol_max" : 1.5,
+    "vol_strong" : 1.0,
+    "p_threshold" :0.46
+  },
+
   "trading": {
     "symbol": "XAUUSD",
     "active_timeframe": ["M1"],
-    "update_interval_seconds": 20,
+    "update_interval_seconds": 1,
     "max_iterations": 200,
+    "tp": 10,
+    "sl": 8,
+    "lots" : 0.01,
+    "strategy" : "pde_vol_mu",
+    "thresholds": {
+      "M1": 1,
+      "M5": 1,
+      "M15": 4,
+      "H1": 5,
+      "H4": 10
+    },
     
     "timeframes": {
       "M1": 1,
@@ -20,8 +47,8 @@
     },
     
     "data_bars": {
-      "M1": 1500,
-      "M5": 1500,
+      "M1": 50000,
+      "M5": 5000,
       "M15": 1500,
       "H1": 1500,
       "H4": 1500
@@ -38,7 +65,7 @@
   }, 
 
   "logging": {
-    "log_directory": "advanced/logs",
+    "log_directory": "logs",
     "log_level": "INFO",
     "log_trades": true,
     "log_risk": true,
@@ -47,7 +74,7 @@
   
   "output": {
     "csv_directory": "data",
-    "charts_base_directory": "advanced",
+    "charts_base_directory": ".",
     "save_charts_every_n_iterations": 10,
     "chart_lookback_bars": 144
   }

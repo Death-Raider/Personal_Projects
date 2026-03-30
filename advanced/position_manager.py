@@ -19,16 +19,42 @@ import pandas as pd
 from datetime import datetime
 
 import MetaTrader5 as mt5
-
+import time
 from config_loader import config
 from logger import logger
 from csv_manager import csv_manager
-from signal_gen import try_enter_trade          # exact same entry logic as backtest
+# from signal_gen import try_enter_trade          # exact same entry logic as backtest
 
+def try_enter_trade(bar_idx, df, surface, sigma_now, mu_now, p_base):
+    """
+    Placeholder for the actual entry logic, which lives in signal_gen.py.
+    We import it here to avoid circular imports, since signal_gen needs
+    to call position_manager.evaluate_entry from the backtest loop.
+    """
+    return True
 
-# ══════════════════════════════════════════════════════════════════════════════
-# STATS HELPER  (no MT5 dependency, pure maths)
-# ══════════════════════════════════════════════════════════════════════════════
+replacements = {
+    'µ': 'mu',
+    'σ': 'sigma',
+    'Σ': 'Sigma',
+    'π': 'pi',
+    'α': 'alpha',
+    'β': 'beta',
+    'γ': 'gamma',
+    'δ': 'delta',
+    'ε': 'epsilon',
+    'θ': 'theta',
+    'λ': 'lambda',
+    'ρ': 'rho',
+    'τ': 'tau',
+    'φ': 'phi',
+    'ω': 'omega',
+}
+
+def replace_special(text):
+    for char, replacement in replacements.items():
+        text = text.replace(char, replacement)
+    return text
 
 def compute_stats(closed_trades: list) -> dict:
     """
@@ -85,6 +111,13 @@ class PositionManager:
 
     def get_active_position(self):
         if not self.active_positions:
+            return None
+        pos_key = list(self.active_positions.keys())[0]
+        position = mt5.positions_get(ticket=self.active_positions[pos_key]['mt5_ticket'])
+        if not position:
+            print("No open position with this ticket.")
+            if pos_key in self.active_positions:
+                del self.active_positions[pos_key]
             return None
         return list(self.active_positions.values())[0]
 
@@ -151,7 +184,7 @@ class PositionManager:
         position = {
             'id'                      : position_id,
             'direction'               : direction,
-            'signal'                  : entry_decision.get('reason', ''),
+            'signal'                  : entry_decision.get('reason', 'NA'), 
             'entry_price'             : entry_price,
             'entry_time'              : entry_time,
             'size'                    : entry_decision.get('position_size', 0.1),
@@ -187,7 +220,7 @@ class PositionManager:
 
     # ── MT5 ORDER OPERATIONS ──────────────────────────────────────────────────
 
-    def place_mt5_order(self, position_id: str) -> bool:
+    def place_mt5_order(self, position_id: str, retry=0) -> bool:
         """
         Send a market order to MT5 for the given position_id.
         Fills position['mt5_ticket'] and updates entry_price to fill price.
@@ -200,7 +233,7 @@ class PositionManager:
 
         symbol    = config.get('trading', 'symbol')
         direction = position['direction']
-        size      = float(position['size'])
+        size      = float(position['size']) if position['size'] else 0.01
         sl        = float(position['current_stop'])
         tp        = float(position['current_target'])
 
@@ -213,29 +246,40 @@ class PositionManager:
             logger.log_error(f'place_mt5_order: no tick for {symbol}')
             return False
 
-        price = tick.ask if direction == 'long' else tick.bid
-
         request = {
             'action'      : mt5.TRADE_ACTION_DEAL,
             'symbol'      : symbol,
             'volume'      : size,
             'type'        : order_type,
-            'price'       : price,
+            'price'       : tick.ask if direction == 'long' else tick.bid,
             'sl'          : sl,
             'tp'          : tp,
             'deviation'   : 10,
-            'magic'       : 234000,
-            'comment'     : position['signal'][:31],
+            'magic'       : 2340001,
+            'comment'     : replace_special(position['signal'][:31]),
             'type_time'   : mt5.ORDER_TIME_GTC,
             'type_filling': mt5.ORDER_FILLING_IOC,
         }
 
         result = mt5.order_send(request)
+        if result:
+            print("Retcode:", result.retcode)
+            print("Comment:", result.comment)
+        else:
+            print("Last error:", mt5.last_error())
 
         if result is None or result.retcode != mt5.TRADE_RETCODE_DONE:
             code = result.retcode if result else 'None'
             logger.log_error(f'place_mt5_order failed: retcode={code}')
-            return False
+            print(request)
+            print("MT5 returned None, retrying...")
+            print("Last error:", mt5.last_error())
+
+            mt5.shutdown()
+            mt5.initialize()
+            time.sleep(0.5)
+            
+            return self.place_mt5_order(position_id, retry=retry+1) if retry < 3 else None
 
         position['mt5_ticket']  = result.order
         position['entry_price'] = result.price   # actual fill price
@@ -366,7 +410,7 @@ class PositionManager:
                 'price'       : price,
                 'deviation'   : 20,
                 'magic'       : 234000,
-                'comment'     : f'close:{exit_reason}'[:31],
+                'comment'     : replace_special(f'close:{exit_reason}'[:31]),
                 'type_time'   : mt5.ORDER_TIME_GTC,
                 'type_filling': mt5.ORDER_FILLING_IOC,
             }

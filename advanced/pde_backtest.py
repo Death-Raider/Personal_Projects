@@ -1,13 +1,3 @@
-"""
-PDE Backtest — Surface Recompute on Vol Regime Shift
-=====================================================
-1. Compute u(x, sigma) surface at start
-2. Track current (x, sigma) path on the surface as dots
-3. Recompute surface only when sigma_bar shifts by >= threshold
-4. Each time TP or SL is hit → start new trade from that price
-5. x is always bounded within [SL, TP] — never drifts to ±100
-"""
-
 import numpy as np
 import pandas as pd
 
@@ -17,11 +7,13 @@ warnings.filterwarnings("ignore")
 from plotting import *
 from PDE_parameters import Params
 from cfd_pde import solve_pde
-from signal_gen import try_enter_trade
+import MetaTrader5 as mt5
+from tqdm import tqdm
 
-# ══════════════════════════════════════════════════════════════════════════════
-# PARAMETER ESTIMATION — OHLCV ONLY, PRICE UNITS
-# ══════════════════════════════════════════════════════════════════════════════
+from strategies import STRATEGY_REGISTRY, Strategy, EntryFeatures, EntryDecision
+from models import BaseModel, OLSModel
+from calc_features import create_features
+# from config_loader import config, Config
 
 def estimate_params(df, w_sigma=20, w_bar=200,
                     w_eta=20, w_rho=60, w_beta=100):
@@ -54,12 +46,59 @@ def estimate_params(df, w_sigma=20, w_bar=200,
         rho       = float(np.clip(rho, -0.99, 0.99)),
     )
 
-class PDEBacktest:
-    def __init__(self, p_base, mu_series, recompute_threshold=1.0):
-        self.p_base    = p_base
-        self.mu_series = mu_series
-        self.threshold = recompute_threshold
+def latest_mu_mle(prices: np.ndarray, sigma_series: np.ndarray,
+                  window: int = 50) -> float:
+    """Single-bar live update — mirrors latest_slope."""
+    if len(prices) < window + 1:
+        return np.nan
+    dx  = np.diff(prices[-window-1:])   # length window
+    sig = sigma_series[-window:]
+    w   = 1.0 / (sig**2 + 1e-9)
+    return float(np.sum(w * dx) / (np.sum(w) + 1e-9))
 
+
+def compute_mu_mle(prices: np.ndarray, sigma_series: np.ndarray,
+                   window: int = 50) -> np.ndarray:
+    """Historical batch — mirrors compute_forward_slope."""
+    n      = len(prices)
+    mu_arr = np.full(n, np.nan)
+    dx     = np.diff(prices)
+    for t in range(window, n):
+        dx_w  = dx[t-window:t]
+        sig_w = sigma_series[t-window:t]
+        w     = 1.0 / (sig_w**2 + 1e-9)
+        mu_arr[t] = np.sum(w * dx_w) / (np.sum(w) + 1e-9)
+
+    # fill last `window` bars using latest_mu_mle (same as latest_slope pattern)
+
+    for row in range(n - window, n):
+        if np.isnan(mu_arr[row]):
+            mu_arr[row] = latest_mu_mle(
+                prices[max(0, row-window-1):row+1],
+                sigma_series[max(0, row-window):row+1],
+                window=window
+            )
+    return mu_arr
+
+def pts_to_usd(pts, symbol, lots):
+    info = mt5.symbol_info(symbol)
+    if info is None:
+        return pts
+    pip = info.trade_tick_value / info.trade_tick_size
+    return pts * pip * lots
+
+class PDEBacktest:                 
+    def __init__(self, p_base, mu_model: BaseModel = None, recompute_threshold=1.0, lots=1, symbol="BTCUSD",strategy: Strategy=None, verbose: int = 2, config = None):
+
+        assert strategy is not None, "Strategy instance must be provided"
+        assert isinstance(strategy, Strategy), "strategy must be an instance of Strategy class"
+        assert any(isinstance(strategy, s) for s in STRATEGY_REGISTRY.values()), f"Strategy '{strategy}' not found in registry {list(STRATEGY_REGISTRY.values())}"
+
+        self.p_base    = p_base
+        self.mu_model = mu_model
+        self.strategy = strategy
+        self.threshold = recompute_threshold
+        self.config = config
         self.surfaces  = []   # PDE surfaces
         self.path      = []   # per-bar records
         self.trades    = []   # completed trade records
@@ -67,9 +106,12 @@ class PDEBacktest:
 
         self.last_sigma_bar     = None
         self.current_surface_id = -1
+        self.lots   = lots
+        self.symbol = symbol
 
-    def run(self, df, entry_price_col="close",
-            w_sigma=20, w_bar=200):
+    def run(self, df, entry_price_col="close", w_sigma=20, w_bar=200):
+
+        self.mu_series = self.mu_model.predict(df,)
 
         print(f"\n  Running PDE backtest over {len(df)} bars ...")
         print(f"  Recompute threshold : {self.threshold} pts")
@@ -85,12 +127,13 @@ class PDEBacktest:
         cumulative_pnl = 0.0
         trade_open     = False
         trade_direction= "long"     # direction of current open trade
-
+        pbar = tqdm(total=len(df)-w_bar, desc="Bars processed")
         for t in range(w_bar, len(df)):
             sigma_now = vol_series.iloc[t]
             sbar_now  = sbar_series.iloc[t]
 
             if np.isnan(sigma_now) or np.isnan(sbar_now):
+                pbar.update(1)
                 continue
 
             mu_now = float(self.mu_series[t]) \
@@ -117,12 +160,7 @@ class PDEBacktest:
                 p_new.r_kill    = self.p_base.r_kill
                 p_new.Nx        = self.p_base.Nx
                 p_new.Ns        = self.p_base.Ns
-                p_new.sigma_max = max(p_new.sigma_bar * 4,
-                                      p_new.sigma0    * 4, 8.0)
-
-                print(f"  Bar {t:>5}  |  Recomputing  "
-                      f"sbar={sbar_now:.3f}  "
-                      f"shift={abs(sbar_now-(self.last_sigma_bar or sbar_now)):.3f}")
+                p_new.sigma_max = max(p_new.sigma_bar * 4, p_new.sigma0    * 4, 8.0)
 
                 u, x_grid, s_grid = solve_pde(p_new, mu=mu_now)
                 self.current_surface_id += 1
@@ -140,38 +178,38 @@ class PDEBacktest:
 
             # ── No surface yet — skip ──────────────────────────────────
             if self.current_surface_id < 0:
+                pbar.update(1)
                 continue
 
             surf = self.surfaces[self.current_surface_id]
 
             # ── Try to enter if no open trade ──────────────────────────
             if not trade_open:
-                decision = try_enter_trade(
-                    bar_idx   = t,
-                    df        = df,
-                    surface   = surf,
-                    sigma_now = sigma_now,
-                    mu_now    = mu_now,
-                    p_base    = self.p_base,
-                )
+                if t + 1 >= len(df):
+                    pbar.update(1)
+                    continue
+                features = create_features(surf, sigma_now, self.p_base, self.mu_series, t)
+                
+                decision = self.strategy(features, self.config)
 
-                if decision["enter"]:
+                
+                if decision.enter:
                     trade_open      = True
-                    trade_direction = decision["direction"]
-                    entry_price     = df[entry_price_col].iloc[t]
+                    trade_direction = decision.direction
+                    entry_price     = df["open"].iloc[t + 1] if t + 1 < len(df) else df[entry_price_col].iloc[t]
                     trade_start     = t
                 else:
                     # Flat bar — record with x=0, p_tp from entry point
                     self.path.append(dict(
                         bar            = t,
                         time           = df.index[t],
-                        price          = df[entry_price_col].iloc[t],
-                        entry_price    = df[entry_price_col].iloc[t],
+                        price          = df["open"].iloc[t + 1] if t + 1 < len(df) else df[entry_price_col].iloc[t],
+                        entry_price    = df["open"].iloc[t + 1] if t + 1 < len(df) else df[entry_price_col].iloc[t],
                         x              = 0.0,
                         x_clipped      = 0.0,
                         sigma          = sigma_now,
                         sigma_bar      = sbar_now,
-                        p_tp           = decision["p_tp_entry"],
+                        p_tp           = decision.p_tp_entry,
                         mu             = mu_now,
                         surface_id     = self.current_surface_id,
                         trade_id       = trade_id,
@@ -180,6 +218,7 @@ class PDEBacktest:
                         trade_open     = False,
                         direction      = None,
                     ))
+                    pbar.update(1)
                     continue
 
             # ── x = displacement from current trade entry ──────────────
@@ -241,7 +280,7 @@ class PDEBacktest:
             self.path.append(dict(
                 bar            = t,
                 time           = df.index[t],
-                price          = df[entry_price_col].iloc[t],
+                price          = df["open"].iloc[t + 1] if t + 1 < len(df) else df[entry_price_col].iloc[t],
                 entry_price    = entry_price,
                 x              = x_record,
                 x_clipped      = x_clipped_record,
@@ -259,15 +298,16 @@ class PDEBacktest:
 
             # ── On exit: record trade and reset ───────────────────────
             if outcome is not None:
-                cumulative_pnl += pnl_this
+                pnl_usd = pts_to_usd(pnl_this, self.symbol, self.lots) if self.symbol else pnl_this
+                cumulative_pnl += pnl_usd
                 self.trades.append(dict(
                     trade_id    = trade_id,
                     start_bar   = trade_start,
                     end_bar     = t,
                     n_bars      = t - trade_start,
                     entry_price = entry_price,
-                    exit_price  = df[entry_price_col].iloc[t],
-                    pnl         = pnl_this,
+                    exit_price  = df["open"].iloc[t + 1] if t + 1 < len(df) else df[entry_price_col].iloc[t],
+                    pnl         = pnl_usd,
                     outcome     = outcome,
                     direction   = trade_direction,
                     entry_p_tp  = self.path[
@@ -279,10 +319,9 @@ class PDEBacktest:
                 trade_open   = False
                 entry_price  = None
                 trade_id    += 1
-                print(f"  Bar {t:>5}  |  {outcome} ({trade_direction})  "
-                      f"pnl={pnl_this:+.2f}  "
-                      f"cum={cumulative_pnl:+.2f}  "
-                      f"trade #{trade_id}")
+                description_str = f"{outcome} ({trade_direction}) |  pnl={pnl_usd:+.2f}  cumulative={cumulative_pnl:+.2f}  trade #{trade_id}"
+                pbar.set_description(description_str)
+            pbar.update(1)
 
         self.path_df   = pd.DataFrame(self.path)
         self.trades_df = pd.DataFrame(self.trades) \
@@ -312,20 +351,23 @@ class PDEBacktest:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def main(args={
-    "csv"       : "",       # path to CSV or pass DataFrame directly
+    "data"       : "",       # path to CSV or pass DataFrame directly
     "tp"        : 5.5,
     "sl"        : 4.0,
-    "mu_col"    : None,     # column name for mu, or None for null
     "threshold" : 1.0,      # vol shift in pts to trigger recompute
     "out"       : "pde_backtest.png",
+    'lots'     : 0.01,      # position size in lots (for USD conversion)
+    'symbol'   : "XAUUSD",  # symbol name for pip conversion
+    'strategy' : 'always_buy',
+    'mu_model' : None
 }):
     import argparse
     a = argparse.Namespace(**args)
 
-    if isinstance(a.csv, pd.DataFrame):
-        df = a.csv
+    if isinstance(a.data, pd.DataFrame):
+        df = a.data
     else:
-        df = pd.read_csv(a.csv, index_col=0, parse_dates=True)
+        df = pd.read_csv(a.data, index_col=0, parse_dates=True)
     df.columns = df.columns.str.lower()
 
     print(f"  Loaded {len(df)} bars")
@@ -334,19 +376,13 @@ def main(args={
     p_base.TP =  a.tp
     p_base.SL = -a.sl
 
-    if a.mu_col and a.mu_col in df.columns:
-        mu_series = df[a.mu_col].fillna(0).values
-        print(f"  mu from column: {a.mu_col}")
-    else:
-        mu_series = np.zeros(len(df))
-        print(f"  null model (mu=0)")
-
-    bt      = PDEBacktest(p_base, mu_series,
-                          recompute_threshold=a.threshold)
-    path_df = bt.run(df, entry_price_col="close")
+    bt = PDEBacktest(p_base, mu_model=a.mu_model, strategy=STRATEGY_REGISTRY[a.strategy](),
+                          recompute_threshold=a.threshold, lots=a.lots, symbol=a.symbol)
+    path_df = bt.run(df, entry_price_col="close" )
 
     surface_stats(bt)
     long_short_analysis(bt)
+    results = diagnose_short_edge(bt)
     plot_backtest(bt, save_path=a.out)
     plot_drawdown(bt, save_path=f"{a.out}_drawdown.png")
 
@@ -359,7 +395,4 @@ def main(args={
     print(f"  t-stat     : {t_stat:.3f}   p={p_val:.4f}")
     print(f"  Significant: {abs(t_stat) > 1.96}")
 
-    return bt,path_df
-
-if __name__ == "__main__":
-    main()
+    return bt

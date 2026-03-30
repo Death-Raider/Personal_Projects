@@ -29,13 +29,13 @@ class DataFetcher:
             self.connected = False
             logger.log_system_event('mt5_disconnect', "Disconnected from MT5")
     
-    def fetch_data(self, timeframe_name):
+    def fetch_data(self, timeframe_name, symbol=None,bars_count=None):
         if not self.connected:
             return None
         
-        symbol = config.get('trading', 'symbol')
+        symbol = config.get('trading', 'symbol') if symbol is None else symbol
         timeframe_code = config.get('trading', 'timeframes', timeframe_name)
-        bars_count = config.get('trading', 'data_bars', timeframe_name)
+        bars_count = config.get('trading', 'data_bars', timeframe_name) if bars_count is None else bars_count
         
         rates = mt5.copy_rates_from_pos(symbol, timeframe_code, 0, bars_count)
         

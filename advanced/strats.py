@@ -1,49 +1,24 @@
-"""
-strats.py
-=========
-Integration entry point.
-
-Two modes
----------
-1. BACKTEST MODE (default, no MT5 needed)
-   Runs the full pipeline — feature engineering, model training,
-   PDE backtest — exactly as before.  Call run_backtest() or just
-   run the file directly.
-
-2. LIVE MODE
-   Connects to MT5, fetches data each iteration, applies the trained
-   model, manages a single live position via position_manager.
-   On every PDE regime change: logs session stats, regenerates all
-   charts from session-start using CSV-persisted data.
-   Call run_live() or pass --live on the command line.
-"""
-
 import time
 import numpy as np
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 from statistical_modeling.Risk_Modeling import build_risk_features, update_last_row
 from statistical_modeling.risk_dashboard import plot_risk_dashboard
 
-from ols import main as ols_main, load_model
 from pde_backtest import main as pde_main, PDEBacktest, estimate_params
 from cfd_pde import solve_pde
 from PDE_parameters import Params
-from plotting import plot_backtest, plot_drawdown
-# from plotting import surface_stats, long_short_analysis
-# from signal_gen import try_enter_trade
+from plotting import CMAP_PROB,TMID, plot_backtest, plot_drawdown
+from models import OLSModel, MLEModel, NULLModel
+
 from position_manager import position_manager
 from data_fetcher import data_fetcher
 from csv_manager import csv_manager
 from config_loader import config
 from logger import logger
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# SHARED HELPERS
-# ══════════════════════════════════════════════════════════════════════════════
 
 def _out_dir(tf: str) -> Path:
     base = config.get('output', 'charts_base_directory')
@@ -108,49 +83,32 @@ def _recompute_surface(df: pd.DataFrame, t: int,
 
 
 def _regenerate_charts(tf: str, df_session: pd.DataFrame,
-                        bt_obj: PDEBacktest | None,
+                        surface: dict|None,
                         surface_id: int):
-    """
-    Regenerate all charts from session-start data.
-    Called on every regime change so charts always reflect
-    the full history since the system started this session.
-    """
+
     out = _out_dir(tf)
     tag = f"{tf}_surface{surface_id}"
-
-    # Risk dashboard from full session data
-    # try:
-    #     plot_risk_dashboard(df_session, tag=tf,
-    #                          save_path=str(out / 'risk_dashboard.png'))
-    # except Exception as e:
-    #     logger.log_error(f'risk_dashboard failed [{tf}]: {e}')
-
-    # PDE backtest charts only if we have a backtest object
-    if bt_obj is not None and len(bt_obj.path) > 0:
-        try:
-            bt_obj.path_df   = pd.DataFrame(bt_obj.path)
-            bt_obj.trades_df = (pd.DataFrame(bt_obj.trades)
-                                if bt_obj.trades else pd.DataFrame())
-            plot_backtest(bt_obj,
-                          save_path=str(out / 'pde_backtest.png'))
-            plot_drawdown(bt_obj,
-                          save_path=str(out / 'drawdown.png'))
-        except Exception as e:
-            logger.log_error(f'backtest charts failed [{tf}]: {e}')
+    
+    if surface is not None:
+        # plot the surface and save it
+        xg     = surface["x_grid"]
+        sg     = surface["s_grid"]
+        u      = surface["u"]
+        # XX, SS = np.meshgrid(xg, sg, indexing='ij')
+        fig, ax = plt.subplots(figsize=(10, 6))
+        im = ax.imshow(u.T, origin="lower", aspect="auto",
+                       extent=[xg[0], xg[-1], sg[0], sg[-1]],
+                       cmap=CMAP_PROB, vmin=0, vmax=1)
+        cb = fig.colorbar(im, ax=ax, fraction=0.04)
+        cb.ax.tick_params(colors=TMID, labelsize=5)
+        cb.set_label("P(TP)", color=TMID, fontsize=6)
+        plt.savefig(out / f'surface_{tag}.png', dpi=150)
+        plt.close(fig)
 
     logger.log_system_event('charts_regenerated',
         f'[{tf}] surface={surface_id}')
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# BACKTEST MODE  (called by strats directly, no MT5 needed)
-# ══════════════════════════════════════════════════════════════════════════════
-
-def run_backtest():
-    """
-    Full backtest pipeline identical to original strats.py logic.
-    Works without MT5 — uses CSV data if available, else raises.
-    """
+def run_backtest(USE_MODEL = False):    
     if not data_fetcher.connect():
         raise Exception('Failed to connect to MT5')
 
@@ -160,6 +118,7 @@ def run_backtest():
 
     tp = config.get('trading', 'tp') if 'tp' in (config._config.get('trading', {})) else 5.5
     sl = config.get('trading', 'sl') if 'sl' in (config._config.get('trading', {})) else 4.0
+    thresh = config.get('trading', 'thresholds') if 'thresholds' in (config._config.get('trading', {})) else {timeframes[0]:1.0}
 
     tf_data = {}
 
@@ -179,118 +138,82 @@ def run_backtest():
 
         # ── Features ─────────────────────────────────────────────────
         print(f'  Building features ...')
-        df = build_risk_features(df, tf)
+        if USE_MODEL:
+            df = build_risk_features(df, tf)
         tf_data[tf] = df
 
         out = _out_dir(tf)
-
-        # ── Train model ───────────────────────────────────────────────
-        print(f'  Training model ...')
-        ols_main(args={
-            'csv'   : df.copy(),
-            'tp'    : tp,
-            'sl'    : sl,
-            'window': 10,
-            'gap'   : 10,
-            'out'   : str(out / 'pde_model'),
-        })
-
-        # ── Predict mu on full dataset ────────────────────────────────
-        model, scaler, feature_cols = load_model(str(out / 'pde_model'))
-        df['mu_pred'] = model.predict(
-            scaler.transform(df[feature_cols].fillna(0).values))
-
+        
         # ── PDE backtest ──────────────────────────────────────────────
         print(f'  Running PDE backtest ...')
         bt, path_df = pde_main(args={
-            'csv'      : df.copy(),
+            'data'      : df.copy(),
             'tp'       : tp,
             'sl'       : sl,
-            'mu_col'   : 'mu_pred',
-            'threshold': 1.0,
-            'out'      : str(out / 'pde_backtest.png'),
-        })
+            'threshold': thresh.get(tf, 1.0),
+            'out'      : str(out / 'pde_backtest'), 
+            'lots'     : config.get('trading').get('lots', 1),
+            'symbol'   : config.get('trading').get('symbol', None),
+            'strategy' : config.get('trading').get('strategy', 'always_buy'),
+            'mu_model' : OLSModel()        
+            })
 
-        # ── Risk dashboard ────────────────────────────────────────────
-        plot_risk_dashboard(df, tag=tf,
-                             save_path=str(out / 'risk_dashboard.png'))
-
-        print(f'  Done: {tf}  outputs → {out}')
+        # ── Risk dashboard ────────────────────────────────────────────\
+        if USE_MODEL:
+            plot_risk_dashboard(df, tag=tf,
+                                save_path=str(out / 'risk_dashboard.png'))
 
     data_fetcher.disconnect()
     return tf_data, bt, path_df
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# LIVE MODE
-# ══════════════════════════════════════════════════════════════════════════════
-
-def run_live():
-    """
-    Live trading loop.
-
-    Per-iteration:
-      1. Fetch latest bars for each active timeframe
-      2. Build features, predict mu
-      3. Check vol regime shift → recompute PDE if needed
-         → log session stats
-         → regenerate all charts from session start
-      4. If no position: evaluate_entry via try_enter_trade
-         → place MT5 order if signal
-      5. If position open: update_position, check_exit_conditions
-         → close on TP/SL hit
-      6. Log bar to CSV
-    """
+"""
+def run_live(USE_MODEL=False):
     if not data_fetcher.connect():
         raise Exception('Failed to connect to MT5')
 
     timeframes = config.get('trading', 'active_timeframe')
     if isinstance(timeframes, list):
-        # timeframes = [timeframes]
         timeframes = timeframes[0]
     assert isinstance(timeframes, str), 'active_timeframe should be a list of strings'
 
     max_iter      = config.get('trading', 'max_iterations')
     sleep_sec     = config.get('trading', 'update_interval_seconds')
     chart_every_n = config.get('output', 'save_charts_every_n_iterations')
-    tp            = 5.5
-    sl            = 4.0
-    threshold     = 1.0
-    lot_size      = 0.01
+    tp            = config.get('trading').get('tp', 5.5)
+    sl            = config.get('trading').get('sl', 4)
+    threshold     = config.get('trading', 'thresholds').get(timeframes, 1.0)
+    lot_size      = config.get('trading').get('lots', 0.01)
 
     # ── Per-timeframe live state ──────────────────────────────────────
     live_state = {}
     tf = timeframes
+    if USE_MODEL:
+        out = _out_dir(tf)
+        model_dir = str(out / 'pde_model')
+        try:
+            model, scaler, feature_cols = load_model(model_dir)
+        except Exception:
+            logger.log_system_event('live_init',
+                f'[{tf}] No model found — training on startup data ...')
+            
+            df_init = data_fetcher.fetch_data(tf)
 
-    out = _out_dir(tf)
-
-    # Load or train model
-    model_dir = str(out / 'pde_model')
-
-    try:
-        model, scaler, feature_cols = load_model(model_dir)
-    except Exception:
-        logger.log_system_event('live_init',
-            f'[{tf}] No model found — training on startup data ...')
-        
-        df_init = data_fetcher.fetch_data(tf)
-
-        if df_init is None:
-            raise Exception(f'No data for {tf} on startup')
-        
-        df_init.rename(columns={'timestamp': 'time'}, errors='ignore', inplace=True)
-        
-        df_init = build_risk_features(df_init, tf)
-        ols_main(args={
-            'csv': df_init.copy(), 'tp': tp, 'sl': sl,
-            'window': 10, 'gap': 10, 'out': model_dir,
-        })
-        model, scaler, feature_cols = load_model(model_dir)
+            if df_init is None:
+                raise Exception(f'No data for {tf} on startup')
+            
+            df_init.rename(columns={'timestamp': 'time'}, errors='ignore', inplace=True)
+            
+            df_init = build_risk_features(df_init, tf)
+            ols_main(args={
+                'csv': df_init.copy(), 'tp': tp, 'sl': sl,
+                'window': 10, 'gap': 10, 'out': model_dir,
+            })
+            model, scaler, feature_cols = load_model(model_dir)
 
     live_state[tf] = {
-        'model'          : model,
-        'scaler'         : scaler,
-        'feature_cols'   : feature_cols,
+        'model'          : model if USE_MODEL else None,
+        'scaler'         : scaler if USE_MODEL else None,
+        'feature_cols'   : feature_cols if USE_MODEL else None,
         'p_base'         : _build_p_base(tp, sl),
         'current_surface': None,
         'last_sigma_bar' : None,
@@ -322,18 +245,9 @@ def run_live():
             latest = df.iloc[-1]
             csv_manager.append_bar_data(tf, latest.to_dict())
 
-            # Build features on updated df
-            if state['df_features'] is None:
-                # First iteration — full computation once
-                state['df_features'] = build_risk_features(df.copy(), tf)
-            else:
-                # Every subsequent bar — one row only
-                state['df_features'] = update_last_row(
-                    state['df_features'],
-                    df.iloc[-1].to_dict(),
-                    tf
-                )
-            df = state['df_features']
+            if USE_MODEL:
+                state['df_features'] = build_risk_features(df.copy(), tf)  # compute full features on first iteration to avoid issues with rolling windows and NaNs
+                df = state['df_features'].copy()
 
             # Grow session df (used for chart regeneration)
             state['df_session'] = df.copy()
@@ -351,18 +265,23 @@ def run_live():
                 continue
 
             # Predict mu from model
-            try:
-                feat    = df[state['feature_cols']].shift(1).iloc[[-1]].fillna(0)
-                mu_now  = float(state['model'].predict(
-                    state['scaler'].transform(feat.values))[0])
-            except Exception as e:
-                logger.log_error(f'mu prediction [{tf}]: {e}')
-                mu_now = 0.0
-
+            if USE_MODEL:
+                try:
+                    feat    = df[state['feature_cols']].shift(1).iloc[[-1]].fillna(0)
+                    mu_now  = float(state['model'].predict(
+                        state['scaler'].transform(feat.values))[0])
+                except Exception as e:
+                    logger.log_error(f'mu prediction [{tf}]: {e}')
+                    mu_now = 0.0
+            else:
+                y = df['close'].iloc[-10-2:-1].values
+                slope = latest_slope(y, window=10)
+                mu_now = slope
             # ── Vol regime check → recompute PDE ─────────────────
             if _regime_changed(state['last_sigma_bar'],sbar_now, threshold):
 
                 # Clamp mu to keep Pe <= 2.0 so surface doesn't degenerate
+                p_base     = state['p_base']
                 L          = abs(p_base.TP) + abs(p_base.SL)
                 sigma_est  = sbar_now if sbar_now > 0 else 1.0
                 mu_max     = 2.0 * 0.5 * sigma_est**2 / L
@@ -392,7 +311,7 @@ def run_live():
                 _regenerate_charts(
                     tf         = tf,
                     df_session = state['df_session'],
-                    bt_obj     = state['bt_obj'],
+                    surface     = state['current_surface'],
                     surface_id = state['surface_id'],
                 )
             
@@ -491,7 +410,7 @@ def run_live():
                 _regenerate_charts(
                     tf         = tf,
                     df_session = state['df_session'],
-                    bt_obj     = state['bt_obj'],
+                    surface     = state['current_surface'],
                     surface_id = state['surface_id'],
                 )
 
@@ -517,11 +436,8 @@ def run_live():
         data_fetcher.disconnect()
         logger.log_system_event('shutdown', 'Live loop ended')
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# ENTRY POINT
-# ══════════════════════════════════════════════════════════════════════════════
+"""
 
 if __name__ == '__main__':
-    # run_backtest()
-    run_live()
+    run_backtest()
+    # run_live()

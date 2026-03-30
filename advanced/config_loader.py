@@ -44,4 +44,4 @@ class Config:
         with open(path, 'w') as f:
             json.dump(self._config, f, indent=2)
 
-config = Config("advanced/config.json")
+config = Config("config.json")

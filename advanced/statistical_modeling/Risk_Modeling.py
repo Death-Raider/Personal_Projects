@@ -907,6 +907,7 @@ def build_all_timeframes(dfs: dict) -> dict:
 # Longest rolling window in this file is 200 (SMA_200).
 _TAIL_WINDOW = 210
 
+
 def update_last_row(df_feat: pd.DataFrame,
                     new_row,
                     timeframe: str = "H1") -> pd.DataFrame:
@@ -1127,26 +1128,22 @@ def _update_spectral_last(df_prev: pd.DataFrame,
     new_feat[f"{tag}_spec_pwr_ratio"] = (low_pwr / (high_pwr + 1e-9)
                                           if not np.isnan(low_pwr) else np.nan)
 
-    # ── Hilbert on last window ────────────────────────────────────────
-    hilbert_amp = hilbert_phase = hilbert_freq = np.nan
-
+    # Hilbert: amplitude is localised (ok from tail), but phase and freq
+    # are path-dependent across the full series — carry those forward.
+    # Only update amplitude here; phase/freq are handled in _carry_forward.
+    hilbert_amp = np.nan
     hilbert_w = min(128, len(r_ext))
     if hilbert_w >= 10:
         try:
             from scipy.signal import hilbert as scipy_hilbert
-            seg_h    = r_ext.values[-hilbert_w:]
-            analytic = scipy_hilbert(seg_h)
-            hilbert_amp   = float(np.abs(analytic[-1]))
-            hilbert_phase = float(np.angle(analytic[-1]))
-            # instantaneous frequency from unwrapped phase gradient
-            phases    = np.unwrap(np.angle(analytic))
-            hilbert_freq  = float(np.gradient(phases)[-1] / (2 * np.pi))
+            seg_h       = r_ext.values[-hilbert_w:]
+            analytic    = scipy_hilbert(seg_h)
+            hilbert_amp = float(np.abs(analytic[-1]))
         except Exception:
             pass
 
-    new_feat[f"{tag}_hilbert_amp"]   = hilbert_amp
-    new_feat[f"{tag}_hilbert_phase"] = hilbert_phase
-    new_feat[f"{tag}_hilbert_freq"]  = hilbert_freq
+    new_feat[f"{tag}_hilbert_amp"] = hilbert_amp
+    # hilbert_phase and hilbert_freq are carried forward in _carry_forward
     return new_feat
 
 
@@ -1161,8 +1158,18 @@ _CARRY_FORWARD_SUFFIXES = [
     "kmeans_regime", "kmeans_dist",            # cluster — refit rarely needed
     "gmm_regime", "gmm_entropy",               # GMM
     "dbscan_anomaly",                          # DBSCAN
-    "drawdown", "dd_duration",                 # cumulative, complex to update
-    "cumulative_pnl",                          # not a feature but safe guard
+    # cumulative features — must carry and then apply one-step update
+    "cum_ret",                                 # updated analytically below
+    "obv",                                     # updated analytically below
+    "vwap",                                    # updated analytically below
+    "drawdown",                                # updated analytically below
+    "dd_duration",                             # updated analytically below
+    "max_dd_20",                               # updated analytically below
+    "max_dd_50",                               # updated analytically below
+    "calmar",                                  # updated analytically below
+    # Hilbert phase/freq are path-dependent — carry forward
+    "hilbert_phase",
+    "hilbert_freq",
 ]
 # GMM probability columns follow a pattern
 _GMM_PROB_PREFIX = "gmm_prob_"
@@ -1172,7 +1179,8 @@ def _carry_forward(df_prev: pd.DataFrame,
                    new_feat: pd.DataFrame,
                    tag: str) -> pd.DataFrame:
     """
-    Carry the last known value of carry-forward features to the new row.
+    Carry the last known value of carry-forward features to the new row,
+    then apply analytical one-step updates where possible.
     Only touches columns that are NOT already populated by tier 1/2.
     """
     if len(df_prev) == 0:
@@ -1182,11 +1190,8 @@ def _carry_forward(df_prev: pd.DataFrame,
 
     for suffix in _CARRY_FORWARD_SUFFIXES:
         col = f"{tag}_{suffix}"
-        if col in df_prev.columns and col not in new_feat.columns:
-            new_feat[col] = last_prev.get(col, np.nan)
-        elif col in df_prev.columns:
-            # Only carry if tier 1 left it NaN
-            if pd.isna(new_feat[col].values[0]):
+        if col in df_prev.columns:
+            if col not in new_feat.columns or pd.isna(new_feat[col].values[0]):
                 new_feat[col] = last_prev.get(col, np.nan)
 
     # GMM probability columns (tag_gmm_prob_0, _1, _2, ...)
@@ -1195,6 +1200,117 @@ def _carry_forward(df_prev: pd.DataFrame,
     for col in gmm_cols:
         if col not in new_feat.columns or pd.isna(new_feat[col].values[0]):
             new_feat[col] = last_prev.get(col, np.nan)
+
+    # ── Analytical one-step updates for cumulative features ───────────
+
+    # cum_ret: (1 + cum_ret_prev) * (1 + ret_new) - 1
+    ret_col  = f"{tag}_ret"
+    cum_col  = f"{tag}_cum_ret"
+    if cum_col in df_prev.columns and ret_col in new_feat.columns:
+        prev_cum = float(last_prev.get(cum_col, 0.0))
+        new_ret  = float(new_feat[ret_col].values[0]
+                          if not pd.isna(new_feat[ret_col].values[0]) else 0.0)
+        new_feat[cum_col] = (1 + prev_cum) * (1 + new_ret) - 1
+
+    # obv: prev_obv + sign(close_diff) * volume
+    obv_col  = f"{tag}_obv"
+    lr_col   = f"{tag}_log_ret"
+    if obv_col in df_prev.columns and lr_col in new_feat.columns:
+        prev_obv = float(last_prev.get(obv_col, 0.0))
+        lr_new   = float(new_feat[lr_col].values[0]
+                          if not pd.isna(new_feat[lr_col].values[0]) else 0.0)
+        vol_new  = float(new_feat.get("volume", pd.Series([0.0])).values[0])
+        new_feat[obv_col] = prev_obv + np.sign(lr_new) * vol_new
+
+    # vwap: (prev_vwap * prev_cum_vol + tp_new * vol_new) / (prev_cum_vol + vol_new)
+    # Approximated since we don't store cumulative volume; use EWM proxy
+    vwap_col = f"{tag}_vwap"
+    if vwap_col in df_prev.columns:
+        # Use rolling VWAP over last window — already computed by tier 1
+        # via the tail recompute; carry if tier 1 left it correct
+        # Tier 1 tail recompute recalculates VWAP from tail start which drifts.
+        # Best approximation: EWM of (tp * vol) / vol for the tail
+        # Since tier 1 already ran, check if the value is reasonable vs prev
+        prev_vwap = float(last_prev.get(vwap_col, 0.0))
+        tier1_val = float(new_feat[vwap_col].values[0]
+                           if vwap_col in new_feat.columns
+                           and not pd.isna(new_feat[vwap_col].values[0])
+                           else np.nan)
+        # If tier 1 value deviates > 1% from prev, it reset — carry instead
+        if not np.isnan(tier1_val) and prev_vwap != 0:
+            if abs(tier1_val - prev_vwap) / abs(prev_vwap) > 0.01:
+                # Analytical update: running EWMA approximation
+                alpha    = 0.02   # slow decay ≈ 50-bar window
+                hi_new   = float(new_feat.get("high", pd.Series([prev_vwap])).values[0])
+                lo_new   = float(new_feat.get("low",  pd.Series([prev_vwap])).values[0])
+                cl_new   = float(new_feat.get("close",pd.Series([prev_vwap])).values[0])
+                tp_new   = (hi_new + lo_new + cl_new) / 3
+                new_feat[vwap_col] = prev_vwap * (1 - alpha) + tp_new * alpha
+
+    # drawdown, dd_duration, max_dd_20, max_dd_50, calmar
+    # These depend on cum_ret which we just updated above
+    cum_ret_new = float(new_feat[cum_col].values[0]
+                         if cum_col in new_feat.columns else 0.0)
+    cummax_prev = float(last_prev.get(f"{tag}_drawdown", 0.0))
+
+    # Reconstruct rolling_max from prev drawdown:
+    # drawdown = (cum - rolling_max) / rolling_max
+    # => rolling_max = cum / (1 + drawdown)  -- approximation
+    prev_dd     = float(last_prev.get(f"{tag}_drawdown", 0.0))
+    if prev_dd < 0 and (1 + prev_dd) > 1e-9:
+        prev_cum_val = float(last_prev.get(cum_col, 0.0))
+        rolling_max  = (1 + prev_cum_val) / (1 + prev_dd)
+    else:
+        rolling_max  = 1 + float(last_prev.get(cum_col, 0.0))
+
+    new_cum_val  = 1 + cum_ret_new
+    rolling_max  = max(rolling_max, new_cum_val)
+    new_dd       = (new_cum_val - rolling_max) / (rolling_max + 1e-9)
+
+    dd_col = f"{tag}_drawdown"
+    if dd_col in df_prev.columns:
+        new_feat[dd_col] = new_dd
+
+    # dd_duration
+    dur_col = f"{tag}_dd_duration"
+    if dur_col in df_prev.columns:
+        prev_dur = float(last_prev.get(dur_col, 0.0))
+        new_feat[dur_col] = 0 if new_dd == 0 else prev_dur + 1
+
+    # max_dd_20 and max_dd_50 — update rolling min of drawdown
+    # Use last 20/50 drawdown values from df_prev
+    for w, wname in [(20, "max_dd_20"), (50, "max_dd_50")]:
+        mdd_col = f"{tag}_{wname}"
+        if mdd_col in df_prev.columns:
+            dd_series = df_prev[dd_col].iloc[-w+1:].tolist() + [new_dd]
+            new_feat[mdd_col] = float(min(dd_series))
+
+    # calmar
+    cal_col  = f"{tag}_calmar"
+    ann_col  = f"{tag}_sharpe_50"   # proxy — use sharpe mean return part
+    if cal_col in df_prev.columns:
+        mdd50_col  = f"{tag}_max_dd_50"
+        mdd_val    = float(new_feat[mdd50_col].values[0]
+                            if mdd50_col in new_feat.columns else -1e-9)
+        r_col_2    = f"{tag}_log_ret"
+        if r_col_2 in df_prev.columns:
+            ann_ret = float(df_prev[r_col_2].iloc[-50:].mean()) * 252
+            new_feat[cal_col] = ann_ret / (-mdd_val + 1e-9)
+
+    # ljungbox_q: Q = n*(n+2) * sum(acf^2/(n-k)) — fix n to use full df length
+    lbq_col = f"{tag}_ljungbox_q"
+    if lbq_col in df_prev.columns:
+        # Recompute using the ACF values already computed by tier 1
+        # and the correct n = len(df_prev) + 1
+        n_full  = len(df_prev) + 1
+        acf_lags = [1, 2, 3, 5]
+        q_sum   = 0.0
+        for lag in acf_lags:
+            acf_c = f"{tag}_acf_{lag}"
+            if acf_c in new_feat.columns and not pd.isna(new_feat[acf_c].values[0]):
+                rho_k  = float(new_feat[acf_c].values[0])
+                q_sum += rho_k**2 / (n_full - lag)
+        new_feat[lbq_col] = n_full * (n_full + 2) * q_sum
 
     return new_feat
 
