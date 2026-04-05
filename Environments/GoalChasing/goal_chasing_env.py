@@ -283,7 +283,7 @@ class GoalChasingEnvironment(BaseEnvironment):
         
         return info
     
-    def render_init(self)->None:
+    def render_init(self,runner)->None:
         def create_figure(robot_count):
             """
                 create the template figure and returns the proper axis for all the robots and the board.
@@ -317,7 +317,7 @@ class GoalChasingEnvironment(BaseEnvironment):
         plt.ion()
         self.render_fig, self.render_ax1, self.render_axs = create_figure(self.board.max_players)
 
-    def render(self)->None:
+    def render(self,runner)->None:
         
         def game_plotting(board, ax1, axs, robot_count):
             

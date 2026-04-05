@@ -12,6 +12,7 @@ from Agents.DQAgent import DQAgent
 from GameRunner import GameRunner
 
 import numpy as np
+from Runners.GoalChasing_QLearning.base import build_model
 
 # ============ Configuration ============
 BOARD_SIZE = 50
@@ -39,13 +40,16 @@ agent = DQAgent(
     action_dim=action_dim,
     lr=0.001,
     gamma=0.90,
-    epsilon=1.0,
+    epsilon=0.005,
     epsilon_min=0.01,
     epsilon_decay=0.998,
     memory_size=20000,
     batch_size=32,
     target_update_freq=1000
 )
+
+agent.initlize_models(model=build_model(agent))
+agent.load_model('results/DQN_(Greedy)-single_1/agent10_epoch_final')
 
 # ============ Create Agents Dictionary ============
 # same agent instance for all robots
@@ -100,7 +104,7 @@ print("-" * 60)
 
 metrics = runner.run(
     epochs=EPOCHS,
-    max_steps_per_episode=1000,
+    max_steps_per_episode=500,
     reward_functions=None,  # Use default reward function
     termination_condition=None,  # Use default termination
     step_callback=training_callback,
@@ -110,7 +114,8 @@ metrics = runner.run(
     save_metrics=False,
     save_models=False,
     save_directory='./saved_models/goal_chasing_basic',
-    verbose=2
+    verbose=2,
+    train=False
 )
 
 print("\n" + "=" * 60)
