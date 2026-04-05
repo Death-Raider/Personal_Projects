@@ -3,10 +3,19 @@ import random
 from collections import deque
 import tensorflow as tf
 from keras.models import Model
-from keras.layers import Dense, Input, BatchNormalization, Dropout, Reshape, MultiHeadAttention, LayerNormalization, Flatten, Concatenate
+from keras.layers import Input, BatchNormalization, Dropout, Reshape, MultiHeadAttention, LayerNormalization, Flatten, Concatenate
 from keras.optimizers import Adam
 import keras
 import time
+from keras.layers import Dense
+
+orig_init = Dense.__init__
+
+def patched_init(self, *args, **kwargs):
+    kwargs.pop("quantization_config", None)
+    orig_init(self, *args, **kwargs)
+
+Dense.__init__ = patched_init
 
 class DQAgent:
     def __init__(self, state_dim, action_dim, lr=0.001, gamma=0.99, epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.995, memory_size=2000, batch_size=32, target_update_freq=100, **kwargs):
@@ -22,42 +31,22 @@ class DQAgent:
         self.memory = deque(maxlen=memory_size)
         self.steps = 0
 
+        self.initlize_models()
+        
+    def initlize_models(self, model=None):
         # Initialize networks and optimizer
-        self.model = self.build_model()
-        self.target_model = self.build_model()
+        if model is not None:
+            self.model = model
+            self.target_model = keras.models.clone_model(model)
+        else:
+            self.model = self.build_model()
+            self.target_model = self.build_model()
         self.optimizer = Adam(learning_rate=self.lr)
         self.update_target_network()
 
     def build_model(self):
-        per_token_features = 2
-        global_features = 2
-
-        grid_size = (self.state_dim - global_features) // per_token_features
-
         inputs = Input(shape=(self.state_dim,))
-
-        # Split into local tokens and global features
-        local_tokens = inputs[:, :grid_size * per_token_features]
-        global_feats = inputs[:, grid_size * per_token_features:]
-
-        # Reshape local tokens for attention: (batch, tokens, features)
-        x = Reshape((grid_size, per_token_features))(local_tokens)
-
-        # Multi-head self-attention
-        attention_out = MultiHeadAttention(num_heads=2, key_dim=8)(x, x, x)
-        x = LayerNormalization()(x + attention_out)
-
-        # Flatten attention output
-        x = Flatten()(x)
-
-        # Concatenate with global features
-        x = Concatenate()([x, global_feats])
-
-        # Dense layers
-        x = Dense(256, activation='relu')(x)
-        x = Dropout(0.3)(x)
-        x = Dense(64, activation='relu')(x)
-        outputs = Dense(self.action_dim, activation='linear')(x)
+        outputs = Dense(self.action_dim, activation='linear')(inputs)
 
         return Model(inputs=inputs, outputs=outputs)
     

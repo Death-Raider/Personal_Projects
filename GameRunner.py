@@ -49,7 +49,7 @@ class GameRunner:
             save_directory: str = './saved_models',
             verbose: int = 1,
             train: bool = True,
-            action_override: Optional[Dict[str, Any]] = None) -> Dict:
+            ) -> Dict:
         """
         Run training loop
         
@@ -67,12 +67,12 @@ class GameRunner:
             save_metrics: Save training metrics
             save_models: Save agent models
             save_directory: Directory for saving
-            verbose: Verbosity level (0=silent, 1=progress bars, 2=detailed)
+            verbose: Verbosity level (0=silent, 1=progress bars, 2=detailed, 3=time profile)
         
         Returns:
             Dictionary of collected metrics
         """
-        
+        self.epochs = epochs
         # Use environment defaults if not provided
         if reward_functions is None:
             default_reward = self.env.get_default_reward_function()
@@ -82,45 +82,60 @@ class GameRunner:
             termination_condition = self.env.get_default_termination_condition()
         
         if render or render_last_epoch:
-            self.env.render_init()
+            self.env.render_init(self)
         # Training loop
         for epoch in tqdm(range(epochs), desc="Training Progress", disable=(verbose < 1)):
+            if verbose >= 3:
+                t = time.time()
             self.env.current_epoch = epoch
             
             # Reset environment
             self.env.reset_episode()
             
             # Metrics for this epoch
-            epoch_rewards = {name: [] for name in self.env.agents.keys()}
-            epoch_losses = {name: [] for name in self.env.agents.keys()}
+            self.epoch_rewards = {name: [] for name in self.env.agents.keys()}
+            self.epoch_losses = {name: [] for name in self.env.agents.keys()}
             step = 0
             
             # Render control
             should_render = render or (render_last_epoch and epoch == epochs - 1)
-            
+            if verbose >= 3:
+                print(f"Epoch {epoch} reset time: {time.time() - t:.2f} seconds")
+                t = time.time()
             # Episode loop
-            pbar = tqdm(total=max_steps_per_episode, desc=f"    Episode Loop: Epoch {epoch+1}/{epochs}", disable=(verbose < 2), leave=False)
+            pbar = tqdm(total=max_steps_per_episode, desc=f"    Episode Loop: Epoch {epoch+1}/{epochs}", disable=(verbose != 2), leave=False)
+            s = time.time()
             while True:
                 if termination_condition(self.env.board, step) or step >= max_steps_per_episode:
                     break
                 # Get states from environment
+                if verbose >= 3:
+                    t = time.time()
+
                 states = self.env.get_states()
+
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: get_states time: {time.time() - t:.2f} seconds")
+                    t = time.time()
 
                 # Agents choose actions
                 actions = {}
                 for name, agent in self.env.agents.items():
                     if name in states:
-                        if action_override and name in action_override:
-                            actions[name] = action_override[name](states[name])
-                        else:
-                            actions[name] = agent.choose_action(states[name])
-
+                        actions[name] = agent.choose_action(states[name])
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: choose_action time: {time.time() - t:.2f} seconds")
+                    t = time.time()
                 # Execute actions in environment
                 self.env.execute_actions(actions)
-
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: execute_actions time: {time.time() - t:.2f} seconds")
+                    t = time.time()
                 # Get new states
                 next_states = self.env.get_states()
-                
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: get_states time: {time.time() - t:.2f} seconds")
+                    t = time.time()
                 # Compute rewards using provided functions
                 rewards = {}
                 for name in self.env.agents.keys():
@@ -134,10 +149,15 @@ class GameRunner:
                         )
                     else:
                         rewards[name] = 0.0
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: reward_functions time: {time.time() - t:.2f} seconds")
+                    t = time.time()
 
                 # Check if done
                 dones = self.env.check_done(step)
-
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: check_done time: {time.time() - t:.2f} seconds")
+                    t = time.time()
                 # Update agents
                 losses = {}
                 if train:
@@ -173,35 +193,42 @@ class GameRunner:
                             except:
                                 pass  # Handle index errors gracefully
                             losses[name] = 0.0
-                    # print("First Half: ",time.time()-s1)
+                    if verbose >= 3:
+                        print(f"Epoch {epoch} step {step}: update agents time: {time.time() - t:.2f} seconds")
+                        t = time.time()
 
                 # Record step metrics
                 for name in self.env.agents.keys():
                     if name in rewards:
-                        epoch_rewards[name].append(rewards[name])
+                        self.epoch_rewards[name].append(rewards[name])
                     if name in losses:
-                        epoch_losses[name].append(losses[name])
-                
+                        self.epoch_losses[name].append(losses[name])
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: record step metrics time: {time.time() - t:.2f} seconds")
+                    t = time.time()
                 # Step callback
                 if step_callback:
                     step_callback(self.env.board, self.env.agents, step, epoch, self)
-
+                if verbose >= 3:
+                    print(f"Epoch {epoch} step {step}: step callback time: {time.time() - t:.2f} seconds")
+                    t = time.time()
                 # Render
                 if should_render:
-                    self.env.render()
+                    self.env.render(self)
                 
                 step += 1
                 pbar.update(1)
             pbar.close()
-            
+            if verbose >= 3:
+                print(f"Epoch {epoch} total episode time: {time.time() - s:.2f} seconds")
             # Record epoch metrics
             self.metrics['rewards'].append({
                 name: float(np.mean(rewards_list)) if rewards_list else 0
-                for name, rewards_list in epoch_rewards.items()
+                for name, rewards_list in self.epoch_rewards.items()
             })
             self.metrics['losses'].append({
                 name: float(np.mean(losses_list)) if losses_list else 0
-                for name, losses_list in epoch_losses.items()
+                for name, losses_list in self.epoch_losses.items()
             })
             self.metrics['episode_lengths'].append(step)
             
@@ -211,7 +238,7 @@ class GameRunner:
             
             # Verbose logging
             if verbose >= 2:
-                self._log_epoch(epoch, epoch_rewards, epoch_losses, step)
+                self._log_epoch(epoch, self.epoch_rewards, self.epoch_losses, step)
             
             # Save models periodically
             if save_models and (epoch + 1) % save_model_freq == 0:
