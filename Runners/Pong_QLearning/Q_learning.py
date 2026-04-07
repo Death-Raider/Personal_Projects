@@ -1,5 +1,5 @@
-from Environments.Pong_obs.board import Board
-from Environments.Pong_obs.pong_env import PongEnvironment
+from Environments.Pong.board import Board
+from Environments.Pong.pong_env import PongEnvironment
 from Agents.QAgent import QAgent
 from GameRunner import GameRunner
 
@@ -21,7 +21,12 @@ agent2 = QAgent(n_states, n_actions, learning_rate=0.5, discount_factor=0.90, ex
 def run_game(board, agents, epochs=1000, SHOW_LAST_EPOCH=False, SAVE_METRICS=False, 
              reward_functions=None, **kwargs):
     # Create environment
-    env = PongEnvironment(board, agents, config={'board_size': board.size, 'paddle_length': PADDLE_LENGTH, 'state_encoding': 'discrete'}, )
+    env = PongEnvironment(board, agents, config={
+            'board_size': board.size,
+            'paddle_length': PADDLE_LENGTH,
+            'state_encoding': 'discrete'
+        }
+    )
     assert env.n_states == n_states, f"State size mismatch! Expected {n_states}, got {env.n_states}"
     # Create runner
     runner = GameRunner(env)

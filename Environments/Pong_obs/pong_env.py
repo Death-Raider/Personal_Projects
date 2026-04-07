@@ -33,7 +33,7 @@ class PongEnvironment(BaseEnvironment):
             # Zero-sum reward weights
             'score_reward': 1.0,       # per point scored
             'alignment_reward': 3.0,    # paddle aligned with ball
-            'obstacle_cross_reward': 3.0,  # ball cleared obstacle toward opponent
+            'obstacle_cross_reward': 1.0,  # ball cleared obstacle toward opponent
         }
         if config:
             self.config.update(config)
@@ -89,31 +89,60 @@ class PongEnvironment(BaseEnvironment):
         w_obs     = self.config['obstacle_cross_reward']
 
         def _zero_sum_reward(board, agent_name, **kwargs):
-            player  = self._get_player_number(agent_name)
-            sign    = 1 if player == 1 else -1   # p1=+1, p2=−1
+            player = self._get_player_number(agent_name)
+            sign   = 1 if player == 1 else -1          # +1 for p1, -1 for p2
+
             score   = board.get_board_score()
             ball    = board.ball
             paddle  = board.l_paddle if player == 1 else board.r_paddle
 
             reward = 0.0
 
-            # ── score delta (zero-sum by design) ─────────────────────────
-            score_delta = score[1] - score[2]   # positive = p1 leads
+            # ── 1. Score delta (zero-sum) ─────────────────────────────────────
+            score_delta = score[1] - score[2]
             reward += sign * w_score * score_delta
 
-            # ── paddle alignment (zero-sum: good for p1 is bad for p2) ──
-            paddle_center  = paddle.y + paddle.length // 2
-            aligned        = abs(ball.y - paddle_center) < paddle.length // 2
-            alignment_val  = w_align if aligned else -w_align
-            reward        += sign * alignment_val
+            # ── 2. Continuous alignment using distance + ball angle ───────────
+            paddle_center = paddle.y + paddle.length / 2.0
+            dy = ball.y - paddle_center                     # signed vertical difference
 
-            # ── obstacle crossing bonuses ─────────────────────────────────
-            # cross > 0 (L->R): ball moving right → p1 benefit
-            # cross < 0 (R->L): ball moving left  → p2 benefit
+            # Horizontal distance (positive when ball is approaching your side)
+            if player == 1:                                 # left paddle
+                dx = ball.x - (paddle.x + 1)     # distance from right edge of paddle
+            else:                                           # right paddle
+                dx = paddle.x - ball.x                      # distance from left edge of paddle
+
+            # Only apply shaping when ball is coming toward this player
+            # Using angle: 0° = right, 90° = down, 180° = left, 270° = up (standard math angles)
+            ball_angle = getattr(ball, 'angle', 0) % 360
+
+            if player == 1:
+                ball_coming_toward_me = 0 <= ball_angle < 180     # moving right-ish (vx > 0)
+            else:
+                ball_coming_toward_me = 180 <= ball_angle < 360   # moving left-ish (vx < 0)
+
+            if ball_coming_toward_me and dx > 0:
+                # Vertical alignment factor (1.0 = perfect, 0.0 = at edge or beyond)
+                half_paddle = paddle.length / 2.0
+                vertical_factor = max(0.0, 1.0 - abs(dy) / half_paddle)
+
+                # Angle factor: how horizontal the ball is moving
+                # Closer to 0° or 180° → more horizontal → easier to return accurately
+                angle_from_horizontal = min(abs(ball_angle % 360), abs((ball_angle % 360) - 180))
+                angle_factor = max(0.0, 1.0 - (angle_from_horizontal / 90.0))   # 0°/180° = 1.0, 90° = 0.0
+
+                # Combine both
+                alignment_factor = vertical_factor * (angle_factor ** 1.5)   # slight emphasis on good angle
+
+                # Proximity weight: stronger reward when ball is closer
+                max_dx = board.size * 0.85                     # adjust based on your board size
+                proximity_factor = max(0.0, 1.0 - (dx / max_dx))
+
+                reward += sign * w_align * alignment_factor * proximity_factor
+
+            # ── 3. Obstacle crossing bonuses ───────────────────────────────────
             for cross in getattr(ball, 'obstacle_crosses', []):
                 if cross != 0:
-                    # cross = +1 → sign_of_benefit = +1 for p1 → sign * +w_obs
-                    # cross = -1 → sign_of_benefit = -1 for p1 → sign * -w_obs
                     reward += sign * cross * w_obs
 
             return reward
@@ -206,6 +235,19 @@ class PongEnvironment(BaseEnvironment):
     # ── state encoding ────────────────────────────────────────────────────────
 
     def state_to_index(self, y1, y2, bx, by, a) -> int:
+        y_size = self.config['board_size'] - self.config['paddle_length'] + 1
+        a = a%360
+        
+        if not (0 <= y1 < y_size):
+            raise ValueError(f"y1 out of range: {y1} (should be 0 to {y_size-1})")
+        if not (0 <= y2 < y_size):
+            raise ValueError(f"y2 out of range: {y2}")
+        if not (0 <= bx <= self.config['board_size']):
+            raise ValueError(f"bx out of range: {bx}")
+        if not (0 <= by <= self.config['board_size']):
+            raise ValueError(f"by out of range: {by}")
+        if not (0 <= a < 360):
+            raise ValueError(f"angle out of range: {a} (should be 0-359)")
         return (y1
                 + y2 * self.base_y1
                 + bx * self.base_y1 * self.base_y2

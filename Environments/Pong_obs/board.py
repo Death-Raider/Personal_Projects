@@ -33,7 +33,7 @@ class Board:
         # obs2 (right bar) occupies the BOTTOM half: y = mid+gap .. size
         # Keeps the horizontal midline (ball spawn row) permanently clear.
         mid  = size // 2
-        gap  = max(1, int(size * 0.05))   # clear band around midline
+        gap  = mid//2# max(1, int(size * 0.05))   # clear band around midline
         hw   = obstacle_width // 2
 
         self.obstacles: list[Obstacle] = [

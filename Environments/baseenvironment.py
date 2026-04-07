@@ -101,11 +101,11 @@ class BaseEnvironment(ABC):
         is_done = termination_fn(self.board, step)
         return {name: is_done for name in self.agents.keys()}
     
-    def render_init(self) -> None:
+    def render_init(self, runner) -> None:
         """Initialize rendering setup"""
         pass
 
-    def render(self) -> None:
+    def render(self, runner) -> None:
         """Render the current environment state"""
         # Default: try to render board if it has a render method
         if hasattr(self.board, 'render'):
