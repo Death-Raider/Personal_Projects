@@ -18,6 +18,29 @@ from Runners.GoalChasing_QLearning.base import build_model
 
 import numpy as np
 
+def trivial_action(state):
+    goal_dx = state[-2]
+    goal_dy = state[-1]
+    
+    # Map (dx, dy) to closest direction
+    # DIR: [NE, N, NW, W, E, SW, S, SE]
+    
+    # row: [-1, -1, -1,  0, 0,  1,  1,  1]  (dy)
+    # col: [-1,  0,  1, -1, 1, -1,  0,  1]  (dx)
+    
+    angle = np.arctan2(-goal_dy, goal_dx)  # negative dy because row increases downward
+    
+    # Convert angle to 0-7 direction index
+    # Angles for each direction:
+    dir_angles = np.array([135, 90, 45, 180, 0, 225, 270, 315]) * np.pi / 180
+    
+    # Find closest direction
+    angle = angle % (2 * np.pi)
+    diffs = np.abs(dir_angles - angle)
+    diffs = np.minimum(diffs, 2 * np.pi - diffs)  # handle wrap-around
+    # print(int(np.argmin(diffs)))
+    return int(np.argmin(diffs))
+
 # Values
 BOARD_SIZES = [50,60,70,80,90,100]
 ROBOT_COUNTS = [5,10,15,20,25,30]
@@ -96,7 +119,7 @@ for b,board_size in enumerate(BOARD_SIZES):
                 termination_condition=None,  # Use default termination
                 step_callback=training_callback,
                 episode_callback=None,
-                render=True,
+                render=False,
                 render_last_epoch=False,
                 save_metrics=False,
                 save_models=False,

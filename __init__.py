@@ -9,7 +9,7 @@ from Runners.Pong_QLearning.Q_learning import *
 metrics = run_game(
     default_board, 
     {'agent1': agent1, 'agent2': agent2}, 
-    epochs=1000, 
+    epochs=100, 
     SHOW_LAST_EPOCH=True, 
     SAVE_METRICS=False,
     save_models=False,
