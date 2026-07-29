@@ -122,7 +122,18 @@ class GameRunner:
                 actions = {}
                 for name, agent in self.env.agents.items():
                     if name in states:
-                        actions[name] = agent.choose_action(states[name])
+                        # if action_override and name in action_override:
+                        #     actions[name] = action_override[name](states[name])
+                        if False:
+                            pass
+                        elif hasattr(agent, 'num_action_samples'):  # CADRL-style agent, needs robot/goal context
+                            robot_id = int(name.replace('agent', ''))
+                            robot, goal = next((r, g) for r, g, _ in self.env.board.players if r.id == robot_id)
+                            other_robots = [r for r, g, _ in self.env.board.players if r.id != robot_id]
+                            actions[name] = agent.choose_action(states[name], robot=robot, goal=goal,
+                                                                other_robots=other_robots)
+                        else:
+                            actions[name] = agent.choose_action(states[name])
                 if verbose >= 3:
                     print(f"Epoch {epoch} step {step}: choose_action time: {time.time() - t:.2f} seconds")
                     t = time.time()
